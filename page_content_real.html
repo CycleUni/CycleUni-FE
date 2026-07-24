@@ -1,0 +1,430 @@
+<!DOCTYPE html><html lang="zh-Hant"><head>
+  <script type="module" src="/@vite/client"></script>
+
+  <meta charset="utf-8">
+  <title>周恭煥 的二手商品 | CycleUni</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&amp;family=Playfair+Display:ital,wght@0,600;1,600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"><style ng-style-reused="">
+.layout-wrapper[_ngcontent-ng-c1917726032] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.app-header[_ngcontent-ng-c1917726032] {
+  border-bottom: 1px solid var(--line);
+  background-color: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-content[_ngcontent-ng-c1917726032] {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand-area[_ngcontent-ng-c1917726032] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.school-selector[_ngcontent-ng-c1917726032] {
+  width: 180px;
+  margin-top: 12px;
+}
+.logo[_ngcontent-ng-c1917726032]   a[_ngcontent-ng-c1917726032] {
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 20px;
+}
+.header-right[_ngcontent-ng-c1917726032] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.nav-links[_ngcontent-ng-c1917726032] {
+  display: flex;
+  gap: 24px;
+}
+.nav-links[_ngcontent-ng-c1917726032]   a[_ngcontent-ng-c1917726032] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+.nav-links[_ngcontent-ng-c1917726032]   a[_ngcontent-ng-c1917726032]:hover {
+  color: var(--accent);
+}
+.nav-links[_ngcontent-ng-c1917726032]   a.active-link[_ngcontent-ng-c1917726032] {
+  color: var(--accent);
+  font-weight: 700;
+}
+.nav-links[_ngcontent-ng-c1917726032]   svg[_ngcontent-ng-c1917726032] {
+  flex-shrink: 0;
+}
+.nav-link-with-badge[_ngcontent-ng-c1917726032] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-badge[_ngcontent-ng-c1917726032] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background-color: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.lang-icon-wrap[_ngcontent-ng-c1917726032] {
+  display: inline-flex;
+}
+.main-content[_ngcontent-ng-c1917726032] {
+  flex: 1;
+  width: 100%;
+}
+.app-footer[_ngcontent-ng-c1917726032] {
+  border-top: 1px solid var(--line);
+  background-color: var(--paper-warm);
+  padding: 48px 16px 24px;
+  margin-top: 64px;
+}
+.footer-content[_ngcontent-ng-c1917726032] {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  gap: 64px;
+  margin-bottom: 48px;
+}
+.footer-col[_ngcontent-ng-c1917726032]   h4[_ngcontent-ng-c1917726032] {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+.footer-col[_ngcontent-ng-c1917726032]   p[_ngcontent-ng-c1917726032] {
+  color: var(--muted);
+  margin: 0;
+  font-size: 14px;
+  max-width: 240px;
+  line-height: 1.6;
+}
+.footer-col[_ngcontent-ng-c1917726032]   a[_ngcontent-ng-c1917726032] {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.footer-col[_ngcontent-ng-c1917726032]   a[_ngcontent-ng-c1917726032]:hover {
+  color: var(--accent);
+}
+.footer-bottom[_ngcontent-ng-c1917726032] {
+  max-width: 1120px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .header-content[_ngcontent-ng-c1917726032] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 12px 16px;
+  }
+  .brand-area[_ngcontent-ng-c1917726032] {
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .school-selector[_ngcontent-ng-c1917726032] {
+    width: 150px;
+  }
+  .header-right[_ngcontent-ng-c1917726032] {
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .nav-links[_ngcontent-ng-c1917726032] {
+    gap: 16px;
+  }
+  .nav-links[_ngcontent-ng-c1917726032]   a[_ngcontent-ng-c1917726032] {
+    gap: 4px;
+  }
+  .nav-links[_ngcontent-ng-c1917726032]   svg[_ngcontent-ng-c1917726032] {
+    width: 15px;
+    height: 15px;
+  }
+  .footer-content[_ngcontent-ng-c1917726032] {
+    flex-direction: column;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .app-footer[_ngcontent-ng-c1917726032] {
+    padding: 32px 16px 24px;
+    margin-top: 48px;
+  }
+}
+/*# sourceMappingURL=/layout.component.css.map */</style><style ng-style-reused="">
+.dropdown-wrapper[_ngcontent-ng-c123094000] {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.dropdown-wrapper.compact[_ngcontent-ng-c123094000] {
+  margin-bottom: 0;
+}
+label[_ngcontent-ng-c123094000] {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.ui-dropdown[_ngcontent-ng-c123094000] {
+  position: relative;
+}
+.dropdown-trigger[_ngcontent-ng-c123094000] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.dropdown-trigger[_ngcontent-ng-c123094000]:disabled {
+  background-color: var(--paper-warm);
+  cursor: not-allowed;
+}
+.dropdown-trigger[aria-expanded=true][_ngcontent-ng-c123094000] {
+  border-color: var(--accent);
+}
+.dropdown-trigger.icon-only[_ngcontent-ng-c123094000] {
+  width: auto;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+.dropdown-trigger.icon-only[_ngcontent-ng-c123094000]:hover, 
+.dropdown-trigger.icon-only[aria-expanded=true][_ngcontent-ng-c123094000] {
+  color: var(--ink);
+}
+.dropdown-trigger-label[_ngcontent-ng-c123094000] {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-caret[_ngcontent-ng-c123094000] {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.dropdown-panel[_ngcontent-ng-c123094000] {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 180px;
+  padding: 4px;
+  background-color: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 200;
+}
+.dropdown-panel.append-to-body[_ngcontent-ng-c123094000] {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+  min-width: 200px;
+  z-index: 1000;
+}
+.dropdown-panel.align-right[_ngcontent-ng-c123094000] {
+  left: auto;
+  right: 0;
+  width: max-content;
+}
+.dropdown-search[_ngcontent-ng-c123094000] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink);
+  background-color: var(--paper);
+}
+.dropdown-search[_ngcontent-ng-c123094000]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.dropdown-list[_ngcontent-ng-c123094000] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.dropdown-list[_ngcontent-ng-c123094000]   li[_ngcontent-ng-c123094000] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.dropdown-list[_ngcontent-ng-c123094000]   li[_ngcontent-ng-c123094000]:hover {
+  background-color: var(--paper-warm);
+}
+.dropdown-list[_ngcontent-ng-c123094000]   li.active[_ngcontent-ng-c123094000] {
+  color: var(--accent);
+  font-weight: 700;
+}
+.dropdown-check[_ngcontent-ng-c123094000] {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.dropdown-empty[_ngcontent-ng-c123094000] {
+  color: var(--muted);
+  cursor: default;
+}
+.dropdown-empty[_ngcontent-ng-c123094000]:hover {
+  background-color: transparent;
+}
+/*# sourceMappingURL=/dropdown.component.css.map */</style><script id="google-jssdk" src="https://accounts.google.com/gsi/client?hl=zh-TW" async="" defer=""></script><style id="googleidentityservice_button_styles">.qJTHM{-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;color:#202124;direction:ltr;-webkit-touch-callout:none;font-family:Roboto-Regular,arial,sans-serif;-webkit-font-smoothing:antialiased;font-weight:400;margin:0;overflow:hidden;-webkit-text-size-adjust:100%}.ynRLnc{left:-9999px;position:absolute;top:-9999px}.L6cTce{display:none}.bltWBb{overflow-wrap:break-word;word-break:break-word}.hSRGPd{color:#1a73e8;cursor:pointer;font-weight:500;text-decoration:none}.Bz112c-W3lGp{height:16px;width:16px}.Bz112c-E3DyYd{height:20px;width:20px}.Bz112c-r9oPif{height:24px;width:24px}.Bz112c-u2z5K{height:36px;width:36px}.Bz112c-uaxL4e{border-radius:10px}.LgbsSe-Bz112c{display:block}.S9gUrf-YoZ4jf{border:none;margin:0;padding:0}.S9gUrf-YoZ4jf *{border:none;margin:0;padding:0}.fFW7wc-ibnC6b>.aZ2wEe>div{border-color:#4285f4}.P1ekSe-ZMv3u{-webkit-transition:height .2s linear;transition:height .2s linear}.P1ekSe-ZMv3u>div:first-child{background-color:#1a73e8!important;-webkit-transition:width .3s linear;transition:width .3s linear}.P1ekSe-ZMv3u>div:nth-child(2){background-image:-webkit-gradient(linear,left top,right top,from(rgba(255,255,255,.7)),to(rgba(255,255,255,.7))),-webkit-gradient(linear,left top,right top,from(#1a73e8),to(#1a73e8))!important;background-image:-webkit-linear-gradient(left,rgba(255,255,255,.7),rgba(255,255,255,.7)),-webkit-linear-gradient(left,#1a73e8,#1a73e8)!important;background-image:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(90deg,#1a73e8,#1a73e8)!important}.P1ekSe-ZMv3u>div:nth-child(3){background-image:-webkit-gradient(linear,left top,right top,from(rgba(255,255,255,.7)),to(rgba(255,255,255,.7))),-webkit-gradient(linear,left top,right top,from(#1a73e8),to(#1a73e8))!important;background-image:-webkit-linear-gradient(left,rgba(255,255,255,.7),rgba(255,255,255,.7)),-webkit-linear-gradient(left,#1a73e8,#1a73e8)!important;background-image:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(90deg,#1a73e8,#1a73e8)!important}.haAclf{display:inline-block}.nsm7Bb-HzV7m-LgbsSe{border-radius:4px;box-sizing:border-box;-webkit-transition:background-color .218s,border-color .218s;transition:background-color .218s,border-color .218s;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;-webkit-appearance:none;background-color:#fff;background-image:none;border:1px solid #dadce0;color:#3c4043;cursor:pointer;font-family:Google Sans,arial,sans-serif;font-size:.875rem;height:40px;letter-spacing:.25px;outline:none;overflow:hidden;padding:0 12px;position:relative;text-align:center;vertical-align:middle;white-space:nowrap;width:auto}@media screen and (-ms-high-contrast:active){.nsm7Bb-HzV7m-LgbsSe{border:2px solid windowText;color:windowText}}@media screen and (preferes-contrast:more){.nsm7Bb-HzV7m-LgbsSe{color:#000}}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe{font-size:.875rem;height:32px;letter-spacing:.25px;padding:0 10px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe{font-size:.6875rem;height:20px;letter-spacing:.3px;padding:0 8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe{padding:0;width:40px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe{width:32px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe{width:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK{border-radius:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.pSzOP-SxQuSe{border-radius:16px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.purZT-SxQuSe{border-radius:10px}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc{border:1px solid #8e918f;background-color:#131314;color:#e3e3e3}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc{border:none;color:#fff}.nsm7Bb-HzV7m-LgbsSe.MFS4be-v3pZbf-Ia7Qfc{background-color:#1a73e8}.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{background-color:#202124;color:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{color:#fff}}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:18px;margin-right:8px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:14px;min-width:14px;width:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:10px;min-width:10px;width:10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin-left:8px;margin-right:-4px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:10px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:4px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:3px;border-bottom-left-radius:3px;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;align-items:center;background-color:#fff;height:36px;margin-left:-10px;margin-right:12px;min-width:36px;width:36px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c,.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:28px;margin-left:-8px;margin-right:10px;min-width:28px;width:28px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:16px;margin-left:-6px;margin-right:8px;min-width:16px;width:16px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:3px;margin-left:2px;margin-right:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:8px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;-webkit-box-align:center;align-items:center;-webkit-flex-direction:row;-webkit-box-orient:horizontal;-webkit-box-direction:normal;flex-direction:row;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;-webkit-flex-wrap:nowrap;flex-wrap:nowrap;height:100%;position:relative;width:100%}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX{-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{-webkit-flex-grow:1;-webkit-box-flex:1;flex-grow:1;font-family:Google Sans,arial,sans-serif;font-weight:500;overflow:hidden;text-overflow:ellipsis;vertical-align:top}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-weight:300}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX .nsm7Bb-HzV7m-LgbsSe-BPrWId{-webkit-flex-grow:0;-webkit-box-flex:0;flex-grow:0}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-MJoBVe{-webkit-transition:background-color .218s;transition:background-color .218s;bottom:0;left:0;position:absolute;right:0;top:0}.nsm7Bb-HzV7m-LgbsSe:focus,.nsm7Bb-HzV7m-LgbsSe:hover{box-shadow:none;border-color:rgb(210,227,252);outline:none}.nsm7Bb-HzV7m-LgbsSe:focus-within{outline:2px solid #00639b;border-color:transparent}.nsm7Bb-HzV7m-LgbsSe:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.08)}.nsm7Bb-HzV7m-LgbsSe:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.1)}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.08)}.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.i5vt6e-to915-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.12)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.24)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.32)}.nsm7Bb-HzV7m-LgbsSe .n1UuX-DkfjY{border-radius:50%;display:-webkit-box;display:-webkit-flex;display:flex;height:20px;margin-left:-4px;margin-right:8px;min-width:20px;width:20px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-family:Roboto;font-size:12px;text-align:left}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .fmcmS,.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .ssJRIf{overflow:hidden;text-overflow:ellipsis}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;-webkit-box-align:center;align-items:center;color:#5f6368;fill:#5f6368;font-size:11px;font-weight:400}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.i5vt6e-to915-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#c4c7c5;fill:#c4c7c5}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#e8eaed;fill:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff,.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#000;fill:#000}}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .Bz112c{height:18px;margin:-3px -3px -3px 2px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:12px;margin-right:-10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.L5Fo6c-sM5MNb{border:0;display:block;left:0;position:relative;top:0}.L5Fo6c-bF1uUb{border-radius:4px;bottom:0;cursor:pointer;left:0;position:absolute;right:0;top:0}.L5Fo6c-bF1uUb:focus{border:none;outline:none}sentinel{}</style><link id="googleidentityservice" type="text/css" media="all" href="https://accounts.google.com/gsi/style" rel="stylesheet"><style>
+.seller-page[_ngcontent-ng-c275607211] {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.seller-header[_ngcontent-ng-c275607211] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  padding: 32px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+.seller-avatar[_ngcontent-ng-c275607211] {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+.seller-avatar-image-container[_ngcontent-ng-c275607211] {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.seller-avatar-image[_ngcontent-ng-c275607211] {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.seller-name[_ngcontent-ng-c275607211] {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.seller-meta[_ngcontent-ng-c275607211] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.seller-school[_ngcontent-ng-c275607211] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.verified-badge[_ngcontent-ng-c275607211] {
+  background: #34c759;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  margin-left: 4px;
+}
+.seller-listings[_ngcontent-ng-c275607211]   h2[_ngcontent-ng-c275607211] {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+.listings-grid[_ngcontent-ng-c275607211] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.empty-state[_ngcontent-ng-c275607211], 
+.loading[_ngcontent-ng-c275607211], 
+.not-found[_ngcontent-ng-c275607211] {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.not-found[_ngcontent-ng-c275607211]   button[_ngcontent-ng-c275607211] {
+  margin-top: 16px;
+  padding: 8px 24px;
+  border: none;
+  border-radius: 20px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+}
+/*# sourceMappingURL=/seller.css.map */</style></head>
+<body><!--nghm--><script type="text/javascript" id="ng-event-dispatch-contract">(()=>{function p(t,n,r,o,e,i,f,m){return{eventType:t,event:n,targetElement:r,eic:o,timeStamp:e,eia:i,eirp:f,eiack:m}}function u(t){let n=[],r=e=>{n.push(e)};return{c:t,q:n,et:[],etc:[],d:r,h:e=>{r(p(e.type,e,e.target,t,Date.now()))}}}function s(t,n,r){for(let o=0;o<n.length;o++){let e=n[o];(r?t.etc:t.et).push(e),t.c.addEventListener(e,t.h,r)}}function c(t,n,r,o,e=window){let i=u(t);e._ejsas||(e._ejsas={}),e._ejsas[n]=i,s(i,r),s(i,o,!0)}window.__jsaction_bootstrap=c;})();
+</script><script>window.__jsaction_bootstrap(document.body,"ng",["click"],[]);</script>
+  <app-root ng-version="22.0.7" ng-server-context="ssr"><ui-layout _nghost-ng-c1917726032=""><div _ngcontent-ng-c1917726032="" class="layout-wrapper"><header _ngcontent-ng-c1917726032="" class="app-header"><div _ngcontent-ng-c1917726032="" class="header-content"><div _ngcontent-ng-c1917726032="" class="brand-area"><h1 _ngcontent-ng-c1917726032="" class="logo"><a _ngcontent-ng-c1917726032="" routerlink="/" href="/">CycleUni 易校網</a></h1><div _ngcontent-ng-c1917726032="" class="school-selector"><ui-dropdown _ngcontent-ng-c1917726032="" _nghost-ng-c123094000="" class="ng-untouched ng-pristine ng-valid"><div _ngcontent-ng-c123094000="" class="dropdown-wrapper compact"><!--container--><div _ngcontent-ng-c123094000="" class="ui-dropdown"><button _ngcontent-ng-c123094000="" type="button" aria-haspopup="listbox" class="dropdown-trigger" aria-expanded="false"><span _ngcontent-ng-c123094000="" class="dropdown-trigger-label">全部大學</span><!--container--><svg _ngcontent-ng-c123094000="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true" class="dropdown-caret"><polyline _ngcontent-ng-c123094000="" points="6 9 12 15 18 9"></polyline></svg></button><!--container--><!--container--></div></div></ui-dropdown><!--container--></div></div><div _ngcontent-ng-c1917726032="" class="header-right"><nav _ngcontent-ng-c1917726032="" class="nav-links"><a _ngcontent-ng-c1917726032="" routerlink="/search" routerlinkactive="active-link" href="/search" class=""><svg _ngcontent-ng-c1917726032="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><circle _ngcontent-ng-c1917726032="" cx="10.5" cy="10.5" r="6.5"></circle><line _ngcontent-ng-c1917726032="" x1="20" y1="20" x2="15.4" y2="15.4"></line></svg> 找書 </a><a _ngcontent-ng-c1917726032="" routerlink="/sell" routerlinkactive="active-link" href="/sell" class=""><svg _ngcontent-ng-c1917726032="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><rect _ngcontent-ng-c1917726032="" x="3.5" y="3.5" width="17" height="17" rx="2"></rect><line _ngcontent-ng-c1917726032="" x1="12" y1="8" x2="12" y2="16"></line><line _ngcontent-ng-c1917726032="" x1="8" y1="12" x2="16" y2="12"></line></svg> 賣書 </a><a _ngcontent-ng-c1917726032="" routerlink="/messages" routerlinkactive="active-link" class="nav-link-with-badge" href="/messages"><svg _ngcontent-ng-c1917726032="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><path _ngcontent-ng-c1917726032="" d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg> 訊息 <!--container--></a><a _ngcontent-ng-c1917726032="" routerlink="/account" routerlinkactive="active-link" href="/account" class=""><svg _ngcontent-ng-c1917726032="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><circle _ngcontent-ng-c1917726032="" cx="12" cy="8" r="3.5"></circle><path _ngcontent-ng-c1917726032="" d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"></path></svg> 會員 </a></nav><ui-dropdown _ngcontent-ng-c1917726032="" class="lang-dropdown ng-untouched ng-pristine ng-valid" _nghost-ng-c123094000=""><div _ngcontent-ng-c123094000="" class="dropdown-wrapper compact"><!--container--><div _ngcontent-ng-c123094000="" class="ui-dropdown"><button _ngcontent-ng-c123094000="" type="button" aria-haspopup="listbox" class="dropdown-trigger icon-only" aria-expanded="false"><span _ngcontent-ng-c1917726032="" dropdowntrigger="" class="lang-icon-wrap"><svg _ngcontent-ng-c1917726032="" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><text _ngcontent-ng-c1917726032="" x="1" y="15" font-family="inherit" font-size="13" font-weight="500" fill="var(--ink)">文</text><text _ngcontent-ng-c1917726032="" x="11" y="19" font-family="inherit" font-size="10" font-weight="700" fill="var(--accent)">A</text></svg></span><!--container--><svg _ngcontent-ng-c123094000="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true" class="dropdown-caret"><polyline _ngcontent-ng-c123094000="" points="6 9 12 15 18 9"></polyline></svg></button><!--container--><!--container--></div></div></ui-dropdown><!--container--></div></div></header><main _ngcontent-ng-c1917726032="" class="main-content"><router-outlet></router-outlet><app-seller-page _nghost-ng-c275607211=""><div _ngcontent-ng-c275607211="" class="seller-page"><div _ngcontent-ng-c275607211="" class="seller-header"><!--container--><div _ngcontent-ng-c275607211="" class="seller-avatar-image-container"><img _ngcontent-ng-c275607211="" alt="Avatar" referrerpolicy="no-referrer" class="seller-avatar-image" src="https://lh3.googleusercontent.com/a/ACg8ocLMRhwBr8zfrsr1efv0eChriZtHkg5dUMl9WN1f9YSRObvtizWBOA=s96-c"></div><!--container--><div _ngcontent-ng-c275607211="" class="seller-info"><h1 _ngcontent-ng-c275607211="" class="seller-name">周恭煥</h1><div _ngcontent-ng-c275607211="" class="seller-meta"><span _ngcontent-ng-c275607211="" class="seller-school"> 國立成功大學 <span _ngcontent-ng-c275607211="" class="verified-badge" title="已驗證校園信箱">✓</span><!--container--></span><span _ngcontent-ng-c275607211="" class="seller-joined"> 加入時間：2026年7月23日 </span></div><div _ngcontent-ng-c275607211="" class="seller-stats" style="margin-top: 8px; font-size: 14px; color: var(--ink); display: flex; gap: 16px;"><!--container--><span _ngcontent-ng-c275607211="" class="muted">尚無評價</span><!--container--><!--container--></div></div></div><div _ngcontent-ng-c275607211="" class="seller-listings"><h2 _ngcontent-ng-c275607211="">周恭煥 的所有商品</h2><!--container--><!--container--><div _ngcontent-ng-c275607211="" class="empty-state"><p _ngcontent-ng-c275607211="">這個賣家目前沒有上架任何商品。</p></div><!--container--><!--container--></div></div><!--container--><!--container--></app-seller-page><!--container--></main><footer _ngcontent-ng-c1917726032="" class="app-footer"><div _ngcontent-ng-c1917726032="" class="footer-content"><div _ngcontent-ng-c1917726032="" class="footer-col"><h4 _ngcontent-ng-c1917726032="">CycleUni</h4><p _ngcontent-ng-c1917726032="">台灣大學生專屬的二手教科書媒合平台。</p></div><div _ngcontent-ng-c1917726032="" class="footer-col"><h4 _ngcontent-ng-c1917726032="">關於</h4><a _ngcontent-ng-c1917726032="" href="javascript:void(0)">運作方式</a><a _ngcontent-ng-c1917726032="" href="javascript:void(0)">常見問題</a></div><div _ngcontent-ng-c1917726032="" class="footer-col"><h4 _ngcontent-ng-c1917726032="">條款</h4><a _ngcontent-ng-c1917726032="" href="javascript:void(0)">服務條款</a><a _ngcontent-ng-c1917726032="" href="javascript:void(0)">隱私權政策</a></div></div><div _ngcontent-ng-c1917726032="" class="footer-bottom"> © 2026 CycleUni. All rights reserved. </div></footer></div></ui-layout></app-root>
+<script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script>
+<link rel="modulepreload" href="chunk-ZVFVACSV.js">
+<link rel="modulepreload" href="chunk-C3Z2GCUD.js">
+<link rel="modulepreload" href="chunk-BIQD7JN6.js">
+<link rel="modulepreload" href="chunk-7DJ32PSZ.js">
+<link rel="modulepreload" href="chunk-W5SZCKWR.js">
+
+
+<script id="ng-state" type="application/json">{"ee4d3d346455e252587256a553facecab56187af49b877590b3f295ff99edb99":{"b":{"lang":"en","schools":[{"id":1,"name":"國立台灣大學","display_name":"National Taiwan University","email_domain":"ntu.edu.tw"},{"id":2,"name":"國立政治大學","display_name":"National Chengchi University","email_domain":"nccu.edu.tw"},{"id":3,"name":"國立台灣師範大學","display_name":"National Taiwan Normal University","email_domain":"ntnu.edu.tw"},{"id":4,"name":"國立成功大學","display_name":"National Cheng Kung University","email_domain":"ncku.edu.tw"},{"id":5,"name":"國立清華大學","display_name":"National Tsing Hua University","email_domain":"nthu.edu.tw"}],"categories":[{"slug":"management","title":"College of Management","desc":"Economics, Accounting, Business Administration"},{"slug":"engineering","title":"College of Engineering","desc":"Mechanical, Civil, Chemical Engineering"},{"slug":"science","title":"College of Science","desc":"Mathematics, Physics, Chemistry"},{"slug":"liberal-arts","title":"College of Liberal Arts","desc":"Foreign Languages, Chinese, History"},{"slug":"medicine","title":"College of Medicine","desc":"Medicine, Nursing, Pharmacy"},{"slug":"eecs","title":"College of EECS","desc":"Electrical Engineering, Computer Science"},{"slug":"law","title":"College of Law","desc":"Department of Law"},{"slug":"social-sciences","title":"College of Social Sciences","desc":"Political Science, Sociology, Social Work"}],"waitlist":[{"title":"Sample Book 1671","count":100},{"title":"Sample Book 3261","count":99},{"title":"Sample Book 2204","count":99},{"title":"Sample Book 2189","count":99},{"title":"Sample Book 793","count":98},{"title":"Sample Book 39","count":98},{"title":"Sample Book 3665","count":96}]},"h":{},"s":200,"st":"OK","u":"http:\u002F\u002Flocalhost:8000\u002Fapi\u002Fv1\u002Fcore\u002Fmetadata\u002F","rt":"json"},"6f1130206a47aea27cf65d37e4a3d0f2f58448c2120deb56991167a92dff8e0e":{"b":{"id":2,"first_name":"恭煥","last_name":"周","display_name":"周恭煥","school_name":"National Cheng Kung University","created_at":"2026-07-23T00:18:46.742745+08:00","is_verified":true,"average_rating":0,"review_count":0,"no_show_count":0,"avatar_url":"https:\u002F\u002Flh3.googleusercontent.com\u002Fa\u002FACg8ocLMRhwBr8zfrsr1efv0eChriZtHkg5dUMl9WN1f9YSRObvtizWBOA=s96-c"},"h":{},"s":200,"st":"OK","u":"http:\u002F\u002Flocalhost:8000\u002Fapi\u002Fv1\u002Fauth\u002Fusers\u002F2\u002F","rt":"json"},"user_profile_2":{"id":2,"first_name":"恭煥","last_name":"周","display_name":"周恭煥","school_name":"National Cheng Kung University","created_at":"2026-07-23T00:18:46.742745+08:00","is_verified":true,"average_rating":0,"review_count":0,"no_show_count":0,"avatar_url":"https:\u002F\u002Flh3.googleusercontent.com\u002Fa\u002FACg8ocLMRhwBr8zfrsr1efv0eChriZtHkg5dUMl9WN1f9YSRObvtizWBOA=s96-c"},"8cad63902838cb201c3f6b601b02f01e1c028493d48b410859023e8ea80427cf":{"b":{"count":0,"next":null,"previous":null,"results":[]},"h":{},"s":200,"st":"OK","u":"http:\u002F\u002Flocalhost:8000\u002Fapi\u002Fv1\u002Flistings\u002F","rt":"json"},"listings__2_1":{"count":0,"next":null,"previous":null,"results":[]},"__nghData__":[{"t":{"1":"t0","6":"t1","9":"t2","11":"t3"},"c":{"1":[],"6":[{"i":"t1","r":1}],"9":[],"11":[]},"n":{"6":"3f"}},{"t":{"1":"t0","6":"t1","9":"t2","11":"t3"},"c":{"1":[],"6":[],"9":[],"11":[]},"n":{"6":"3fn"}},{"c":{"8":[],"29":[],"36":[]},"t":{"29":"t4"},"n":{"37":"36f2nf2"}},{"t":{"0":"t38","1":"t49"},"c":{"0":[{"i":"t38","r":1,"t":{"2":"t39","3":"t40","10":"t41","15":"t42","16":"t43","17":"t44","22":"t45","23":"t46","24":"t47","25":"t48"},"c":{"2":[],"3":[{"i":"t40","r":1}],"10":[{"i":"t41","r":1}],"15":[],"16":[{"i":"t43","r":1}],"17":[],"22":[],"23":[],"24":[{"i":"t47","r":1}],"25":[]}}],"1":[]}},{"n":{"1":"0f2nf"},"c":{"1":[{"i":"c275607211","r":1}]}}]}</script></body></html>

@@ -1,0 +1,186 @@
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AdminService, AdminUser } from '../../core/services/admin.service';
+import { MetadataService } from '../../core/services/metadata.service';
+import { TPipe, I18nService } from '../../core/i18n.service';
+import { UiButton } from '../../shared/ui/button.component';
+import { UiSelect } from '../../shared/ui/select.component';
+
+@Component({
+  selector: 'app-admin-user-detail',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiSelect],
+  template: `
+    <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
+
+    <div *ngIf="loading" class="empty-state">{{ 'common.noData' | t }}</div>
+
+    <div class="detail-card" *ngIf="!loading && user">
+      <h2>{{ user.display_name || user.email }}</h2>
+
+      <div class="field-grid">
+        <div class="field"><label>{{ 'admin.colEmail' | t }}</label><span>{{ user.email }}</span></div>
+        <div class="field"><label>{{ 'admin.colEduEmail' | t }}</label><span>{{ user.edu_email || '—' }}</span></div>
+        <div class="field"><label>{{ 'admin.colName' | t }}</label><span>{{ user.first_name }} {{ user.last_name }}</span></div>
+        <div class="field"><label>{{ 'admin.staffBadge' | t }}</label><span class="status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span></div>
+      </div>
+
+      <ui-select [label]="'admin.colSchool' | t" [options]="schoolOptions" [(ngModel)]="schoolId"></ui-select>
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" [(ngModel)]="isActive" />
+          {{ 'admin.colActive' | t }}
+        </label>
+        <label class="toggle">
+          <input type="checkbox" [(ngModel)]="isVerified" />
+          {{ 'admin.colVerified' | t }}
+        </label>
+      </div>
+
+      <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
+      <div *ngIf="savedMsg" class="inline-msg ok">{{ savedMsg }}</div>
+
+      <ui-button (onClick)="save()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
+    </div>
+  `,
+  styles: [`
+    .back-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link:hover { color: var(--accent); }
+    .detail-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 520px;
+    }
+    .detail-card h2 { margin-top: 0; }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .field { display: flex; flex-direction: column; gap: 2px; }
+    .field label { font-size: 12px; color: var(--muted); }
+    .field span { font-size: 14px; color: var(--ink); }
+    .toggle-row {
+      display: flex;
+      gap: 24px;
+      margin: 16px 0;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      background: rgba(0,0,0,0.06);
+      color: var(--muted);
+      width: fit-content;
+    }
+    .status-badge.ok {
+      background: rgba(22,163,74,0.12);
+      color: #16a34a;
+    }
+    .inline-msg {
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    .inline-msg.error { color: #dc2626; }
+    .inline-msg.ok { color: #16a34a; }
+    .empty-state {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+  `]
+})
+export class AdminUserDetailComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private adminService = inject(AdminService);
+  private metadataService = inject(MetadataService);
+  private i18n = inject(I18nService);
+  private cdr = inject(ChangeDetectorRef);
+
+  user: AdminUser | null = null;
+  loading = true;
+  saving = false;
+  errorMsg = '';
+  savedMsg = '';
+
+  isActive = false;
+  isVerified = false;
+  schoolId: string | number | '' = '';
+  schools: { id: string | number; name: string }[] = [];
+
+  get schoolOptions() {
+    return [
+      { value: '', label: this.i18n.t('admin.noSchool') },
+      ...this.schools.map(s => ({ value: String(s.id), label: s.name })),
+    ];
+  }
+
+  ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id')!;
+
+    this.metadataService.getMetadata().subscribe({
+      next: (meta) => { this.schools = meta?.schools || []; this.cdr.markForCheck(); },
+      error: () => {}
+    });
+
+    this.adminService.getUser(id).subscribe({
+      next: (user) => {
+        this.user = user;
+        this.isActive = user.is_active;
+        this.isVerified = user.is_verified;
+        this.schoolId = user.school ? String(user.school) : '';
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  save() {
+    if (!this.user) return;
+    this.saving = true;
+    this.errorMsg = '';
+    this.savedMsg = '';
+
+    this.adminService.updateUser(this.user.id, {
+      is_active: this.isActive,
+      verified: this.isVerified,
+      school: this.schoolId === '' ? null : this.schoolId,
+    }).subscribe({
+      next: (updated) => {
+        this.user = updated;
+        this.saving = false;
+        this.savedMsg = this.i18n.t('admin.saved');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.saving = false;
+        this.errorMsg = this.i18n.t('admin.errGeneric');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+}

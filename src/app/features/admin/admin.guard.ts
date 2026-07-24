@@ -1,0 +1,31 @@
+import { inject } from '@angular/core';
+import { Router, CanActivateFn } from '@angular/router';
+import { map, catchError, of } from 'rxjs';
+import { AuthStore } from '../../core/auth.store';
+import { AccountService } from '../../core/services/account.service';
+
+// Gates the whole /admin/* section on the current user's `is_staff` flag.
+// `AccountService.profileCache` (backed by GET /auth/me/) is the only place
+// that flag lives client-side — AuthStore only ever holds the bare
+// email/id set at login and is never rehydrated on page load — so a direct
+// nav to /admin (fresh load, cache still empty) has to fetch the profile
+// first rather than assume it's already populated.
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthStore);
+  const accountService = inject(AccountService);
+  const router = inject(Router);
+
+  if (!auth.isLoggedIn()) {
+    return router.parseUrl('/');
+  }
+
+  const cached = accountService.profileCache();
+  if (cached) {
+    return cached.is_staff === true ? true : router.parseUrl('/');
+  }
+
+  return accountService.getMyProfile().pipe(
+    map(profile => (profile?.is_staff === true ? true : router.parseUrl('/'))),
+    catchError(() => of(router.parseUrl('/')))
+  );
+};

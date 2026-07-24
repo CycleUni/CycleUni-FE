@@ -1,0 +1,227 @@
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { UiButton } from '../../shared/ui/button.component';
+import { UiInput } from '../../shared/ui/input.component';
+import { UiSelect } from '../../shared/ui/select.component';
+import { ListingService } from '../../core/services/listing.service';
+import { OrderService } from '../../core/services/order.service';
+import { MessageService } from '../../core/services/message.service';
+import { TPipe, I18nService } from '../../core/i18n.service';
+
+@Component({
+  selector: 'app-checkout',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule, UiButton, TPipe],
+  template: `
+      <main class="container">
+        <h2>{{ 'checkout.title' | t }}</h2>
+
+        <div *ngIf="isLoading" style="padding: 40px; text-align: center;">
+          {{ 'checkout.loading' | t }}
+        </div>
+
+        <div *ngIf="!isLoading && listing" class="checkout-grid">
+          <!-- Order Summary -->
+          <div class="summary-card">
+            <h3>{{ 'checkout.summary' | t }}</h3>
+            <div class="book-info">
+              <img *ngIf="listing.photos?.length > 0" [src]="listing.photos[0]" alt="Book Cover" class="book-cover">
+              <img *ngIf="!listing.photos?.length && listing.book_cover_url" [src]="listing.book_cover_url" alt="Book Cover" class="book-cover">
+              <div class="placeholder-cover" *ngIf="!listing.photos?.length && !listing.book_cover_url"></div>
+              <div>
+                <h4 class="book-title-serif">{{ listing.book_title }}</h4>
+                <p class="muted">{{ listing.book_authors }}</p>
+                <div class="price">NT$ {{ listing.price }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Checkout Form -->
+          <div class="form-card">
+            <h3>{{ 'checkout.meetupFormTitle' | t }}</h3>
+            <p class="muted" style="margin-bottom: 24px;">
+              {{ 'checkout.meetupFormDesc' | t }}
+            </p>
+
+            <div *ngIf="errorKey || errorMsg" class="inline-msg error" style="margin-top: 16px;">
+              {{ errorKey ? (errorKey | t) : errorMsg }}
+              <div *ngIf="isNoChatError" style="margin-top: 16px;">
+                <ui-button variant="white" style="display: block; width: 100%;" (onClick)="contactSeller()">{{ 'checkout.contactSeller' | t }}</ui-button>
+              </div>
+            </div>
+
+            <ui-button style="margin-top: 24px; width: 100%;" (onClick)="placeOrder()" [disabled]="isSubmitting">
+              {{ (isSubmitting ? 'checkout.processing' : 'checkout.sendMeetupRequest') | t }}
+            </ui-button>
+          </div>
+        </div>
+      </main>
+  `,
+  styles: [`
+    .container {
+      max-width: 800px;
+      margin: 32px auto;
+    }
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .summary-card, .form-card {
+      background: var(--paper);
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .book-info {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .book-cover {
+      width: 80px;
+      height: 120px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+    .placeholder-cover {
+      width: 80px;
+      height: 120px;
+      background: var(--paper-warm);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+    .price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 8px;
+    }
+    @media (max-width: 768px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `]
+})
+export class CheckoutComponent implements OnInit {
+  listing: any = null;
+  isLoading = true;
+  isSubmitting = false;
+  errorKey = '';
+  errorMsg = '';
+  isNoChatError = false;
+
+  listingId: string | null = null;
+
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private listingService = inject(ListingService);
+  private orderService = inject(OrderService);
+  private messageService = inject(MessageService);
+  readonly i18n = inject(I18nService);
+  private cdr = inject(ChangeDetectorRef);
+
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.listingId = id;
+        this.loadListing();
+      }
+    });
+  }
+
+  loadListing() {
+    this.listingService.getListing(this.listingId!).subscribe({
+      next: (data) => {
+        this.listing = data;
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.errorMsg = this.i18n.t('alert.bookNotFound');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onFormChange() {
+    if (this.errorMsg) {
+      this.errorMsg = '';
+      this.isNoChatError = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async placeOrder() {
+    this.isSubmitting = true;
+    this.errorMsg = '';
+    this.isNoChatError = false;
+    this.cdr.markForCheck();
+
+    const orderData = {
+      listing: this.listingId!
+    };
+
+    this.orderService.createOrder(orderData).subscribe({
+      next: (order) => {
+        this.router.navigate(['/checkout/success']);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorKey = '';
+        this.errorMsg = '';
+        this.isNoChatError = false;
+        const errStr = JSON.stringify(err.error || {});
+        if (errStr.includes('checkout.errNoChat')) {
+          this.errorKey = 'checkout.errNoChat';
+          this.isNoChatError = true;
+        } else if (errStr.includes('checkout.errListingUnavailable')) {
+          this.errorKey = 'checkout.errListingUnavailable';
+        } else {
+          // If it's a standard DRF error object, try to extract the first string
+          let msg = 'checkout.orderFailed';
+          let foundBackendMsg = false;
+          if (err.error && typeof err.error === 'object') {
+            for (const key in err.error) {
+              if (Array.isArray(err.error[key]) && err.error[key].length > 0) {
+                msg = err.error[key][0];
+                foundBackendMsg = true;
+                break;
+              }
+            }
+          }
+          if (foundBackendMsg) {
+            // Check if the extracted message is an i18n key
+            if (typeof msg === 'string' && msg.startsWith('checkout.')) {
+              this.errorKey = msg;
+            } else {
+              this.errorMsg = msg;
+            }
+          } else {
+            this.errorKey = msg;
+          }
+        }
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  contactSeller() {
+    if (!this.listingId) return;
+    this.messageService.startConversation(this.listingId).subscribe({
+      next: (conv) => {
+        this.router.navigate(['/messages'], { queryParams: { conversation: conv.id } });
+      },
+      error: () => {
+        // Fallback: navigate to messages page without pre-selected conversation
+        this.router.navigate(['/messages']);
+      }
+    });
+  }
+}

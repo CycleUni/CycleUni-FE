@@ -1,0 +1,47 @@
+/*
+ * CycleUni — global styles and design tokens (frontend-ssd §4.3)
+ * Engineering agents must not add colors or fonts beyond these tokens;
+ * new visual elements go through the ui-design-consultant.
+ */
+
+:root {
+  /* Colors: the vocabulary is "used books, kraft paper, library" */
+  --ink:        #1F2933; /* body text and headings (near-black ink, not pure black) */
+  --paper:      #FFFFFF; /* main background */
+  --paper-warm: #F7F5F0; /* section background (very light paper tone, used sparingly) */
+  --line:       #D9D4CB; /* borders and dividers */
+  --accent:     #1E5C46; /* primary action color (deep green: links, primary buttons, prices) */
+  --accent-ink: #14402F; /* darkened hover state */
+  --flag:       #A34A2A; /* warnings and the "N people waiting" badge (brick red, these two uses only) */
+  --muted:      #6B7280; /* secondary text */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  /* Body text and UI use Noto Sans TC (400/500/700) with system font fallbacks */
+  font-family:
+    'Noto Sans TC',
+    -apple-system, 'PingFang TC', 'Microsoft JhengHei',
+    system-ui, sans-serif;
+  /* Numbers (prices, ISBNs) align with tabular-nums */
+  font-variant-numeric: tabular-nums;
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
+}
+
+/*
+ * Serif exception for book titles (the interface's only serif usage):
+ * book detail titles render in Noto Serif TC 700; the class is reserved here.
+ */
+.book-title-serif {
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+}

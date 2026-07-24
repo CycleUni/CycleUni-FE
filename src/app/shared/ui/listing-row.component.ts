@@ -1,0 +1,194 @@
+import { Component, Input, Output, EventEmitter, inject, OnChanges, SimpleChanges } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { UiBadge } from './badge.component';
+import { UiButton } from './button.component';
+import { I18nService, TPipe } from '../../core/i18n.service';
+
+@Component({
+  selector: 'ui-listing-row',
+  standalone: true,
+  imports: [CommonModule, UiBadge, UiButton, TPipe],
+  template: `
+    <div class="listing-row">
+      <div class="cover">
+        <img *ngIf="coverUrl" [src]="coverUrl" [alt]="title || ('home.unknownBook' | t)" />
+        <div class="placeholder" *ngIf="!coverUrl"></div>
+      </div>
+      <div class="info">
+        <h3 class="title book-title-serif">{{ title }}</h3>
+        <ng-container *ngIf="authorLine && isbnLine; else metaFallback">
+          <p class="meta">
+            <span class="meta-author">{{ authorLine }}</span><span class="meta-isbn">{{ isbnLine }}</span>
+          </p>
+        </ng-container>
+        <ng-template #metaFallback>
+          <p class="meta">{{ metaInfo }}</p>
+        </ng-template>
+        <p class="course" *ngIf="courseInfo">{{ courseInfo }}</p>
+        <p class="note" *ngIf="noteInfo">{{ noteInfo }}</p>
+      </div>
+      <div class="actions">
+        <div class="price" *ngIf="price !== undefined && price !== null">{{ pricePrefix }}{{ price }}</div>
+        
+        <!-- badges -->
+        <ui-badge *ngIf="status === 'active'" type="waitlist">{{ 'row.active' | t }}</ui-badge>
+        <ui-badge *ngIf="status === 'sold'" condition="noted">{{ 'row.sold' | t }}</ui-badge>
+        <ui-badge *ngIf="status === 'reserved'" condition="damaged">{{ 'row.reserved' | t }}</ui-badge>
+        <ui-badge *ngIf="status === 'inactive'" condition="damaged">{{ 'row.inactive' | t }}</ui-badge>
+        <ui-badge *ngIf="condition && (!status || status === 'active')" [condition]="condition">{{ conditionText }}</ui-badge>
+        <div class="condition-summary" *ngIf="conditionSummary">{{ conditionSummary }}</div>
+        <ui-badge *ngIf="waitlistCount" type="waitlist">{{ 'home.waitingCount' | t:{n: waitlistCount} }}</ui-badge>
+
+        <!-- management buttons -->
+        <div class="manage-actions" *ngIf="isEditable">
+          <ui-button variant="ghost" *ngIf="status === 'active'" (onClick)="action.emit({type: 'edit', id: id})">{{ 'common.edit' | t }}</ui-button>
+          <ui-button variant="ghost" *ngIf="status === 'active'" (onClick)="action.emit({type: 'mark_sold', id: id})">{{ 'row.markSold' | t }}</ui-button>
+          <ui-button variant="ghost" *ngIf="status === 'sold' || status === 'reserved'" (onClick)="action.emit({type: 'mark_active', id: id})">{{ 'row.markUnsold' | t }}</ui-button>
+          <ui-button variant="ghost" class="text-danger" (onClick)="action.emit({type: 'delete', id: id})">{{ 'common.delete' | t }}</ui-button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .listing-row {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      align-items: flex-start;
+    }
+    .cover {
+      width: 88px;
+      height: 124px;
+      flex-shrink: 0;
+      border: 1px solid var(--line);
+      background-color: var(--paper-warm);
+    }
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .title {
+      margin: 0;
+      font-size: 18px;
+    }
+    .meta, .course, .note {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .note {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      min-width: 100px;
+    }
+    .price {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+    .condition-summary {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: right;
+    }
+    .manage-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .meta .meta-author::after {
+      content: ' • ';
+      margin: 0 4px;
+    }
+    @media (max-width: 768px) {
+      .listing-row {
+        flex-wrap: wrap;
+      }
+      .meta .meta-author::after {
+        content: '';
+        margin: 0;
+      }
+      .meta .meta-isbn {
+        display: block;
+        margin-top: 2px;
+      }
+      .cover {
+        width: 64px;
+        height: 90px;
+      }
+      .info {
+        flex: 1;
+        min-width: 0;
+      }
+      .actions {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+        max-width: 100%;
+      }
+      .condition-summary {
+        max-width: 100%;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        flex-basis: 100%;
+        text-align: right;
+      }
+      .price {
+        font-size: 18px;
+      }
+      .manage-actions {
+        margin-top: 0;
+      }
+    }
+  `]
+})
+export class UiListingRow implements OnChanges {
+  @Input() id!: number | string;
+  @Input() coverUrl?: string;
+  @Input() title: string = '';
+  @Input() metaInfo: string = '';
+  @Input() authorLine: string = '';
+  @Input() isbnLine: string = '';
+  @Input() courseInfo?: string;
+  @Input() noteInfo?: string;
+  @Input() price?: number;
+  @Input() pricePrefix: string = 'NT$ ';
+  @Input() condition?: 'new' | 'like_new' | 'noted' | 'damaged';
+  @Input() conditionSummary?: string;
+  @Input() status?: string;
+  @Input() waitlistCount?: number;
+  @Input() isEditable = false;
+
+  @Output() action = new EventEmitter<{ type: string, id: number | string }>();
+
+  private i18n = inject(I18nService);
+  conditionText: string = '';
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['condition']) {
+      this.conditionText = this.condition ? this.i18n.t(`cond.${this.condition}`) : '';
+    }
+  }
+}

@@ -1,0 +1,310 @@
+import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
+
+import { AccountService } from '../../core/services/account.service';
+import { ListingService } from '../../core/services/listing.service';
+import { UiListingRow } from '../../shared/ui/listing-row.component';
+import { UiPagination } from '../../shared/ui/pagination.component';
+import { TPipe, I18nService } from '../../core/i18n.service';
+
+@Component({
+  selector: 'app-seller-page',
+  standalone: true,
+  imports: [CommonModule, UiListingRow, UiPagination, TPipe],
+  template: `
+    <div class="seller-page" *ngIf="seller">
+      <div class="seller-header">
+        <div class="seller-avatar" *ngIf="!avatarUrl">
+          {{ getAvatarInitial() }}
+        </div>
+        <div class="seller-avatar-image-container" *ngIf="avatarUrl">
+          <img [src]="avatarUrl" alt="Avatar" class="seller-avatar-image" referrerpolicy="no-referrer">
+        </div>
+        <div class="seller-info">
+          <h1 class="seller-name">{{ seller.display_name }}</h1>
+          <div class="seller-meta">
+            <span class="seller-school">
+              {{ seller.school_name }}
+              <span class="verified-badge" *ngIf="seller.is_verified" [title]="'seller.verifiedBadge' | t">✓</span>
+            </span>
+            <span class="seller-joined">
+              {{ 'seller.joined' | t }}{{ getFormattedDate(seller.created_at) }}
+            </span>
+          </div>
+          <div class="seller-stats" style="margin-top: 8px; font-size: 14px; color: var(--ink); display: flex; gap: 16px;">
+            <span *ngIf="seller.review_count > 0">⭐️ {{ seller.average_rating }} ({{ seller.review_count }})</span>
+            <span *ngIf="seller.review_count === 0" class="muted">{{ 'seller.noReviews' | t }}</span>
+            <span *ngIf="seller.no_show_count > 0" style="color: var(--flag); font-weight: 500;">⚠️ {{ 'seller.noShowCount' | t:{n: seller.no_show_count} }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="seller-listings">
+        <h2>{{ 'seller.listingsTitle' | t:{name: seller.display_name} }}</h2>
+        
+        <div class="listings-grid" *ngIf="!loadingListings && listings.length > 0">
+          <ui-listing-row
+            *ngFor="let listing of listings"
+            [title]="listing.book_title || listing.book?.title"
+            [metaInfo]="listing.book_authors || listing.book?.authors || ('home.unknownAuthor' | t)"
+            [courseInfo]="getCourseOrNoteInfo(listing)"
+            [noteInfo]="listing.description ? (('sell.note' | t) + ': ' + listing.description) : undefined"
+            [price]="listing.price"
+            [coverUrl]="(listing.photos && listing.photos.length > 0) ? listing.photos[0] : (listing.book_cover_url || listing.book?.cover_url)"
+            [condition]="listing.condition"
+            [waitlistCount]="listing.waitlist_count"
+            (click)="goToListing(listing.id)"
+          ></ui-listing-row>
+        </div>
+        
+        <ui-pagination *ngIf="totalListings > 20" [total]="totalListings" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
+
+        <div class="empty-state" *ngIf="!loadingListings && listings.length === 0">
+          <p>{{ 'seller.noListings' | t }}</p>
+        </div>
+        
+        <div class="loading" *ngIf="loadingListings">
+          {{ 'seller.loading' | t }}
+        </div>
+      </div>
+    </div>
+    
+    <div class="not-found" *ngIf="error">
+      <h2>{{ 'seller.notFound' | t }}</h2>
+      <p>{{ 'seller.notFoundDesc' | t }}</p>
+      <button (click)="goHome()">{{ 'checkout.backHome' | t }}</button>
+    </div>
+  `,
+  styles: [`
+    .seller-page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    .seller-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: var(--paper-warm);
+      border: 1px solid var(--line);
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+
+    .seller-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .seller-avatar-image-container {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+    .seller-avatar-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .seller-name {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .seller-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .seller-school {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .verified-badge {
+      background: #34c759;
+      color: white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    .seller-listings h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--ink);
+    }
+
+    .listings-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .empty-state, .loading, .not-found {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    
+    .not-found button {
+      margin-top: 16px;
+      padding: 8px 24px;
+      border: none;
+      border-radius: 20px;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+    }
+  `]
+})
+export class SellerPageComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private accountService = inject(AccountService);
+  private listingService = inject(ListingService);
+  private title = inject(Title);
+  private i18n = inject(I18nService);
+  private meta = inject(Meta);
+  private cdr = inject(ChangeDetectorRef);
+
+  seller: any = null;
+  listings: any[] = [];
+  loadingListings = false;
+  error = false;
+  totalListings = 0;
+  currentPage = 1;
+  averageRating = 0;
+  reviewCount = 0;
+  noShowCount = 0;
+  avatarUrl = '';
+  
+  private currentId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      this.i18n.lang();
+      if (this.currentId) {
+        this.loadSeller(this.currentId);
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      this.currentId = id;
+      if (id) {
+        this.loadSeller(id);
+      }
+    });
+  }
+
+  loadSeller(id: string) {
+    this.accountService.getPublicUserProfile(id).subscribe({
+      next: (profile) => {
+        this.seller = profile;
+        this.averageRating = profile.average_rating || 0;
+        this.reviewCount = profile.review_count || 0;
+        this.noShowCount = profile.no_show_count || 0;
+        this.avatarUrl = profile.avatar_url || '';
+        this.title.setTitle(this.i18n.t('seller.pageTitle', { name: this.seller.display_name }));
+        this.cdr.detectChanges();
+        this.loadListings(id);
+      },
+      error: (err) => {
+        this.error = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadListings(sellerId: string) {
+    this.loadingListings = true;
+    this.cdr.detectChanges();
+    this.listingService.getListings(undefined, sellerId, this.currentPage).subscribe({
+      next: (data: any) => {
+        if (data.results) {
+          this.listings = data.results;
+          this.totalListings = data.count || this.listings.length;
+        } else {
+          this.listings = data || [];
+          this.totalListings = this.listings.length;
+        }
+        this.loadingListings = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingListings = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onPageChange(page: number) {
+    this.currentPage = page;
+    if (this.currentId) {
+      this.loadListings(this.currentId);
+    }
+  }
+
+  goToListing(id: string) {
+    this.router.navigate(['/listing', id]);
+  }
+
+  goHome() {
+    this.router.navigate(['/']);
+  }
+
+  getAvatarInitial(): string {
+    const last = this.seller?.last_name || '';
+    const first = this.seller?.first_name || '';
+    if (/[A-Za-z]/.test(last) || /[A-Za-z]/.test(first)) {
+      return (first.charAt(0) || last.charAt(0) || this.i18n.t('acct.avatarFallback')).toUpperCase();
+    }
+    return (last.charAt(0) || first.charAt(0) || this.i18n.t('acct.avatarFallback')).toUpperCase();
+  }
+
+  getFormattedDate(dateString: string): string {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      const lang = this.i18n.lang() === 'zh-TW' ? 'zh-TW' : 'en-US';
+      return new Intl.DateTimeFormat(lang, { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+    } catch (e) {
+      return dateString.substring(0, 10);
+    }
+  }
+
+  getCourseOrNoteInfo(listing: any): string {
+    if (listing.course_name) {
+      return `${this.i18n.t('sell.course')}: ${listing.course_name}`;
+    }
+    return '';
+  }
+}

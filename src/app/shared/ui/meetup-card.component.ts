@@ -1,0 +1,227 @@
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TPipe } from '../../core/i18n.service';
+import { UiButton } from './button.component';
+
+export type MeetupMessageType = 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'CANCEL' | 'COMPLETE' | 'NONE';
+
+@Component({
+  selector: 'ui-meetup-card',
+  standalone: true,
+  imports: [CommonModule, TPipe, UiButton],
+  template: `
+    <div class="meetup-card" [ngClass]="typeClass">
+      <div class="meetup-card-header">
+        <span class="meetup-icon">{{ icon }}</span>
+        <span class="meetup-title">{{ headerTitleKey | t }}</span>
+        <span class="meetup-status-badge" *ngIf="statusBadgeKey">{{ statusBadgeKey | t }}</span>
+      </div>
+      
+      <p class="meetup-card-body">{{ bodyTextKey | t }}</p>
+
+      <div class="meetup-card-actions" *ngIf="showActions">
+        <!-- Seller Actions (Current User is Seller: userRole is 'seller') -->
+        <ng-container *ngIf="userRole === 'seller'">
+          <ui-button size="sm" (onClick)="onAccept.emit()">
+            {{ 'msg.meetupActionAccept' | t }}
+          </ui-button>
+          <ui-button size="sm" variant="ghost" (onClick)="onDecline.emit()">
+            {{ 'msg.meetupActionDecline' | t }}
+          </ui-button>
+        </ng-container>
+
+        <!-- Buyer Actions (Current User is Buyer: userRole is 'buyer') -->
+        <ng-container *ngIf="userRole === 'buyer'">
+          <ui-button size="sm" variant="ghost" (onClick)="onCancel.emit()">
+            {{ 'msg.meetupActionCancel' | t }}
+          </ui-button>
+        </ng-container>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      max-width: 360px;
+    }
+    .meetup-card {
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+      border: 1px solid var(--line);
+    }
+    
+    /* Request Card Variant (Accent Teal) */
+    .meetup-card.card-request {
+      background-color: var(--paper-warm);
+      border-left: 4px solid var(--accent);
+    }
+    .meetup-card.card-request .meetup-title {
+      color: var(--accent);
+    }
+
+    /* Accept Card Variant (Green Success) */
+    .meetup-card.card-accept {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #16a34a;
+    }
+    .meetup-card.card-accept .meetup-title {
+      color: #15803d;
+    }
+
+    /* Decline Card Variant (Red Error) */
+    .meetup-card.card-decline {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-left: 4px solid #dc2626;
+    }
+    .meetup-card.card-decline .meetup-title {
+      color: #b91c1c;
+    }
+
+    /* Cancel Card Variant (Muted Gray) */
+    .meetup-card.card-cancel {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #94a3b8;
+    }
+    .meetup-card.card-cancel .meetup-title {
+      color: #64748b;
+    }
+
+    /* Complete Card Variant (Green Success, reuses Accept color scheme) */
+    .meetup-card.card-complete {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #16a34a;
+    }
+    .meetup-card.card-complete .meetup-title {
+      color: #15803d;
+    }
+
+    .meetup-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .meetup-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+    .meetup-title {
+      font-weight: 700;
+      font-size: 14px;
+      flex: 1;
+    }
+    .meetup-status-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .meetup-card-body {
+      font-size: 13px;
+      color: var(--ink);
+      margin: 0;
+      line-height: 1.5;
+    }
+    .meetup-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    }
+  `]
+})
+export class UiMeetupCard {
+  @Input() body = '';
+  @Input() userRole: 'buyer' | 'seller' = 'buyer'; // current user's role in transaction
+  @Input() isPendingApproval = false; // whether order status is 'awaiting_approval'
+
+  @Output() onAccept = new EventEmitter<void>();
+  @Output() onDecline = new EventEmitter<void>();
+  @Output() onCancel = new EventEmitter<void>();
+
+  get cardType(): MeetupMessageType {
+    if (!this.body) return 'NONE';
+    // Support both legacy [MEETUP_*] and new [SYSTEM:...] formats
+    if (this.body.includes('[MEETUP_REQUEST]') || this.body.includes('[SYSTEM:order.notify.meetup_requested]')) return 'REQUEST';
+    if (this.body.includes('[MEETUP_ACCEPT]') || this.body.includes('[SYSTEM:order.notify.seller_approved]') || this.body.includes('[SYSTEM:order.notify.meetup_accepted]')) return 'ACCEPT';
+    if (this.body.includes('[MEETUP_DECLINE]') || this.body.includes('[SYSTEM:order.notify.seller_rejected]') || this.body.includes('[SYSTEM:order.notify.meetup_declined]')) return 'DECLINE';
+    if (
+      this.body.includes('[MEETUP_CANCEL]') ||
+      this.body.includes('[SYSTEM:order.notify.cancelled_by_buyer]') ||
+      this.body.includes('[SYSTEM:order.notify.cancelled_by_seller]') ||
+      this.body.includes('[SYSTEM:order.notify.meetup_cancelled]')
+    ) return 'CANCEL';
+    if (this.body.includes('[SYSTEM:order.notify.delivered]')) return 'COMPLETE';
+    return 'NONE';
+  }
+
+  get typeClass(): string {
+    switch (this.cardType) {
+      case 'REQUEST': return 'card-request';
+      case 'ACCEPT': return 'card-accept';
+      case 'DECLINE': return 'card-decline';
+      case 'CANCEL': return 'card-cancel';
+      case 'COMPLETE': return 'card-complete';
+      default: return 'card-request';
+    }
+  }
+
+  get icon(): string {
+    switch (this.cardType) {
+      case 'REQUEST': return '🤝';
+      case 'ACCEPT': return '✅';
+      case 'DECLINE': return '❌';
+      case 'CANCEL': return '🚫';
+      case 'COMPLETE': return '📦';
+      default: return '🤝';
+    }
+  }
+
+  get headerTitleKey(): string {
+    switch (this.cardType) {
+      case 'REQUEST': return 'msg.meetupRequestTitle';
+      case 'ACCEPT': return 'msg.meetupAcceptTitle';
+      case 'DECLINE': return 'msg.meetupDeclineTitle';
+      case 'CANCEL': return 'msg.meetupCancelTitle';
+      case 'COMPLETE': return 'msg.meetupCompleteTitle';
+      default: return 'msg.meetupRequestTitle';
+    }
+  }
+
+  get bodyTextKey(): string {
+    switch (this.cardType) {
+      case 'REQUEST': return 'msg.meetupRequestBody';
+      case 'ACCEPT': return 'msg.meetupAcceptBody';
+      case 'DECLINE': return 'msg.meetupDeclineBody';
+      case 'CANCEL': return 'msg.meetupCancelBody';
+      case 'COMPLETE': return 'msg.meetupCompleteBody';
+      default: return 'msg.meetupRequestBody';
+    }
+  }
+
+  get statusBadgeKey(): string | null {
+    if (this.cardType === 'ACCEPT') return 'msg.statusAccepted';
+    if (this.cardType === 'DECLINE') return 'msg.statusDeclined';
+    if (this.cardType === 'CANCEL') return 'msg.statusCancelled';
+    if (this.cardType === 'COMPLETE') return 'msg.statusCompleted';
+    if (this.cardType === 'REQUEST') {
+      return this.isPendingApproval ? 'msg.statusPendingApproval' : 'msg.statusProcessed';
+    }
+    return null;
+  }
+
+  get showActions(): boolean {
+    return this.cardType === 'REQUEST' && this.isPendingApproval;
+  }
+}

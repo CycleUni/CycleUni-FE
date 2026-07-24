@@ -1,0 +1,417 @@
+<!DOCTYPE html><html lang="zh-Hant"><head>
+  <script type="module" src="/@vite/client"></script>
+
+  <meta charset="utf-8">
+  <title>test t 的二手商品 | CycleUni</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="styles.css"><style ng-style-reused="">
+.layout-wrapper[_ngcontent-ng-c1958522930] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.app-header[_ngcontent-ng-c1958522930] {
+  border-bottom: 1px solid var(--line);
+  background-color: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-content[_ngcontent-ng-c1958522930] {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand-area[_ngcontent-ng-c1958522930] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.school-selector[_ngcontent-ng-c1958522930] {
+  width: 180px;
+  margin-top: 12px;
+}
+.logo[_ngcontent-ng-c1958522930]   a[_ngcontent-ng-c1958522930] {
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 20px;
+}
+.header-right[_ngcontent-ng-c1958522930] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.nav-links[_ngcontent-ng-c1958522930] {
+  display: flex;
+  gap: 24px;
+}
+.nav-links[_ngcontent-ng-c1958522930]   a[_ngcontent-ng-c1958522930] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+.nav-links[_ngcontent-ng-c1958522930]   a[_ngcontent-ng-c1958522930]:hover {
+  color: var(--accent);
+}
+.nav-links[_ngcontent-ng-c1958522930]   a.active-link[_ngcontent-ng-c1958522930] {
+  color: var(--accent);
+  font-weight: 700;
+}
+.nav-links[_ngcontent-ng-c1958522930]   svg[_ngcontent-ng-c1958522930] {
+  flex-shrink: 0;
+}
+.nav-link-with-badge[_ngcontent-ng-c1958522930] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-badge[_ngcontent-ng-c1958522930] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background-color: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.lang-icon-wrap[_ngcontent-ng-c1958522930] {
+  display: inline-flex;
+}
+.main-content[_ngcontent-ng-c1958522930] {
+  flex: 1;
+  width: 100%;
+}
+.app-footer[_ngcontent-ng-c1958522930] {
+  border-top: 1px solid var(--line);
+  background-color: var(--paper-warm);
+  padding: 48px 16px 24px;
+  margin-top: 64px;
+}
+.footer-content[_ngcontent-ng-c1958522930] {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  gap: 64px;
+  margin-bottom: 48px;
+}
+.footer-col[_ngcontent-ng-c1958522930]   h4[_ngcontent-ng-c1958522930] {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+.footer-col[_ngcontent-ng-c1958522930]   p[_ngcontent-ng-c1958522930] {
+  color: var(--muted);
+  margin: 0;
+  font-size: 14px;
+  max-width: 240px;
+  line-height: 1.6;
+}
+.footer-col[_ngcontent-ng-c1958522930]   a[_ngcontent-ng-c1958522930] {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.footer-col[_ngcontent-ng-c1958522930]   a[_ngcontent-ng-c1958522930]:hover {
+  color: var(--accent);
+}
+.footer-bottom[_ngcontent-ng-c1958522930] {
+  max-width: 1120px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .header-content[_ngcontent-ng-c1958522930] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 12px 16px;
+  }
+  .brand-area[_ngcontent-ng-c1958522930] {
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .school-selector[_ngcontent-ng-c1958522930] {
+    width: 150px;
+  }
+  .header-right[_ngcontent-ng-c1958522930] {
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .nav-links[_ngcontent-ng-c1958522930] {
+    gap: 16px;
+  }
+  .nav-links[_ngcontent-ng-c1958522930]   a[_ngcontent-ng-c1958522930] {
+    gap: 4px;
+  }
+  .nav-links[_ngcontent-ng-c1958522930]   svg[_ngcontent-ng-c1958522930] {
+    width: 15px;
+    height: 15px;
+  }
+  .footer-content[_ngcontent-ng-c1958522930] {
+    flex-direction: column;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .app-footer[_ngcontent-ng-c1958522930] {
+    padding: 32px 16px 24px;
+    margin-top: 48px;
+  }
+}
+/*# sourceMappingURL=/layout.component.css.map */</style><style ng-style-reused="">
+.dropdown-wrapper[_ngcontent-ng-c123094000] {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.dropdown-wrapper.compact[_ngcontent-ng-c123094000] {
+  margin-bottom: 0;
+}
+label[_ngcontent-ng-c123094000] {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.ui-dropdown[_ngcontent-ng-c123094000] {
+  position: relative;
+}
+.dropdown-trigger[_ngcontent-ng-c123094000] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.dropdown-trigger[_ngcontent-ng-c123094000]:disabled {
+  background-color: var(--paper-warm);
+  cursor: not-allowed;
+}
+.dropdown-trigger[aria-expanded=true][_ngcontent-ng-c123094000] {
+  border-color: var(--accent);
+}
+.dropdown-trigger.icon-only[_ngcontent-ng-c123094000] {
+  width: auto;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+.dropdown-trigger.icon-only[_ngcontent-ng-c123094000]:hover, 
+.dropdown-trigger.icon-only[aria-expanded=true][_ngcontent-ng-c123094000] {
+  color: var(--ink);
+}
+.dropdown-trigger-label[_ngcontent-ng-c123094000] {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-caret[_ngcontent-ng-c123094000] {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.dropdown-panel[_ngcontent-ng-c123094000] {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 180px;
+  padding: 4px;
+  background-color: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 200;
+}
+.dropdown-panel.append-to-body[_ngcontent-ng-c123094000] {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+  min-width: 200px;
+  z-index: 1000;
+}
+.dropdown-panel.align-right[_ngcontent-ng-c123094000] {
+  left: auto;
+  right: 0;
+  width: max-content;
+}
+.dropdown-search[_ngcontent-ng-c123094000] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink);
+  background-color: var(--paper);
+}
+.dropdown-search[_ngcontent-ng-c123094000]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.dropdown-list[_ngcontent-ng-c123094000] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.dropdown-list[_ngcontent-ng-c123094000]   li[_ngcontent-ng-c123094000] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.dropdown-list[_ngcontent-ng-c123094000]   li[_ngcontent-ng-c123094000]:hover {
+  background-color: var(--paper-warm);
+}
+.dropdown-list[_ngcontent-ng-c123094000]   li.active[_ngcontent-ng-c123094000] {
+  color: var(--accent);
+  font-weight: 700;
+}
+.dropdown-check[_ngcontent-ng-c123094000] {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.dropdown-empty[_ngcontent-ng-c123094000] {
+  color: var(--muted);
+  cursor: default;
+}
+.dropdown-empty[_ngcontent-ng-c123094000]:hover {
+  background-color: transparent;
+}
+/*# sourceMappingURL=/dropdown.component.css.map */</style><style ng-style-reused="">
+.seller-page[_ngcontent-ng-c2307172489] {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.seller-header[_ngcontent-ng-c2307172489] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--surface-raised, #ffffff);
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 32px;
+}
+.seller-avatar[_ngcontent-ng-c2307172489] {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--primary, #007aff);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+}
+.seller-name[_ngcontent-ng-c2307172489] {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.seller-meta[_ngcontent-ng-c2307172489] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.seller-school[_ngcontent-ng-c2307172489] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.verified-badge[_ngcontent-ng-c2307172489] {
+  background: #34c759;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  margin-left: 4px;
+}
+.seller-listings[_ngcontent-ng-c2307172489]   h2[_ngcontent-ng-c2307172489] {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-main);
+}
+.listings-grid[_ngcontent-ng-c2307172489] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.empty-state[_ngcontent-ng-c2307172489], 
+.loading[_ngcontent-ng-c2307172489], 
+.not-found[_ngcontent-ng-c2307172489] {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.not-found[_ngcontent-ng-c2307172489]   button[_ngcontent-ng-c2307172489] {
+  margin-top: 16px;
+  padding: 8px 24px;
+  border: none;
+  border-radius: 20px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+}
+/*# sourceMappingURL=/seller.css.map */</style></head>
+<body><!--nghm--><script type="text/javascript" id="ng-event-dispatch-contract">(()=>{function p(t,n,r,o,e,i,f,m){return{eventType:t,event:n,targetElement:r,eic:o,timeStamp:e,eia:i,eirp:f,eiack:m}}function u(t){let n=[],r=e=>{n.push(e)};return{c:t,q:n,et:[],etc:[],d:r,h:e=>{r(p(e.type,e,e.target,t,Date.now()))}}}function s(t,n,r){for(let o=0;o<n.length;o++){let e=n[o];(r?t.etc:t.et).push(e),t.c.addEventListener(e,t.h,r)}}function c(t,n,r,o,e=window){let i=u(t);e._ejsas||(e._ejsas={}),e._ejsas[n]=i,s(i,r),s(i,o,!0)}window.__jsaction_bootstrap=c;})();
+</script><script>window.__jsaction_bootstrap(document.body,"ng",["click"],[]);</script>
+  <app-root ng-version="22.0.7" ng-server-context="ssr"><ui-layout _nghost-ng-c1958522930=""><div _ngcontent-ng-c1958522930="" class="layout-wrapper"><header _ngcontent-ng-c1958522930="" class="app-header"><div _ngcontent-ng-c1958522930="" class="header-content"><div _ngcontent-ng-c1958522930="" class="brand-area"><h1 _ngcontent-ng-c1958522930="" class="logo"><a _ngcontent-ng-c1958522930="" routerlink="/" href="/">CycleUni 易校網</a></h1><div _ngcontent-ng-c1958522930="" class="school-selector"><ui-dropdown _ngcontent-ng-c1958522930="" _nghost-ng-c123094000="" class="ng-untouched ng-pristine ng-valid"><div _ngcontent-ng-c123094000="" class="dropdown-wrapper compact"><!--container--><div _ngcontent-ng-c123094000="" class="ui-dropdown"><button _ngcontent-ng-c123094000="" type="button" aria-haspopup="listbox" class="dropdown-trigger" aria-expanded="false"><span _ngcontent-ng-c123094000="" class="dropdown-trigger-label">國立台灣大學</span><!--container--><svg _ngcontent-ng-c123094000="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true" class="dropdown-caret"><polyline _ngcontent-ng-c123094000="" points="6 9 12 15 18 9"></polyline></svg></button><!--container--><!--container--></div></div></ui-dropdown><!--container--></div></div><div _ngcontent-ng-c1958522930="" class="header-right"><nav _ngcontent-ng-c1958522930="" class="nav-links"><a _ngcontent-ng-c1958522930="" routerlink="/search" routerlinkactive="active-link" href="/search" class=""><svg _ngcontent-ng-c1958522930="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><circle _ngcontent-ng-c1958522930="" cx="10.5" cy="10.5" r="6.5"></circle><line _ngcontent-ng-c1958522930="" x1="20" y1="20" x2="15.4" y2="15.4"></line></svg> 找書 </a><a _ngcontent-ng-c1958522930="" routerlink="/sell" routerlinkactive="active-link" href="/sell" class=""><svg _ngcontent-ng-c1958522930="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><rect _ngcontent-ng-c1958522930="" x="3.5" y="3.5" width="17" height="17" rx="2"></rect><line _ngcontent-ng-c1958522930="" x1="12" y1="8" x2="12" y2="16"></line><line _ngcontent-ng-c1958522930="" x1="8" y1="12" x2="16" y2="12"></line></svg> 賣書 </a><a _ngcontent-ng-c1958522930="" routerlink="/messages" routerlinkactive="active-link" class="nav-link-with-badge" href="/messages"><svg _ngcontent-ng-c1958522930="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><path _ngcontent-ng-c1958522930="" d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg> 私訊 <!--container--></a><a _ngcontent-ng-c1958522930="" routerlink="/account" routerlinkactive="active-link" href="/account" class=""><svg _ngcontent-ng-c1958522930="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true"><circle _ngcontent-ng-c1958522930="" cx="12" cy="8" r="3.5"></circle><path _ngcontent-ng-c1958522930="" d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"></path></svg> test t </a></nav><ui-dropdown _ngcontent-ng-c1958522930="" class="lang-dropdown ng-untouched ng-pristine ng-valid" _nghost-ng-c123094000=""><div _ngcontent-ng-c123094000="" class="dropdown-wrapper compact"><!--container--><div _ngcontent-ng-c123094000="" class="ui-dropdown"><button _ngcontent-ng-c123094000="" type="button" aria-haspopup="listbox" class="dropdown-trigger icon-only" aria-expanded="false"><span _ngcontent-ng-c1958522930="" dropdowntrigger="" class="lang-icon-wrap"><svg _ngcontent-ng-c1958522930="" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><text _ngcontent-ng-c1958522930="" x="1" y="15" font-family="inherit" font-size="13" font-weight="500" fill="var(--ink)">文</text><text _ngcontent-ng-c1958522930="" x="11" y="19" font-family="inherit" font-size="10" font-weight="700" fill="var(--accent)">A</text></svg></span><!--container--><svg _ngcontent-ng-c123094000="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true" class="dropdown-caret"><polyline _ngcontent-ng-c123094000="" points="6 9 12 15 18 9"></polyline></svg></button><!--container--><!--container--></div></div></ui-dropdown><!--container--></div></div></header><main _ngcontent-ng-c1958522930="" class="main-content"><router-outlet></router-outlet><app-seller-page _nghost-ng-c2307172489="" ng-version="22.0.7"><!--container--><!--container--></app-seller-page><!--container--></main><footer _ngcontent-ng-c1958522930="" class="app-footer"><div _ngcontent-ng-c1958522930="" class="footer-content"><div _ngcontent-ng-c1958522930="" class="footer-col"><h4 _ngcontent-ng-c1958522930="">CycleUni</h4><p _ngcontent-ng-c1958522930="">台灣大學生專屬的二手教科書媒合平台。</p></div><div _ngcontent-ng-c1958522930="" class="footer-col"><h4 _ngcontent-ng-c1958522930="">關於</h4><a _ngcontent-ng-c1958522930="" href="javascript:void(0)">運作方式</a><a _ngcontent-ng-c1958522930="" href="javascript:void(0)">常見問題</a></div><div _ngcontent-ng-c1958522930="" class="footer-col"><h4 _ngcontent-ng-c1958522930="">條款</h4><a _ngcontent-ng-c1958522930="" href="javascript:void(0)">服務條款</a><a _ngcontent-ng-c1958522930="" href="javascript:void(0)">隱私權政策</a></div></div><div _ngcontent-ng-c1958522930="" class="footer-bottom"> © 2026 CycleUni. All rights reserved. </div></footer></div></ui-layout></app-root>
+<script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script>
+<link rel="modulepreload" href="chunk-6KELIVCJ.js">
+<link rel="modulepreload" href="chunk-LF7AYRSM.js">
+<link rel="modulepreload" href="chunk-ICSZ4ZVL.js">
+<link rel="modulepreload" href="chunk-W5SZCKWR.js">
+
+
+<script id="ng-state" type="application/json">{"ee4d3d346455e252587256a553facecab56187af49b877590b3f295ff99edb99":{"b":{"lang":"en","schools":[{"id":1,"name":"國立台灣大學","display_name":"National Taiwan University","email_domain":"ntu.edu.tw"},{"id":2,"name":"國立政治大學","display_name":"National Chengchi University","email_domain":"nccu.edu.tw"},{"id":3,"name":"國立台灣師範大學","display_name":"National Taiwan Normal University","email_domain":"ntnu.edu.tw"},{"id":4,"name":"國立成功大學","display_name":"National Cheng Kung University","email_domain":"ncku.edu.tw"},{"id":5,"name":"國立清華大學","display_name":"National Tsing Hua University","email_domain":"nthu.edu.tw"}],"categories":[{"slug":"management","title":"College of Management","desc":"Economics, Accounting, Business Administration"},{"slug":"engineering","title":"College of Engineering","desc":"Mechanical, Civil, Chemical Engineering"},{"slug":"science","title":"College of Science","desc":"Mathematics, Physics, Chemistry"},{"slug":"liberal-arts","title":"College of Liberal Arts","desc":"Foreign Languages, Chinese, History"},{"slug":"medicine","title":"College of Medicine","desc":"Medicine, Nursing, Pharmacy"},{"slug":"eecs","title":"College of EECS","desc":"Electrical Engineering, Computer Science"},{"slug":"law","title":"College of Law","desc":"Department of Law"},{"slug":"social-sciences","title":"College of Social Sciences","desc":"Political Science, Sociology, Social Work"}],"waitlist":[{"title":"超好懂！微積分概念筆記","count":1}]},"h":{},"s":200,"st":"OK","u":"http:\u002F\u002Flocalhost:8000\u002Fapi\u002Fv1\u002Fcore\u002Fmetadata\u002F","rt":"json"},"6f1130206a47aea27cf65d37e4a3d0f2f58448c2120deb56991167a92dff8e0e":{"b":{"id":2,"first_name":"test","last_name":"t","display_name":"test t","school_name":"National Taiwan University","created_at":"2026-07-20T14:48:06.460990+08:00","is_verified":true},"h":{},"s":200,"st":"OK","u":"http:\u002F\u002Flocalhost:8000\u002Fapi\u002Fv1\u002Fauth\u002Fusers\u002F2\u002F","rt":"json"},"929e9ae7382a7993cd3e0a22e2667ee48c777111b1d77b0264ee42d71fa7e302":{"b":[{"id":"2ab15b20-76c2-45d4-b3c5-1d970cc0c8ee","seller_name":"test t","school_name":"National Taiwan University","book_title":"Smarandache Function, Vol. 2-3","book_authors":"C. Dumitrescu, V. Seleacu","book_cover_url":"https:\u002F\u002Fbooks.google.com\u002Fbooks\u002Fcontent?id=rTfzAAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api","book_source":"google_api","course_name":"","isbn":"9781879585805","category":"science","photo_url":"http:\u002F\u002Flocalhost:8000\u002Fmedia\u002Flistings\u002Fd80b258a21b14ac494120fad668cd547.jpg","price":123,"condition":"damaged","note":"","description":"5","photos":["http:\u002F\u002Flocalhost:8000\u002Fmedia\u002Flistings\u002Fd80b258a21b14ac494120fad668cd547.jpg"],"status":"active","delivery_methods":["meetup"],"payment_methods":["cash"],"created_at":"2026-07-21T13:31:07.022658+08:00","updated_at":"2026-07-21T13:31:07.022672+08:00","book":4,"seller":2,"school":1,"course":null},{"id":"72e5235a-3bca-4a7e-86a8-8e1ffcd59073","seller_name":"test t","school_name":"National Taiwan University","book_title":"Flight Testing","book_authors":"Steffen Haakon Schrader","book_cover_url":"https:\u002F\u002Fbooks.google.com\u002Fbooks\u002Fcontent?id=fWayEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api","book_source":"google_api","course_name":"","isbn":"9783662632185","category":"liberal-arts","photo_url":"http:\u002F\u002Flocalhost:8000\u002Fmedia\u002Flistings\u002F36a169fa2eca4ee8a4624f0ff1eec6c8.jpg","price":150,"condition":"noted","note":"f","description":"d","photos":["http:\u002F\u002Flocalhost:8000\u002Fmedia\u002Flistings\u002F36a169fa2eca4ee8a4624f0ff1eec6c8.jpg"],"status":"active","delivery_methods":["meetup"],"payment_methods":["cash"],"created_at":"2026-07-20T23:04:23.978774+08:00","updated_at":"2026-07-20T23:04:23.978814+08:00","book":1,"seller":2,"school":1,"course":null},{"id":"549fbb49-ee10-490d-b679-de47c35ee34a","seller_name":"test t","school_name":"National Taiwan University","book_title":"Flight Testing","book_authors":"Steffen Haakon Schrader","book_cover_url":"https:\u002F\u002Fbooks.google.com\u002Fbooks\u002Fcontent?id=fWayEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api","book_source":"google_api","course_name":"","isbn":"9783662632185","category":"engineering","photo_url":"http:\u002F\u002Flocalhost:8000\u002Fmedia\u002Flistings\u002F30af03f25ec845acbbf6d60746bc86c5.jpg","price":123,"condition":"new","note":"test course","description":"","photos":["http:\u002F\u002Flocalhost:8000\u002Fmedia\u002Flistings\u002F30af03f25ec845acbbf6d60746bc86c5.jpg"],"status":"active","delivery_methods":["meetup"],"payment_methods":["cash"],"created_at":"2026-07-20T14:51:13.548421+08:00","updated_at":"2026-07-21T13:35:11.394140+08:00","book":1,"seller":2,"school":1,"course":null}],"h":{},"s":200,"st":"OK","u":"http:\u002F\u002Flocalhost:8000\u002Fapi\u002Fv1\u002Flistings\u002F","rt":"json"},"__nghData__":[{"t":{"1":"t0","6":"t1","9":"t2","11":"t3"},"c":{"1":[],"6":[{"i":"t1","r":1}],"9":[],"11":[]},"n":{"6":"3f"}},{"t":{"1":"t0","6":"t1","9":"t2","11":"t3"},"c":{"1":[],"6":[],"9":[],"11":[]},"n":{"6":"3fn"}},{"c":{"8":[],"29":[],"36":[]},"t":{"29":"t4"},"n":{"37":"36f2nf2"}},{"t":{"0":"t5","1":"t6"},"c":{"0":[],"1":[]}},{"n":{"1":"0f2nf"},"c":{"1":[{"i":"c2307172489","r":1}]}}]}</script></body></html>
