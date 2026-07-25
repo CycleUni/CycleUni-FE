@@ -34,20 +34,5 @@
         ]
       }
     }
-  ],
-  "dataGroups": [
-    {
-      "name": "api",
-      "urls": [
-        "/api/**",
-        "https://api.cycleuni.com/**"
-      ],
-      "cacheConfig": {
-        "strategy": "networkFirst",
-        "maxSize": 50,
-        "maxAge": "1h",
-        "timeout": "10s"
-      }
-    }
   ]
 }
