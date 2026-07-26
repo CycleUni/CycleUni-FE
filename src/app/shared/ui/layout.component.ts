@@ -30,7 +30,21 @@ import { Subscription } from 'rxjs';
                 (ngModelChange)="onSchoolChange($event)"
                 [compact]="true"
                 [appendToBody]="true"
-              ></ui-dropdown>
+                [customTrigger]="true"
+              >
+                <span dropdownTrigger class="school-trigger">
+                  <svg class="school-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+                    <path d="M12 2v5"/>
+                    <path d="M12 3.5 16 5.5 12 7.5"/>
+                    <path d="M4 13 12 7 20 13"/>
+                    <path d="M5 13v8h14v-8"/>
+                    <path d="M10 21v-5h4v5"/>
+                    <rect x="7.5" y="15.5" width="2" height="2"/>
+                    <rect x="14.5" y="15.5" width="2" height="2"/>
+                  </svg>
+                  <span class="school-trigger-label">{{ selectedSchoolLabel }}</span>
+                </span>
+              </ui-dropdown>
             </div>
           </div>
           <div class="header-right">
@@ -78,6 +92,7 @@ import { Subscription } from 'rxjs';
               (ngModelChange)="onLangChange($event)"
               [searchable]="false"
               [customTrigger]="true"
+              [iconOnly]="true"
               [compact]="true"
               [align]="'right'"
               [appendToBody]="true"
@@ -96,6 +111,44 @@ import { Subscription } from 'rxjs';
       <main class="main-content">
         <ng-content></ng-content>
       </main>
+
+      <nav class="bottom-tab-bar">
+        <a routerLink="/search" routerLinkActive="active-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5"/>
+            <line x1="20" y1="20" x2="15.4" y2="15.4"/>
+          </svg>
+          <span class="tab-label">{{ 'nav.search' | t }}</span>
+        </a>
+        <a routerLink="/sell" routerLinkActive="active-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="2"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          <span class="tab-label">{{ 'nav.sell' | t }}</span>
+        </a>
+        <a routerLink="/messages" class="tab-with-badge" routerLinkActive="active-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+          </svg>
+          <span class="tab-label">{{ 'nav.messages' | t }}</span>
+          <span class="tab-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+        </a>
+        <a routerLink="/account" routerLinkActive="active-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.5"/>
+            <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"/>
+          </svg>
+          <span class="tab-label">{{ 'nav.account' | t }}</span>
+        </a>
+        <a *ngIf="isStaff" routerLink="/admin" routerLinkActive="active-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4z"/>
+          </svg>
+          <span class="tab-label">{{ 'nav.admin' | t }}</span>
+        </a>
+      </nav>
 
       <footer class="app-footer">
         <div class="footer-content">
@@ -149,6 +202,21 @@ import { Subscription } from 'rxjs';
     .school-selector {
       width: 180px;
       margin-top: 12px; /* offsets ui-select's default margin-bottom */
+    }
+    .school-trigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0; /* let the label ellipsis instead of forcing the button to grow */
+    }
+    .school-icon {
+      display: none;
+      flex-shrink: 0;
+    }
+    .school-trigger-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .logo a {
       text-decoration: none;
@@ -217,6 +285,9 @@ import { Subscription } from 'rxjs';
       overflow-x: hidden; /* Prevent horizontal overflow from content */
       box-sizing: border-box;
     }
+    .bottom-tab-bar {
+      display: none;
+    }
     .app-footer {
       border-top: 1px solid var(--line);
       background-color: var(--paper-warm);
@@ -264,9 +335,6 @@ import { Subscription } from 'rxjs';
 
     @media (max-width: 768px) {
       .header-content {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 4px;
         padding: 12px 16px;
       }
       .brand-area {
@@ -274,23 +342,87 @@ import { Subscription } from 'rxjs';
         gap: 12px;
       }
       .school-selector {
-        width: 150px;
+        /* Shrinks to its content (icon + caret) instead of a fixed field width,
+           so it can never wrap onto a second row with the language switcher. */
+        width: auto;
+        margin-top: 0;
       }
-      .header-right {
-        justify-content: space-between;
-        gap: 12px;
+      .school-icon {
+        display: inline-flex;
+      }
+      .school-trigger-label {
+        /* Kept in the DOM (not display:none) so the button's accessible name
+           still reads the selected school name to screen readers; visually
+           hidden since the icon carries the affordance on narrow screens. */
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      /* Primary nav moves to the bottom tab bar on mobile; only the language
+         switcher stays in the header. */
+      .header-right .nav-links {
+        display: none;
+      }
+      .main-content {
+        /* Reserve space so page content doesn't end up under the fixed tab bar */
+        padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+      }
+      .bottom-tab-bar {
+        display: flex;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
         border-top: 1px solid var(--line);
-        padding-top: 12px;
+        background-color: var(--paper);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
-      .nav-links {
-        gap: 8px;
+      .bottom-tab-bar a {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        min-height: 56px;
+        color: var(--muted);
+        text-decoration: none;
+        position: relative;
       }
-      .nav-links a {
-        gap: 4px;
+      .bottom-tab-bar a.active-tab {
+        color: var(--accent);
       }
-      .nav-links svg {
-        width: 15px;
-        height: 15px;
+      .bottom-tab-bar .tab-label {
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .bottom-tab-bar .tab-with-badge {
+        position: relative;
+      }
+      .bottom-tab-bar .tab-badge {
+        position: absolute;
+        top: 4px;
+        left: 50%;
+        transform: translateX(6px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 8px;
+        background-color: var(--accent);
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1;
       }
       .footer-content {
         flex-direction: column;
@@ -314,46 +446,9 @@ import { Subscription } from 'rxjs';
       .logo a {
         font-size: 18px;
       }
-      .school-selector {
-        width: min(160px, 50vw);
-      }
       .header-right {
         flex-wrap: wrap;
         gap: 8px;
-      }
-      .nav-links {
-        gap: 4px;
-        flex-wrap: wrap;
-      }
-      .nav-links a {
-        gap: 3px;
-        font-size: 13px;
-        /* Icon-only here (label hidden below) — with no text competing for
-           space, the button itself should read as a real touch target, not
-           just an icon padded out to the 44px minimum. */
-        padding: 14px;
-        min-height: 48px;
-        min-width: 48px;
-      }
-      .nav-links svg {
-        width: 22px;
-        height: 22px;
-      }
-      .nav-links .nav-label,
-      .nav-links .nav-badge {
-        display: none;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .nav-links {
-        gap: 4px;
-      }
-      .nav-links a {
-        font-size: 12px;
-      }
-      .header-content {
-        padding: 8px 10px;
       }
     }
   `]
@@ -379,6 +474,11 @@ export class UiLayout implements OnDestroy {
   private unreadCountSubscription: Subscription;
   private swUpdateSubscription?: Subscription;
   private hubConnectedForUserId: string | null = null;
+
+  get selectedSchoolLabel(): string {
+    const found = this.schools.find(s => s.value === this.selectedSchool);
+    return found?.label || this.i18n.t('layout.allSchools') || '全部大學';
+  }
 
   get userName(): string {
     if (!this.authStore.isAuthenticated()) return '';

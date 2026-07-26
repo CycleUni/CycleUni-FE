@@ -20,7 +20,7 @@ export interface DropdownOption {
           #trigger
           type="button"
           class="dropdown-trigger"
-          [class.icon-only]="customTrigger"
+          [class.icon-only]="iconOnly"
           [disabled]="disabled"
           [attr.aria-expanded]="open"
           aria-haspopup="listbox"
@@ -227,6 +227,10 @@ export class UiDropdown implements ControlValueAccessor, AfterViewInit, OnDestro
   // Set when projecting custom trigger content (e.g. an icon) via
   // [dropdownTrigger] instead of showing the selected option's label.
   @Input() customTrigger: boolean = false;
+  // Strips the field chrome (border/background) down to a bare icon button.
+  // Independent of customTrigger: a custom-trigger dropdown can still want
+  // the bordered field look (e.g. a compact select-style school picker).
+  @Input() iconOnly: boolean = false;
   // Drops the form-field bottom margin, for inline header usage rather
   // than a stacked form field.
   @Input() compact: boolean = false;
