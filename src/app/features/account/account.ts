@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 
 import { AuthStore } from '../../core/auth.store';
 import { AccountService } from '../../core/services/account.service';
+import { OrderService } from '../../core/services/order.service';
 import { GoogleAuthService } from '../../core/services/google-auth.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
@@ -119,7 +120,7 @@ import { RouterModule } from '@angular/router';
           <nav class="dashboard-nav">
             <a routerLink="/account/listings" routerLinkActive="active">{{ 'acct.tabListings' | t }}</a>
             <a routerLink="/account/subscriptions" routerLinkActive="active">{{ 'acct.tabSubs' | t }}</a>
-            <a routerLink="/account/orders" routerLinkActive="active">{{ 'acct.myOrders' | t }}</a>
+            <a routerLink="/account/orders" routerLinkActive="active">{{ 'acct.myOrders' | t }}<span class="unread-dot" *ngIf="hasUnreadOrders"></span></a>
             <a routerLink="/account/settings" routerLinkActive="active">{{ 'acct.tabSettings' | t }}</a>
           </nav>
         </aside>
@@ -295,6 +296,16 @@ import { RouterModule } from '@angular/router';
       text-decoration: none;
       border-left: 3px solid transparent;
       font-weight: 500;
+      position: relative;
+    }
+    .unread-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: var(--flag);
+      border-radius: 50%;
+      margin-left: 6px;
+      vertical-align: middle;
     }
     .dashboard-nav a:hover {
       background-color: var(--paper-warm);
@@ -506,6 +517,7 @@ export class Account {
   }
 
   authIsError = false;
+  hasUnreadOrders = false;
 
   firstName = '';
   lastName = '';
@@ -518,6 +530,7 @@ export class Account {
 
   private accountService = inject(AccountService);
   private googleAuth = inject(GoogleAuthService);
+  private orderService = inject(OrderService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
@@ -536,6 +549,11 @@ export class Account {
         this.profileLoaded = false;
         setTimeout(() => this.googleAuth.renderButton('google-btn'), 0);
       }
+    });
+
+    this.orderService.unreadOrders$.subscribe(unread => {
+      this.hasUnreadOrders = unread;
+      this.cdr.markForCheck();
     });
   }
 
@@ -570,6 +588,7 @@ export class Account {
         this.schoolName = data.school_name || '';
         this.verifiedAt = data.verified_at || null;
         this.avatarUrl = data.avatar_url || '';
+        this.orderService.checkUnreadOrders(data.id);
         this.cdr.markForCheck(); 
       },
       error: (err) => {
