@@ -31,7 +31,7 @@ export interface AuthUser {
 })
 export class AuthStore {
   private readonly _isAuthenticated = signal<boolean>(false);
-  private readonly _user = signal<UserProfile | null>(null);
+  private readonly _user = signal<AuthUser | null>(null);
   private readonly _userLoading = signal<boolean>(false);
 
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
@@ -88,7 +88,7 @@ export class AuthStore {
 
     this._userLoading.set(true);
 
-    this.http.get<UserProfile>('/auth/me/').pipe(
+    this.http.get<AuthUser>('/auth/me/').pipe(
       tap(profile => {
         this._user.set(profile);
         this._userLoading.set(false);

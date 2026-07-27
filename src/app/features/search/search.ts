@@ -118,7 +118,7 @@ import { combineLatest } from 'rxjs';
                   </p>
 
                   <div class="stock-status" *ngIf="item.activeListings > 0">
-                    {{ 'search.stockBefore' | t:{n: item.activeListings} }}<span class="price">${{ item.minPrice }}</span>{{ 'search.stockAfter' | t }}
+                    {{ 'search.stockBefore' | t:{n: item.activeListings} }}<span class="price">\${{ item.minPrice }}</span>{{ 'search.stockAfter' | t }}
                   </div>
                   <div class="stock-status" [class.empty]="item.waitlistCount > 0" *ngIf="item.activeListings === 0">
                     <ng-container *ngIf="item.waitlistCount > 0">

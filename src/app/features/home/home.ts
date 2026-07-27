@@ -176,6 +176,7 @@ export class Home implements OnInit, OnDestroy {
 
   categoriesLoading = false;
   metadataLoading = false;
+  categoriesError = false;
   metadataError = false;
 
   private metadataService = inject(MetadataService);
@@ -191,7 +192,7 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  private loadMetadata() {
+  loadMetadata() {
     this.categoriesLoading = true;
     this.metadataLoading = true;
     this.metadataError = false;
