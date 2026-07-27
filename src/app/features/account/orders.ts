@@ -277,6 +277,8 @@ export class OrdersComponent implements OnInit {
   }
 
   currentUserId: string | null = null;
+  lastSeenBought: string | null | undefined = null;
+  lastSeenSold: string | null | undefined = null;
 
   setTab(tab: 'buying' | 'selling') {
     this.activeTab = tab;
@@ -286,14 +288,29 @@ export class OrdersComponent implements OnInit {
   }
 
   markTabAsSeen(userId: string) {
+    let shouldUpdate = false;
+    let payload: any = {};
+    
     if (this.activeTab === 'buying') {
       const maxBought = this.boughtOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
-      localStorage.setItem(`lastSeenBoughtAt_${userId}`, maxBought.toString());
+      if (maxBought > 0) {
+        this.lastSeenBought = new Date(maxBought).toISOString();
+        payload.last_seen_bought_orders_at = this.lastSeenBought;
+        shouldUpdate = true;
+      }
     } else {
       const maxSold = this.soldOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
-      localStorage.setItem(`lastSeenSoldAt_${userId}`, maxSold.toString());
+      if (maxSold > 0) {
+        this.lastSeenSold = new Date(maxSold).toISOString();
+        payload.last_seen_sold_orders_at = this.lastSeenSold;
+        shouldUpdate = true;
+      }
     }
-    this.orderService.checkUnreadOrders(userId);
+    
+    if (shouldUpdate) {
+      this.accountService.updateProfile(payload).subscribe();
+    }
+    this.orderService.checkUnreadOrders(userId, this.lastSeenBought, this.lastSeenSold);
   }
 
   loadOrders() {
@@ -302,6 +319,9 @@ export class OrdersComponent implements OnInit {
       next: (profile) => {
         const userId = profile.id;
         this.currentUserId = userId;
+        this.lastSeenBought = profile.last_seen_bought_orders_at;
+        this.lastSeenSold = profile.last_seen_sold_orders_at;
+        
         this.orderService.getOrders().subscribe({
           next: (orders) => {
             this.boughtOrders = orders.filter(o => String(o.buyer) === String(userId));

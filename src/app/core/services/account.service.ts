@@ -24,6 +24,8 @@ export interface UserProfile {
   is_google_linked?: boolean;
   is_staff?: boolean;
   is_superuser?: boolean;
+  last_seen_bought_orders_at?: string | null;
+  last_seen_sold_orders_at?: string | null;
   [key: string]: unknown;
 }
 
@@ -120,7 +122,7 @@ export class AccountService {
     this.cacheTimestamp = 0;
   }
 
-  updateProfile(data: { first_name?: string, last_name?: string, email?: string }): Observable<any> {
+  updateProfile(data: { first_name?: string, last_name?: string, email?: string, last_seen_bought_orders_at?: string, last_seen_sold_orders_at?: string }): Observable<any> {
     return this.http.patch<any>('/auth/me/', data).pipe(
       tap(profile => {
         this.profileCache.set(profile);
