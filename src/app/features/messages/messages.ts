@@ -881,6 +881,19 @@ export class Messages implements OnInit, OnDestroy {
         } catch (e) { }
 
         this.messageService.markConversationReadCF(chat.id, this.chatToken, this.edgeChatUrl, this.userId).subscribe();
+
+        // Fetch message history immediately via REST — don't wait for the
+        // WebSocket connection to reach 'connected' (it may be delayed or
+        // fail, leaving the message pane blank).
+        this.messageService.getEdgeMessages(chat.id, this.chatToken, this.edgeChatUrl).subscribe({
+          next: (data) => {
+            this.setEdgeMessages(data || []);
+          },
+          error: () => {
+            this.setEdgeMessages([]);
+          }
+        });
+
         this.messageService.connectEdgeChat(chat.id, this.chatToken, this.userId, this.edgeChatUrl);
       },
       error: (err) => {
