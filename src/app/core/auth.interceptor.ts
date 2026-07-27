@@ -1,5 +1,8 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse, HttpClient } from '@angular/common/http';
+import {
+  HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse,
+  HttpBackend, HttpClient
+} from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, switchMap, map, finalize, shareReplay } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
@@ -12,11 +15,21 @@ export class AuthInterceptor implements HttpInterceptor {
   // observable so the one-time-use refresh token is not sent to /auth/refresh/ twice
   private refreshInProgress$: Observable<string> | null = null;
 
+  // Use HttpBackend directly for the token-refresh flow so we don't create a
+  // circular dependency: AuthInterceptor → HttpClient → HTTP_INTERCEPTORS → AuthInterceptor.
+  // HttpBackend is the raw XHR/fetch layer; it skips the entire interceptor chain.
+  private http: HttpClient;
+
+  /** Deduplicate the /auth/refresh/ call (one-time-use refresh token). */
+  private readonly refreshBackendUrl = `${environment.backendUrl}/auth/refresh/`;
+
   constructor(
     private authStore: AuthStore,
-    private http: HttpClient,
+    backend: HttpBackend,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) {
+    this.http = new HttpClient(backend);
+  }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Requests to other origins (e.g. CFEdgeChat) carry their own,
@@ -111,7 +124,7 @@ export class AuthInterceptor implements HttpInterceptor {
         return throwError(() => new Error('No refresh token available'));
       }
 
-      this.refreshInProgress$ = this.http.post<any>('/auth/refresh/', { refresh: refreshToken }).pipe(
+      this.refreshInProgress$ = this.http.post<any>(this.refreshBackendUrl, { refresh: refreshToken }).pipe(
         map(tokens => {
           this.authStore.setAuth(tokens);
           return tokens.access as string;
@@ -137,7 +150,7 @@ export class AuthInterceptor implements HttpInterceptor {
         finalize(() => {
           this.refreshInProgress$ = null;
         }),
-        shareReplay({ bufferSize: 1, refCount: false })
+        shareReplay({ bufferSize: 1, refCount: true })
       );
     }
     return this.refreshInProgress$;

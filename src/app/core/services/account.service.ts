@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay, tap } from 'rxjs';
+import { Observable, shareReplay, tap, catchError, throwError } from 'rxjs';
 import { I18nService } from '../i18n.service';
 import { AuthStore } from '../auth.store';
 
@@ -47,6 +47,8 @@ export class AccountService {
   readonly profileCache = signal<UserProfile | null>(null);
   private profileLoading = signal(false);
   private profileRequest: Observable<UserProfile> | null = null;
+  private cacheTimestamp = 0;
+  private static readonly PROFILE_CACHE_TTL = 60_000; // 60 秒
   private i18n = inject(I18nService);
 
   private authStore = inject(AuthStore);
@@ -64,7 +66,11 @@ export class AccountService {
     // For backwards-compat callers that still use this directly,
     // leave the existing logic intact but always call /auth/me/
     const cached = this.profileCache();
-    if (cached && page === 1 && !q) {
+    const cacheValid = cached
+      && page === 1
+      && !q
+      && (Date.now() - this.cacheTimestamp) < AccountService.PROFILE_CACHE_TTL;
+    if (cacheValid) {
       return new Observable(subscriber => {
         subscriber.next(cached);
         subscriber.complete();
@@ -84,11 +90,22 @@ export class AccountService {
       tap(profile => {
         if (page === 1 && !q) {
           this.profileCache.set(profile);
+          this.cacheTimestamp = Date.now();
           this.profileLoading.set(false);
           this.profileRequest = null;
         }
       }),
-      shareReplay(1)
+      catchError(err => {
+        // Reset flight-lock and cache on error so the next call retries
+        // instead of re-subscribing to the same failed Observable forever.
+        if (page === 1 && !q) {
+          this.profileLoading.set(false);
+          this.profileRequest = null;
+          this.cacheTimestamp = 0;
+        }
+        return throwError(() => err);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
     if (!q) this.profileRequest = req;
@@ -99,11 +116,15 @@ export class AccountService {
     this.profileCache.set(null);
     this.profileLoading.set(false);
     this.profileRequest = null;
+    this.cacheTimestamp = 0;
   }
 
   updateProfile(data: { first_name?: string, last_name?: string, email?: string }): Observable<any> {
     return this.http.patch<any>('/auth/me/', data).pipe(
-      tap(profile => this.profileCache.set(profile))
+      tap(profile => {
+        this.profileCache.set(profile);
+        this.cacheTimestamp = Date.now();
+      })
     );
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, signal, inject, untracked } from '@angular/core';
+import { Injectable, Injector, signal, inject, untracked } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -44,9 +44,10 @@ export class AuthStore {
       if (token) {
         this._isAuthenticated.set(true);
         // Bootstrap: fetch profile once when the page initialises with a
-        // persisted token.  Use untracked so writing _user inside the
-        // subscription callback doesn't re-enter any reactive context.
-        untracked(() => this.fetchUserProfile());
+        // persisted token. Deferred via setTimeout to break the construction
+        // cycle — AuthStore → HttpClient → HTTP_INTERCEPTORS → AuthInterceptor
+        // → AuthStore. Waiting one microtask lets all providers finish.
+        setTimeout(() => untracked(() => this.fetchUserProfile()), 0);
       }
     }
 
@@ -110,6 +111,20 @@ export class AuthStore {
   }
 
   private router = inject(Router);
+  private injector = inject(Injector);
+
+  // Lazy HttpClient: avoids circular dependency with HTTP_INTERCEPTORS.
+  // AuthInterceptor → AuthStore → HttpClient → HTTP_INTERCEPTORS → AuthInterceptor
+  // would be a cycle if we injected HttpClient directly in the constructor;
+  // resolving it lazily via Injector lets all interceptors finish initialising
+  // before the first HTTP call actually needs HttpClient.
+  private _http: HttpClient | null = null;
+  private get http(): HttpClient {
+    if (!this._http) {
+      this._http = this.injector.get(HttpClient);
+    }
+    return this._http;
+  }
 
   clearAuth() {
     if (typeof localStorage !== 'undefined') {
@@ -147,8 +162,6 @@ export class AuthStore {
   getUser() {
     return this.user();
   }
-
-  private http = inject(HttpClient);
 
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>('/auth/token/', { email, password }).pipe(
