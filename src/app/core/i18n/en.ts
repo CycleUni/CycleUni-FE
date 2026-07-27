@@ -567,4 +567,9 @@ export const en: Record<string, string> = {
   'fp.successBody': 'Your password has been changed. Please log in again — all previous sessions have been signed out.',
   'acct.passwordResetSent': "If that email is registered, we've sent a reset link.",
   'acct.passwordResetSuccess': 'Your password has been reset. Please log in with your new password.',
+
+  // Not Found
+  'notfound.title': 'Page Not Found',
+  'notfound.desc': 'The page you are looking for does not exist or has been moved.',
+  'notfound.backHome': 'Back to Home',
 };

@@ -569,4 +569,9 @@ export const zhTW: Record<string, string> = {
   'fp.successBody': '您的密碼已變更，請重新登入——所有先前的登入狀態皆已被登出。',
   'acct.passwordResetSent': '若該信箱已註冊，我們已寄送重設連結。',
   'acct.passwordResetSuccess': '密碼已重設，請使用新密碼登入。',
+
+  // Not Found
+  'notfound.title': '找不到頁面',
+  'notfound.desc': '您要找的頁面不存在或已被移除。',
+  'notfound.backHome': '返回首頁',
 };
