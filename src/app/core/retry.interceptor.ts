@@ -22,8 +22,8 @@ import { environment } from '../../environments/environment';
  */
 @Injectable()
 export class RetryInterceptor implements HttpInterceptor {
-  private readonly maxRetries = 1; // total attempts = 1 initial + 1 retry
-  private readonly retryDelayMs = 1000;
+  private readonly maxRetries = 2; // total attempts = 1 initial + 2 retries
+  private readonly baseDelayMs = 1000;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -49,12 +49,13 @@ export class RetryInterceptor implements HttpInterceptor {
             if (attempt > this.maxRetries) {
               return throwError(() => error);
             }
+            const delayTime = this.baseDelayMs * attempt;
             if (isPlatformBrowser(this.platformId)) {
               console.warn(
-                `[retry] ${request.method} ${request.url} failed (attempt ${attempt}) — retrying in ${this.retryDelayMs}ms`
+                `[retry] ${request.method} ${request.url} failed (attempt ${attempt}) — retrying in ${delayTime}ms`
               );
             }
-            return timer(this.retryDelayMs);
+            return timer(delayTime);
           },
         }),
         catchError(error => {
