@@ -28,7 +28,7 @@ import { combineLatest } from 'rxjs';
             [placeholder]="'common.searchPlaceholder' | t"
             [(ngModel)]="searchQuery"
             (keyup.enter)="onSearch()"
-            class="search-input"
+            class="search-page-input"
           ></ui-input>
           <ui-button (onClick)="onSearch()" class="search-button">{{ 'common.search' | t }}</ui-button>
         </div>
@@ -164,7 +164,8 @@ import { combineLatest } from 'rxjs';
   styles: [`
     .search-header { background-color: var(--paper-warm); border-bottom: 1px solid var(--line); padding: 24px 16px; margin-bottom: 32px; }
     .header-inner { max-width: 1120px; margin: 0 auto; display: flex; gap: 8px; }
-    .search-input { display: inline-block; width: 400px; max-width: 100%; }
+    .search-page-input { display: inline-block !important; width: 400px; max-width: 100%; }
+    ::ng-deep .search-page-input .input-wrapper { margin-bottom: 0; }
     .search-button { flex-shrink: 0; }
     .container { max-width: 1120px; margin: 0 auto; padding: 0 16px; display: flex; gap: 48px; }
     .filter-toggle { display: none; }
@@ -196,11 +197,10 @@ import { combineLatest } from 'rxjs';
     .error-box h3 { margin-top: 0; margin-bottom: 12px; }
     .error-box p { color: var(--muted); margin-bottom: 24px; }
 
-    @media (max-width: 1024px) { .header-inner { flex-wrap:wrap; } .search-input { flex:1; width:auto; min-width:200px; } }
+    @media (max-width: 1024px) { .header-inner { flex-wrap:wrap; } .search-page-input { flex:1; width:auto; min-width:200px; } }
     @media (max-width: 768px) {
       .header-inner { flex-direction:column; align-items:stretch; }
-      .search-input { flex:none; width:100%; max-width:100%; }
-      .search-input ui-input { width:100%; }
+      .search-page-input { flex:none; width:100%; max-width:100%; }
       .search-button { width:100%; }
       .container { flex-direction:column; gap:0; }
       .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; }
