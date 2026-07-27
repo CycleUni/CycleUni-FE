@@ -1,54 +1,113 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
 
+export interface AuthUser {
+  id: string | number;
+  email: string;
+  edu_email?: string;
+  first_name?: string;
+  last_name?: string;
+  display_name?: string;
+  school?: string | number | null;
+  school_name?: string;
+  is_active?: boolean;
+  verified_at?: string | null;
+  average_rating?: number;
+  review_count?: number;
+  no_show_count?: boolean;
+  has_password?: boolean;
+  avatar_url?: string;
+  is_google_linked?: boolean;
+  is_staff?: boolean;
+  is_superuser?: boolean;
+  [key: string]: unknown;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthStore {
-  // Private writable signals; only this store's own methods (setAuth/clearAuth/login...)
-  // may write to them, so external consumers can't call .set()/.update() and desync
-  // state from localStorage.
   private readonly _isAuthenticated = signal<boolean>(false);
-  private readonly _user = signal<any | null>(null);
+  private readonly _user = signal<UserProfile | null>(null);
+  private readonly _userLoading = signal<boolean>(false);
 
-  // Exposed as read-only; writes must go through the store's own methods.
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
   readonly user = this._user.asReadonly();
+  readonly userLoading = this._userLoading.asReadonly();
 
   constructor() {
+    // Phase 1: Set isAuthenticated from persisted token on bootstrap
     if (typeof localStorage !== 'undefined') {
       const token = localStorage.getItem('access_token');
       if (token) {
         this._isAuthenticated.set(true);
       }
     }
+
     if (typeof window !== 'undefined') {
-      // Cross-tab sync: storage events notify this tab when another tab logs
-      // in, logs out, or rotates tokens (e.key === null means localStorage.clear())
       window.addEventListener('storage', (e: StorageEvent) => {
         if (e.key === 'access_token' || e.key === null) {
           const token = this.getAccessToken();
           this._isAuthenticated.set(!!token);
           if (!token) {
-            // Known limitation: when another tab logs in, this tab only learns
-            // that a token now exists — it can't recover `user` (never persisted
-            // to localStorage). Needs a fresh login, or an /auth/me call later,
-            // to fully resync.
             this._user.set(null);
           }
         }
       });
     }
+
+    // Phase 2: When isAuthenticated flips to true (including on page load),
+    // automatically fetch the user profile — /auth/me/ gates its response
+    // on the access token, so the flow works the same whether the token was
+    // just received from login or already sitting in localStorage.
+    effect(() => {
+      if (this._isAuthenticated()) {
+        this.fetchUserProfile();
+      }
+    });
+  }
+
+  /**
+   * Best-effort user profile fetch. Silently ignores network/transient
+   * failures (the RetryInterceptor will handle retries, so we only guard
+   * against the case where the session is truly invalid).
+   */
+  private fetchUserProfile(): void {
+    if (this._userLoading()) {
+      return; // already in flight
+    }
+
+    if (!this.getAccessToken()) {
+      // Shouldn't normally happen with the effect gate, but guard against
+      // transient timing where the token was cleared after the effect fired
+      return;
+    }
+
+    this._userLoading.set(true);
+
+    this.http.get<UserProfile>('/auth/me/').pipe(
+      tap(profile => {
+        this._user.set(profile);
+        this._userLoading.set(false);
+      }),
+      catchError(err => {
+        // A 401 here means the token is stale — clear auth to get a
+        // clean slate (AuthInterceptor already tried the refresh path,
+        // so if we're still getting 401 the refresh token is also gone).
+        if (err.status === 401) {
+          this.clearAuth();
+        }
+        this._userLoading.set(false);
+        return of(null);
+      })
+    ).subscribe();
   }
 
   setAuth(data: { access: string; refresh?: string }) {
     if (typeof localStorage !== 'undefined') {
-      // Safari private browsing (or a full storage quota) makes setItem throw;
-      // keep the in-memory auth state valid even if persistence fails, so the
-      // login flow doesn't break outright.
       try {
         localStorage.setItem('access_token', data.access);
         if (data.refresh) {
@@ -59,7 +118,7 @@ export class AuthStore {
       }
     }
     this._isAuthenticated.set(true);
-    // In a real app, we might decode the JWT or fetch user profile here
+    // The effect above will trigger fetchUserProfile() — no need to duplicate
   }
 
   private router = inject(Router);
@@ -75,6 +134,7 @@ export class AuthStore {
     }
     this._isAuthenticated.set(false);
     this._user.set(null);
+    this._userLoading.set(false);
     this.router.navigate(['/account']);
   }
 
@@ -107,11 +167,11 @@ export class AuthStore {
       tap(response => {
         if (response.access && response.refresh) {
           this.setAuth(response);
-          this._user.set({ email }); // Store the email only; decoding the JWT is a possible follow-up
         }
       })
     );
   }
+
   getAuthConfig(): Observable<any> {
     return this.http.get<any>('/auth/config/');
   }
@@ -121,10 +181,6 @@ export class AuthStore {
       tap(response => {
         if (response.access && response.refresh) {
           this.setAuth(response);
-          // Check for user ID from response
-          if (response.user_id) {
-            this._user.set({ id: response.user_id, is_verified: response.user?.is_verified });
-          }
         }
       })
     );
@@ -147,9 +203,6 @@ export class AuthStore {
     return this.http.post<any>('/auth/verify/', { token });
   }
 
-  // Unlike verifyEmail (edu-email binding, run from an already-logged-in
-  // session), the caller here has no session yet — the backend issues JWTs
-  // directly on success, so this logs them in as part of verifying.
   verifyRegistration(token: string): Observable<any> {
     return this.http.post<any>('/auth/verify-registration/', { token }).pipe(
       tap(response => {
@@ -164,17 +217,11 @@ export class AuthStore {
     return this.http.post<any>('/auth/password/reset/request/', { email });
   }
 
-  // No auto-login on success — a password reset also revokes every existing
-  // session (see accounts.views.ConfirmPasswordResetView), so signing back
-  // in fresh with the new password is the expected next step, not a bug.
   confirmPasswordReset(token: string, newPassword: string): Observable<any> {
     return this.http.post<any>('/auth/password/reset/confirm/', { token, new_password: newPassword });
   }
 
   logout(): Observable<any> {
-    // Call the backend logout API to revoke the refresh token.
-    // Local state is cleared whether the call succeeds or fails, and callers
-    // can subscribe to react to completion (e.g. navigate after logout).
     const refresh = this.getRefreshToken();
     if (refresh) {
       return this.http.post('/auth/logout/', { refresh }).pipe(

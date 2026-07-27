@@ -26,7 +26,7 @@ export const en: Record<string, string> = {
   'nav.messages': 'Messages',
   'nav.account': 'Account',
   'nav.admin': 'Admin',
-  'footer.tagline': 'The used-textbook marketplace for university students in Taiwan.',
+  'footer.tagline': 'Connecting university students across Taiwan to buy and sell secondhand textbooks.',
   'footer.about': 'About',
   'footer.how': 'How it works',
   'footer.faq': 'FAQ',

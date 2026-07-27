@@ -1,0 +1,89 @@
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, timer } from 'rxjs';
+import { retry, catchError } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../environments/environment';
+
+/**
+ * RetryInterceptor — lightweight, targeted retry for transient server errors.
+ *
+ * Design decisions:
+ * - Only intercepts requests to our own backend (cycleuni). Cross-origin
+ *   requests (e.g. CFEdgeChat, Google sign-in) are left untouched.
+ * - Retries ONLY on transient errors: HTTP 5xx (server fault, likely cold
+ *   start timeout from Vercel Lambda), 429 with retry-after, or status 0
+ *   (browser network-level DNS/TCP failure — very common after idle).
+ * - Does NOT retry 4xx: 401 is already handled by AuthInterceptor (token
+ *   refresh flow), and 400/403/404 are permanent.
+ * - Retries use an immediate first attempt + a single delayed retry (1s).
+ *   This gives the Lambda instance time to warm up without adding
+ *   meaningful user-perceived latency for the common case.
+ */
+@Injectable()
+export class RetryInterceptor implements HttpInterceptor {
+  private readonly maxRetries = 1; // total attempts = 1 initial + 1 retry
+  private readonly retryDelayMs = 1000;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Only apply retries to our own backend; let external requests handle
+    // failures on their own
+    if (!request.url.startsWith('http') || request.url.startsWith(environment.backendUrl)) {
+      // The initial attempt and the retry are within the `retry` pattern, so
+      // they share the same chain through the interceptor.
+      return next.handle(request).pipe(
+        retry({
+          count: this.maxRetries,
+          delay: (error, attempt) => {
+            if (!this.shouldRetry(error)) {
+              return throwError(() => error);
+            }
+            if (attempt > this.maxRetries) {
+              return throwError(() => error);
+            }
+            if (isPlatformBrowser(this.platformId)) {
+              console.warn(
+                `[retry] ${request.method} ${request.url} failed (attempt ${attempt}) — retrying in ${this.retryDelayMs}ms`
+              );
+            }
+            return timer(this.retryDelayMs);
+          },
+        }),
+        catchError(error => {
+          // After all retries exhausted, rethrow for the caller to handle
+          // (e.g. show error state)
+          if (error instanceof HttpErrorResponse && isPlatformBrowser(this.platformId)) {
+            console.warn(
+              `[retry] ${request.method} ${request.url} failed after ${this.maxRetries + 1} attempts — giving up`
+            );
+          }
+          return throwError(() => error);
+        })
+      );
+    }
+
+    // Cross-origin (CFEdgeChat etc.) — no retry
+    return next.handle(request);
+  }
+
+  private shouldRetry(error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse)) {
+      return false;
+    }
+    // Server errors (502/503/504): the classic Lambda cold-start signature
+    const is5xx = error.status >= 500 && error.status < 600;
+    if (is5xx) {
+      return true;
+    }
+    // 429 with Retry-After is explicitly documented that the client should
+    // honour it (we just retry once regardless)
+    if (error.status === 429) {
+      return true;
+    }
+    // status 0: CORS failure, network timeout, or the server forcibly closed
+    // the connection before responding — common from overloaded Lambda
+    return error.status === 0;
+  }
+}

@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard, accountIndexGuard } from './core/auth.guard';
 import { adminGuard } from './features/admin/admin.guard';
 
-// Client-side rendered only (no SSR) — all routes are lazy-loaded.
+// CSR only (PWA) — all routes are lazy-loaded.
 export const routes: Routes = [
   {
     path: '',

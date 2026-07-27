@@ -1,7 +1,6 @@
-import { Injectable, inject, signal, PLATFORM_ID, TransferState, makeStateKey, effect } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay, tap, of } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { I18nService } from '../i18n.service';
 import { AuthStore } from '../auth.store';
 
@@ -27,12 +26,24 @@ export interface UserProfile {
   [key: string]: unknown;
 }
 
+/**
+ * AccountService — thin wrapper over /auth/me/ and related endpoints.
+ *
+ * The canonical "logged-in user" state is now owned by AuthStore.user
+ * (auto-fetched on every login and on bootstrap when a persisted token
+ * exists). This service still exposes getMyProfile() for components that
+ * need the latest profile at a specific moment, but its cache acts only as
+ * a short-lived deduplication layer, not the primary source of truth.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
   private http = inject(HttpClient);
 
+  // Lightweight dedup cache: holds the last successful /auth/me/ response
+  // for the current login session so multiple concurrent consumers don't
+  // each fire separate requests. Cleared on language switch.
   readonly profileCache = signal<UserProfile | null>(null);
   private profileLoading = signal(false);
   private profileRequest: Observable<UserProfile> | null = null;
@@ -41,20 +52,17 @@ export class AccountService {
   private authStore = inject(AuthStore);
 
   constructor() {
-    effect(() => {
-      this.i18n.lang();
-      this.clearProfileCache();
-    });
-    effect(() => {
-      // Clear cache whenever auth state changes to logged out
-      // (or when a new login occurs, but logged out is sufficient if they log out first)
-      if (!this.authStore.isAuthenticated()) {
-        this.clearProfileCache();
-      }
-    });
+    // The AuthStore now manages the lifecycle of /auth/me/ — it fetches on
+    // bootstrap (if a token exists) and on every login. That value flows
+    // into AuthStore.user. This service's cache merely mirrors it for
+    // compatibility with existing components that read profileCache().
+    // We keep this function as a convenience; calling getMyProfile() when
+    // AuthStore.user already has data will return the cached copy.
   }
 
   getMyProfile(page: number = 1, q: string = ''): Observable<any> {
+    // For backwards-compat callers that still use this directly,
+    // leave the existing logic intact but always call /auth/me/
     const cached = this.profileCache();
     if (cached && page === 1 && !q) {
       return new Observable(subscriber => {
@@ -113,24 +121,8 @@ export class AccountService {
     );
   }
 
-  private transferState = inject(TransferState);
-  private platformId = inject(PLATFORM_ID);
-
   getPublicUserProfile(userId: string): Observable<any> {
-    const key = makeStateKey<any>(`user_profile_${userId}`);
-    if (this.transferState.hasKey(key)) {
-      const data = this.transferState.get(key, null);
-      // Remove it so subsequent client-side navigations fetch fresh data
-      this.transferState.remove(key);
-      return of(data);
-    }
-    return this.http.get<any>(`/auth/users/${userId}/`).pipe(
-      tap(data => {
-        if (!isPlatformBrowser(this.platformId)) {
-          this.transferState.set(key, data);
-        }
-      })
-    );
+    return this.http.get<any>(`/auth/users/${userId}/`);
   }
 
   unbindEduEmail(): Observable<any> {

@@ -26,7 +26,7 @@ export const zhTW: Record<string, string> = {
   'nav.messages': '訊息',
   'nav.account': '會員',
   'nav.admin': '後台管理',
-  'footer.tagline': '台灣大學生專屬的二手教科書媒合平台。',
+  'footer.tagline': '台灣大學生專屬的二手教科書媒合平台',
   'footer.about': '關於',
   'footer.how': '運作方式',
   'footer.faq': '常見問題',

@@ -4,9 +4,7 @@ import { Observable } from 'rxjs';
 import { SKIP_LANG_PARAM } from '../api-url.interceptor';
 import { I18nService } from '../i18n.service';
 
-// Search and book-detail responses carry no localized fields; skipping the
-// lang param keeps SSR and client URLs identical so the hydration transfer
-// cache reuses the server-fetched response instead of re-hitting the backend
+// Search and book-detail responses carry no localized fields; skip the lang param.
 const NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
 
 @Injectable({

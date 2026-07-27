@@ -503,10 +503,8 @@ export class ListingDetail implements OnInit {
       }
     });
 
-    // Personalized content only renders after client hydration; SSR always
-    // outputs the guest view. This fetches the current user's own id from
-    // /auth/me/, browser-side only and only when logged in, to decide whether
-    // the "report" button should be hidden on the user's own listing.
+    // Fetch the current user's profile (browser-side only) to determine
+    // whether to hide the "report" button on the user's own listing.
     effect(() => {
       if (isPlatformBrowser(this.platformId) && this.auth.isLoggedIn()) {
         this.accountService.getMyProfile().subscribe({
@@ -533,12 +531,8 @@ export class ListingDetail implements OnInit {
         this.errorMsg = '';
         this.cdr.markForCheck();
         this.loadListing(newId);
-        // Fallback in case the API hangs. Scheduled outside Angular's zone
-        // so it doesn't count as a pending task for SSR — a plain
-        // setTimeout inside the zone makes Angular Universal wait out the
-        // full 8s on every server render before it'll send the response,
-        // even on a normal fast load where this timeout is a no-op by the
-        // time it fires (isLoading is already false from loadListing()).
+        // Fallback in case the API hangs. Running outside Angular's zone
+        // so the timeout doesn't trigger unnecessary change detection.
         this.ngZone.runOutsideAngular(() => {
           setTimeout(() => {
             if (this.isLoading && this.currentId === newId) {
@@ -579,14 +573,7 @@ export class ListingDetail implements OnInit {
         }
         this.selectedIndex = 0;
 
-        // Fetch other listings for the same book — client-side only. This
-        // section isn't SEO-relevant content (the route is SSR'd for the
-        // listing itself, not its cross-sell list), and Angular's SSR
-        // blocks the whole response on every outstanding HTTP call, so
-        // chaining this one after getListing() was doubling the server
-        // render's latency on every refresh for no visible benefit before
-        // hydration. Skipping it on the server keeps the response bound to
-        // a single round trip; it still loads moments after hydration.
+        // Fetch other listings for the same book — after the main listing loads.
         const bookIdentifier = data.isbn || data.book;
         if (bookIdentifier && isPlatformBrowser(this.platformId)) {
           this.bookService.getBook(bookIdentifier).subscribe({

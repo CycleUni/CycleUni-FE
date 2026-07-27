@@ -4,12 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { I18nService } from './i18n.service';
 
-/**
- * Marks a request whose response has no localized fields. Skipping the `lang`
- * param keeps the URL identical between SSR and the client, so Angular's
- * hydration HTTP transfer cache can reuse the server-fetched response instead
- * of hitting the backend again.
- */
+/** Skip the `lang` query param for endpoints whose response has no localized fields. */
 export const SKIP_LANG_PARAM = new HttpContextToken<boolean>(() => false);
 
 @Injectable()

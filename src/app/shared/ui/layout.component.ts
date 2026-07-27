@@ -482,14 +482,16 @@ export class UiLayout implements OnDestroy {
 
   get userName(): string {
     if (!this.authStore.isAuthenticated()) return '';
-    const profile = this.accountService.profileCache();
+    // AuthStore.user is now auto-fetched on bootstrap and after login —
+    // it's the canonical source of truth for the current user
+    const profile = this.authStore.user();
     if (!profile) return '';
     return profile.display_name || profile.email || '';
   }
 
   get isStaff(): boolean {
     if (!this.authStore.isAuthenticated()) return false;
-    return this.accountService.profileCache()?.is_staff === true;
+    return this.authStore.user()?.is_staff === true;
   }
 
   constructor() {

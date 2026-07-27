@@ -279,7 +279,7 @@ export class Book implements OnInit {
               this.fetchBook();
             }
           } else {
-            // In SSR (sessionStorage is undefined), we skip fetching to avoid API calls.
+            // Not in a browser environment (sessionStorage unavailable) — skip fetch.
             this.isLocalCache = true;
           }
         } else {

@@ -1,8 +1,7 @@
-import { Injectable, inject, PLATFORM_ID, TransferState, makeStateKey, effect } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, from } from 'rxjs';
-import { shareReplay, catchError, tap, switchMap, map } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
+import { shareReplay, catchError, switchMap, map } from 'rxjs/operators';
 import imageCompression from 'browser-image-compression';
 import { I18nService } from '../i18n.service';
 
@@ -16,8 +15,6 @@ export class ListingService {
   private apiUrl = '/listings/';
 
   private cache = new Map<string, Observable<any[]>>();
-  private transferState = inject(TransferState);
-  private platformId = inject(PLATFORM_ID);
   private i18n = inject(I18nService);
 
   constructor() {
@@ -38,23 +35,9 @@ export class ListingService {
         params = params.set('seller_id', sellerId);
       }
       const request = this.http.get<any>('/listings/', { params }).pipe(
-        tap(data => {
-          if (!isPlatformBrowser(this.platformId)) {
-            const stateKey = makeStateKey<any>(`listings_${key}`);
-            this.transferState.set(stateKey, data);
-          }
-        }),
         shareReplay({ bufferSize: 1, refCount: true })
       );
       this.cache.set(key, request);
-    }
-    
-    // Check transfer state first on client
-    const stateKey = makeStateKey<any>(`listings_${key}`);
-    if (this.transferState.hasKey(stateKey)) {
-      const data = this.transferState.get(stateKey, null);
-      this.transferState.remove(stateKey);
-      return of(data);
     }
     
     return this.cache.get(key)!;

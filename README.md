@@ -5,42 +5,23 @@
 ## 技術棧
 
 - Angular（最新穩定版，standalone components）
-- Angular SSR 混合渲染（route-level render mode）
-- Node 24＋npm
+- Angular（standalone components，CSR）
+- Node 24 + npm
 - 單元測試：vitest（不採 karma）
-- 部署目標：Cloudflare Pages（靜態資產＋Pages Functions SSR）
+- 部署目標：Cloudflare Pages（靜態資產 + PWA service worker）
 
-## 渲染策略（摘自前端 SSD §2）
+## 渲染策略
 
-| 路由 | 模式 |
-|---|---|
-| `/`、`/search`、`/book/:id` | SSR |
-| `/sell`、`/account`、`/messages` | CSR（lazy-loaded） |
+全站 CSR（Client-side rendering），搭配 PWA service worker 提供離線能力。所有路由均 lazy-loaded。
 
 ## 開發
 
 ```bash
 npm install
-npm start        # 開發伺服器（含 SSR）
+npm start        # 開發伺服器
 npm test         # vitest 單元測試
-npm run build    # 正式建置（server bundle 為 platform-neutral，無 Node 專屬 API）
+npm run build    # 正式 production 建置
 ```
-
-### 本地 Workers runtime 冒煙（wrangler dev）
-
-```bash
-npm run smoke                # 以 smoke 組態建置（同 production 最佳化，僅允許 Host: localhost）
-                             # 並啟動 wrangler dev，預設 http://localhost:8787
-curl http://localhost:8787/  # SSR 路由應回傳完整 HTML
-```
-
-`smoke` 組態與 production 唯一差異為 `security.allowedHosts: ["localhost"]`。
-
-> **部署前必辦（安全姿態，經 security-manager 核可）**：
-> production 建置之 `security.allowedHosts` 刻意維持空清單＝**拒絕所有 Host**。
-> 以 production 產物部署後，所有 SSR 請求（含 `*.pages.dev` 與正式網域）都會回 400。
-> 正式網域定案（人類決策點）後，**必須**於 `angular.json` production 組態補上
-> host 清單，否則 SSR 全面 400。不得以 localhost 或萬用 host 充數。
 
 詳細架構見 `docs/frontend-ssd.md`（位於上層 CycleUni 工作根目錄）。
 
@@ -71,7 +52,7 @@ src/app/
 │   ├─ api‑url.interceptor.ts
 │   └─ i18n.service.ts
 ├─ router/                       # 路由集中管理 (app.routes.ts, router.module.ts)
-└─ app.config.ts                # providers、SSR hydration、http client
+└─ app.config.ts                # providers、http client、PWA
 ```
 
 - **Feature component** 均為 **standalone**，只在 `features/home/home.component.ts` 中 `import` 必要的 UI 元件與服務。
@@ -88,7 +69,7 @@ export const APP_ROUTES: Routes = [
 ];
 ```
 
-- 所有路由在 `src/app/router/app.routes.ts` 統一定義，`router.module.ts` 只負責 `provideRouter(APP_ROUTES)`。SSR 與 CSR 共享同一份路由，避免不同檔案導致不一致。
+- 所有路由在 `src/app/router/app.routes.ts` 統一定義。
 
 ### 3️⃣ API 抽象層與錯誤統一處理
 
@@ -113,7 +94,7 @@ export const APP_ROUTES: Routes = [
 |------|------|------|
 | 單元測試 | Vitest + Testing Library | 每個 UI 元件、Pipe、Service 的渲染與行為 |
 | 整合測試 | Vitest (HttpTestingController) | API service 與 interceptor 的互動 |
-| E2E 測試 | Playwright | 首頁 → 搜尋 → 書本 → 私訊 → 登入 → 登出 完整流程，驗證 SSR/CSR 行為一致 |
+| E2E 測試 | Playwright | 首頁 → 搜尋 → 書本 → 私訊 → 登入 → 登出 完整流程 |
 
 執行測試：
 ```bash
@@ -123,9 +104,9 @@ npm run e2e           # Playwright
 
 ### 7️⃣ 部署流程
 
-1. **建置** `npm run build` → 產生 `dist/`（client + server bundle）
+1. **建置** `npm run build` → 產生 `dist/cycleuni-fe/browser/`
 2. **部署**
-   - **Cloudflare Pages**：上傳 `dist/` 作為靜態資產，`dist/server/main.js` 作為 **Pages Functions**（SSR）
+   - **Cloudflare Pages**：上傳 `dist/cycleuni-fe/browser/` 作為靜態資產
    - **環境變數**：在 Cloudflare Dashboard 設定 `API_URL`（指向後端 API）與 `APP_ENV=production`
 3. **安全設定**：`angular.json` production 中 `security.allowedHosts` 必須空白，避免跨域 400 錯誤。
 
@@ -161,7 +142,7 @@ CycleUni-FE 支援 PWA，提供離線使用、安裝到桌面、推播通知等�
 }
 ```
 
-- **navigationRequestStrategy: 'freshness'** — 確保 SSR 頁面導覽時優先從網路獲取最新 HTML，避免 hydration mismatch
+- **navigationRequestStrategy: 'freshness'** — 確保頁面導覽時優先從網路獲取最新 HTML
 - **app group (prefetch)** — 關鍵資源建置時預快取
 - **assets group (lazy)** — 圖片、字體按需快取
 - **api group (networkFirst)** — API 請求優先走網路，離線才讀取快取，TTL 1 小時
@@ -176,7 +157,7 @@ provideServiceWorker('ngsw-worker.js', {
 ```
 
 - `enabled: !isDevMode()` — 開發環境不啟用 SW，避免干擾熱重載
-- `registerWhenStable:30000` — 等待 Angular 應用穩定（hydration 完成）後再註冊，最多等 30 秒，確保 SSR + PWA 共存無衝突
+- `registerWhenStable:30000` — 等待 Angular 應用穩定後再註冊，最多等 30 秒，確保 PWA 不干擾初始載入
 
 ### 建置與驗證
 
@@ -190,7 +171,7 @@ npm run build          # 正式建置，產出 dist/cycleuni-fe/browser/ngsw-wor
 - [x] **可安裝** — manifest.webmanifest + icons + HTTPS
 - [x] **離線可用** — Service Worker 快取 app shell + API network-first
 - [x] **快速載入** — Prefetch 關鍵資源、lazy-load 非關鍵資源
-- [x] **SSR 相容** — navigationRequestStrategy: freshness + registerWhenStable
+- [x] **CSR + PWA 相容** — navigationRequestStrategy: freshness + registerWhenStable
 - [x] **iOS 支援** — apple-mobile-web-app-* meta tags + maskable icons
 - [x] **App Shortcuts** — "發布商品"、`/listings/new`、"我的訊息"、`/messages`
 
