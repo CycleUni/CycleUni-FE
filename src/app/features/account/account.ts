@@ -588,7 +588,7 @@ export class Account {
         this.schoolName = data.school_name || '';
         this.verifiedAt = data.verified_at || null;
         this.avatarUrl = data.avatar_url || '';
-        this.orderService.checkUnreadOrders(data.id);
+        this.orderService.checkUnreadOrders(String(data.id), data.last_seen_bought_orders_at, data.last_seen_sold_orders_at);
         this.cdr.markForCheck(); 
       },
       error: (err) => {

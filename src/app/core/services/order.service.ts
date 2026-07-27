@@ -28,18 +28,18 @@ export class OrderService {
 
   public unreadOrders$ = new BehaviorSubject<boolean>(false);
 
-  checkUnreadOrders(userId: string) {
+  checkUnreadOrders(userId: string, lastSeenBoughtAt: string | null | undefined, lastSeenSoldAt: string | null | undefined) {
     this.getOrders().subscribe(orders => {
       const boughtOrders = orders.filter(o => String(o.buyer) === String(userId));
       const soldOrders = orders.filter(o => String(o.seller) === String(userId));
       
-      const lastSeenBought = localStorage.getItem(`lastSeenBoughtAt_${userId}`) || '0';
-      const lastSeenSold = localStorage.getItem(`lastSeenSoldAt_${userId}`) || '0';
+      const lastSeenBought = lastSeenBoughtAt ? new Date(lastSeenBoughtAt).getTime() : 0;
+      const lastSeenSold = lastSeenSoldAt ? new Date(lastSeenSoldAt).getTime() : 0;
       
       const maxBought = boughtOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
       const maxSold = soldOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
       
-      this.unreadOrders$.next(maxBought > parseInt(lastSeenBought, 10) || maxSold > parseInt(lastSeenSold, 10));
+      this.unreadOrders$.next(maxBought > lastSeenBought || maxSold > lastSeenSold);
     });
   }
 
