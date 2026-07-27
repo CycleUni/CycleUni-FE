@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 
 export interface Order {
   id?: string;
@@ -17,6 +17,7 @@ export interface Order {
   meetup_time?: string;
   meetup_location?: string;
   created_at?: string;
+  updated_at?: string;
   has_reviewed?: boolean;
 }
 
@@ -24,6 +25,23 @@ export interface Order {
 export class OrderService {
   private http = inject(HttpClient);
   private url = '/orders/';
+
+  public unreadOrders$ = new BehaviorSubject<boolean>(false);
+
+  checkUnreadOrders(userId: string) {
+    this.getOrders().subscribe(orders => {
+      const boughtOrders = orders.filter(o => String(o.buyer) === String(userId));
+      const soldOrders = orders.filter(o => String(o.seller) === String(userId));
+      
+      const lastSeenBought = localStorage.getItem(`lastSeenBoughtAt_${userId}`) || '0';
+      const lastSeenSold = localStorage.getItem(`lastSeenSoldAt_${userId}`) || '0';
+      
+      const maxBought = boughtOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
+      const maxSold = soldOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
+      
+      this.unreadOrders$.next(maxBought > parseInt(lastSeenBought, 10) || maxSold > parseInt(lastSeenSold, 10));
+    });
+  }
 
   getOrders(): Observable<Order[]> {
     return this.http.get<any>(this.url).pipe(

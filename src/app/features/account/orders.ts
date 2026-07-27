@@ -276,8 +276,24 @@ export class OrdersComponent implements OnInit {
     this.loadOrders();
   }
 
+  currentUserId: string | null = null;
+
   setTab(tab: 'buying' | 'selling') {
     this.activeTab = tab;
+    if (this.currentUserId) {
+      this.markTabAsSeen(this.currentUserId);
+    }
+  }
+
+  markTabAsSeen(userId: string) {
+    if (this.activeTab === 'buying') {
+      const maxBought = this.boughtOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
+      localStorage.setItem(`lastSeenBoughtAt_${userId}`, maxBought.toString());
+    } else {
+      const maxSold = this.soldOrders.reduce((max, o) => Math.max(max, new Date(o.updated_at || o.created_at || 0).getTime()), 0);
+      localStorage.setItem(`lastSeenSoldAt_${userId}`, maxSold.toString());
+    }
+    this.orderService.checkUnreadOrders(userId);
   }
 
   loadOrders() {
@@ -285,6 +301,7 @@ export class OrdersComponent implements OnInit {
     this.accountService.getMyProfile().subscribe({
       next: (profile) => {
         const userId = profile.id;
+        this.currentUserId = userId;
         this.orderService.getOrders().subscribe({
           next: (orders) => {
             this.boughtOrders = orders.filter(o => String(o.buyer) === String(userId));
@@ -295,11 +312,12 @@ export class OrdersComponent implements OnInit {
             } else if (this.boughtOrders.length === 0 && this.soldOrders.length > 0) {
               this.activeTab = 'selling';
             } else if (this.boughtOrders.length > 0 && this.soldOrders.length > 0) {
-              const newestBought = Math.max(...this.boughtOrders.map(o => new Date(o.created_at || 0).getTime()));
-              const newestSold = Math.max(...this.soldOrders.map(o => new Date(o.created_at || 0).getTime()));
+              const newestBought = Math.max(...this.boughtOrders.map(o => new Date(o.updated_at || o.created_at || 0).getTime()));
+              const newestSold = Math.max(...this.soldOrders.map(o => new Date(o.updated_at || o.created_at || 0).getTime()));
               this.activeTab = newestBought >= newestSold ? 'buying' : 'selling';
             }
             
+            this.markTabAsSeen(userId);
             this.isLoading = false;
             this.cdr.markForCheck();
             this.checkHighlight();
