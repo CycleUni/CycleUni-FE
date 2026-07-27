@@ -28,9 +28,15 @@ export class RetryInterceptor implements HttpInterceptor {
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Only apply retries to our own backend; let external requests handle
-    // failures on their own
-    if (!request.url.startsWith('http') || request.url.startsWith(environment.backendUrl)) {
+    // Only apply retries to our own backend API requests:
+    // - Relative URLs (e.g. /listings/) haven't been prefixed by ApiUrlInterceptor yet
+    // - URLs matching backendUrl have already been prefixed
+    // Cross-origin requests (CFEdgeChat, Google API) pass through without retry.
+    const isOwnBackendRequest =
+      !request.url.startsWith('http') ||
+      request.url.startsWith(environment.backendUrl);
+
+    if (isOwnBackendRequest) {
       // The initial attempt and the retry are within the `retry` pattern, so
       // they share the same chain through the interceptor.
       return next.handle(request).pipe(

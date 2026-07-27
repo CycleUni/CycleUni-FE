@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
 
 export interface Order {
   id?: string;
@@ -24,7 +23,7 @@ export interface Order {
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private http = inject(HttpClient);
-  private url = environment.backendUrl + '/orders/';
+  private url = '/orders/';
 
   getOrders(): Observable<Order[]> {
     return this.http.get<any>(this.url).pipe(

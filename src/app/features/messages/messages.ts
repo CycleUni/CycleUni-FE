@@ -774,6 +774,11 @@ export class Messages implements OnInit, OnDestroy {
       this.connectionState = state;
 
       if (state === 'connected' && this.activeChat && this.chatToken && this.edgeChatUrl) {
+        // Already loaded via selectChat's eager fetch; don't overwrite
+        if (this.messages.length > 0) {
+          this.cdr.markForCheck();
+          return;
+        }
         this.messageService.getEdgeMessages(this.activeChat.id, this.chatToken, this.edgeChatUrl).subscribe({
           next: (data) => {
             this.setEdgeMessages(data || []);
@@ -886,13 +891,15 @@ export class Messages implements OnInit, OnDestroy {
         // WebSocket connection to reach 'connected' (it may be delayed or
         // fail, leaving the message pane blank).
         this.messageService.getEdgeMessages(chat.id, this.chatToken, this.edgeChatUrl).subscribe({
-          next: (data) => {
-            this.setEdgeMessages(data || []);
-          },
-          error: () => {
-            this.setEdgeMessages([]);
-          }
-        });
+      next: (data) => {
+        console.log('[selectChat] getEdgeMessages raw response:', JSON.stringify(data).substring(0, 200));
+        this.setEdgeMessages(data || []);
+      },
+      error: (err) => {
+        console.error('[selectChat] getEdgeMessages failed:', err);
+        this.setEdgeMessages([]);
+      }
+    });
 
         this.messageService.connectEdgeChat(chat.id, this.chatToken, this.userId, this.edgeChatUrl);
       },
@@ -1009,6 +1016,8 @@ export class Messages implements OnInit, OnDestroy {
   private setEdgeMessages(edgeMsgsInput: any) {
     if (edgeMsgsInput !== undefined) {
       this.rawEdgeMsgs = this.extractArray(edgeMsgsInput);
+      console.log('[setEdgeMessages] extracted messages count:', this.rawEdgeMsgs.length,
+        'first msg body:', this.rawEdgeMsgs[0]?.content?.substring(0, 80));
     }
 
     const newMessages = this.rawEdgeMsgs.map(m => {

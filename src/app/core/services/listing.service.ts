@@ -1,6 +1,6 @@
 import { Injectable, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, from } from 'rxjs';
+import { Observable, from, throwError } from 'rxjs';
 import { shareReplay, catchError, switchMap, map } from 'rxjs/operators';
 import imageCompression from 'browser-image-compression';
 import { I18nService } from '../i18n.service';
@@ -14,7 +14,9 @@ export class ListingService {
   private http = inject(HttpClient);
   private apiUrl = '/listings/';
 
+  private readonly CACHE_TTL_MS = 60_000;
   private cache = new Map<string, Observable<any[]>>();
+  private cacheTimestamps = new Map<string, number>();
   private i18n = inject(I18nService);
 
   constructor() {
@@ -26,6 +28,16 @@ export class ListingService {
 
   getListings(school?: string, sellerId?: string, page: number = 1): Observable<any> {
     const key = (school || '') + '_' + (sellerId || '') + '_' + page;
+
+    // Evict stale cache entry (freshness based on CACHE_TTL_MS).
+    if (this.cache.has(key)) {
+      const age = Date.now() - (this.cacheTimestamps.get(key) ?? 0);
+      if (age > this.CACHE_TTL_MS) {
+        this.cache.delete(key);
+        this.cacheTimestamps.delete(key);
+      }
+    }
+
     if (!this.cache.has(key)) {
       let params = new HttpParams().set('page', page.toString());
       if (school) {
@@ -35,11 +47,19 @@ export class ListingService {
         params = params.set('seller_id', sellerId);
       }
       const request = this.http.get<any>('/listings/', { params }).pipe(
+        catchError(err => {
+          // Evict the failed entry so the next subscriber starts a fresh
+          // request instead of replaying the same error to every caller.
+          this.cache.delete(key);
+          this.cacheTimestamps.delete(key);
+          return throwError(() => err);
+        }),
         shareReplay({ bufferSize: 1, refCount: true })
       );
       this.cache.set(key, request);
+      this.cacheTimestamps.set(key, Date.now());
     }
-    
+
     return this.cache.get(key)!;
   }
 
@@ -54,8 +74,10 @@ export class ListingService {
   clearCache(school?: string) {
     if (school) {
       this.cache.delete(school);
+      this.cacheTimestamps.delete(school);
     } else {
       this.cache.clear();
+      this.cacheTimestamps.clear();
     }
   }
 
