@@ -21,7 +21,9 @@ export class ApiUrlInterceptor implements HttpInterceptor {
       
       request = request.clone({
         url: `${environment.backendUrl}${request.url}`,
-        headers: request.headers.set('Accept-Language', acceptLanguage),
+        headers: request.headers
+          .set('Accept-Language', acceptLanguage)
+          .set('ngsw-bypass', 'true'),
         ...(request.context.get(SKIP_LANG_PARAM)
           ? {}
           : { setParams: { lang: currentLang } })
