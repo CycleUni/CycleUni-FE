@@ -1,8 +1,14 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import {
   HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse,
-  HttpBackend, HttpClient
+  HttpBackend, HttpClient, HttpContextToken
 } from '@angular/common/http';
+
+/** Set on public endpoints (AllowAny views) so the interceptor does NOT attach
+ * the Bearer token. An expired/invalid token causes SimpleJWT to raise
+ * AuthenticationFailed before DRF checks permission_classes, so AllowAny views
+ * would return 401 instead of serving data anonymously. */
+export const SKIP_AUTH = new HttpContextToken<boolean>(() => false);
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, switchMap, map, finalize, shareReplay } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
@@ -41,19 +47,22 @@ export class AuthInterceptor implements HttpInterceptor {
 
     const isAuthEndpoint = this.isAuthEndpoint(request.url);
 
-    if (isPlatformBrowser(this.platformId) && !isAuthEndpoint) {
+    const skipAuth = request.context.get(SKIP_AUTH);
+    if (isPlatformBrowser(this.platformId) && !isAuthEndpoint && !skipAuth) {
       const token = this.authStore.getAccessToken();
       if (token) {
         request = this.addToken(request, token);
       }
     }
 
+    const shouldHandle401 = !isAuthEndpoint && !skipAuth;
+
     return next.handle(request).pipe(
       catchError(error => {
         if (
           error instanceof HttpErrorResponse &&
           error.status === 401 &&
-          !isAuthEndpoint &&
+          shouldHandle401 &&
           isPlatformBrowser(this.platformId)
         ) {
           return this.handle401Error(request, next);

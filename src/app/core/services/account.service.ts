@@ -1,8 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpContext } from '@angular/common/http';
 import { Observable, shareReplay, tap, catchError, throwError } from 'rxjs';
 import { I18nService } from '../i18n.service';
 import { AuthStore } from '../auth.store';
+import { SKIP_AUTH } from '../auth.interceptor';
 
 export interface UserProfile {
   id: string | number;
@@ -143,7 +144,9 @@ export class AccountService {
   }
 
   getPublicUserProfile(userId: string): Observable<any> {
-    return this.http.get<any>(`/auth/users/${userId}/`);
+    return this.http.get<any>(`/auth/users/${userId}/`, {
+      context: new HttpContext().set(SKIP_AUTH, true)
+    });
   }
 
   unbindEduEmail(): Observable<any> {

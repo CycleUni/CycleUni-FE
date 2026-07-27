@@ -2,10 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SKIP_LANG_PARAM } from '../api-url.interceptor';
+import { SKIP_AUTH } from '../auth.interceptor';
 import { I18nService } from '../i18n.service';
 
 // Search and book-detail responses carry no localized fields; skip the lang param.
-const NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
+// Both book search and detail are public endpoints — skip auth token too.
+const PUBLIC_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true).set(SKIP_AUTH, true);
+const PUBLIC = new HttpContext().set(SKIP_AUTH, true);
 
 @Injectable({
   providedIn: 'root'
@@ -24,13 +27,13 @@ export class BookService {
     if (engine) {
       url += `&engine=${encodeURIComponent(engine)}`;
     }
-    return this.http.get<any[]>(url, { context: NO_LANG });
+    return this.http.get<any[]>(url, { context: PUBLIC_NO_LANG });
   }
 
   getBook(idOrIsbn: string, page: number = 1): Observable<any> {
     const isIsbn = /^\d{10,13}$/.test(idOrIsbn);
     const param = isIsbn ? `?isbn=${idOrIsbn}&page=${page}` : `?id=${idOrIsbn}&page=${page}`;
-    return this.http.get<any>(`/books/${param}`);
+    return this.http.get<any>(`/books/${param}`, { context: PUBLIC });
   }
 
   createManualBook(bookData: any): Observable<any> {

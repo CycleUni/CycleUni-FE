@@ -1,11 +1,10 @@
 import { Injectable, inject, effect } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpContext } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
 import { shareReplay, catchError, switchMap, map } from 'rxjs/operators';
 import imageCompression from 'browser-image-compression';
 import { I18nService } from '../i18n.service';
-
-import { HttpParams } from '@angular/common/http';
+import { SKIP_AUTH } from '../auth.interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +12,10 @@ import { HttpParams } from '@angular/common/http';
 export class ListingService {
   private http = inject(HttpClient);
   private apiUrl = '/listings/';
+
+  /** Public listing endpoints don't need auth — an expired token would
+   * cause SimpleJWT to reject the request even though the view is AllowAny. */
+  private readonly publicCtx = new HttpContext().set(SKIP_AUTH, true);
 
   private readonly CACHE_TTL_MS = 60_000;
   private cache = new Map<string, Observable<any[]>>();
@@ -46,7 +49,7 @@ export class ListingService {
       if (sellerId) {
         params = params.set('seller_id', sellerId);
       }
-      const request = this.http.get<any>('/listings/', { params }).pipe(
+      const request = this.http.get<any>('/listings/', { params, context: this.publicCtx }).pipe(
         catchError(err => {
           // Evict the failed entry so the next subscriber starts a fresh
           // request instead of replaying the same error to every caller.
@@ -68,7 +71,7 @@ export class ListingService {
     if (school) {
       params = params.set('school', school);
     }
-    return this.http.get<any>(`${this.apiUrl}recent_books/`, { params });
+    return this.http.get<any>(`${this.apiUrl}recent_books/`, { params, context: this.publicCtx });
   }
 
   clearCache(school?: string) {
@@ -82,7 +85,7 @@ export class ListingService {
   }
 
   getListing(id: string | number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}${id}/`);
+    return this.http.get<any>(`${this.apiUrl}${id}/`, { context: this.publicCtx });
   }
 
   createListing(listingData: any): Observable<any> {
