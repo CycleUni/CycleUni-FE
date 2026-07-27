@@ -67,4 +67,8 @@ export const routes: Routes = [
       { path: 'managers', loadComponent: () => import('./features/admin/managers-list.component').then(m => m.AdminManagersListComponent) },
     ]
   },
+  {
+    path: '**',
+    loadComponent: () => import('./features/not-found/not-found').then(m => m.NotFoundComponent),
+  }
 ];
