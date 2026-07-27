@@ -1,4 +1,4 @@
-import { Injectable, signal, inject, effect } from '@angular/core';
+import { Injectable, signal, inject, untracked } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -32,18 +32,21 @@ export interface AuthUser {
 export class AuthStore {
   private readonly _isAuthenticated = signal<boolean>(false);
   private readonly _user = signal<AuthUser | null>(null);
-  private readonly _userLoading = signal<boolean>(false);
 
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
   readonly user = this._user.asReadonly();
-  readonly userLoading = this._userLoading.asReadonly();
+
+  private fetchedForToken: string | null = null;
 
   constructor() {
-    // Phase 1: Set isAuthenticated from persisted token on bootstrap
     if (typeof localStorage !== 'undefined') {
       const token = localStorage.getItem('access_token');
       if (token) {
         this._isAuthenticated.set(true);
+        // Bootstrap: fetch profile once when the page initialises with a
+        // persisted token.  Use untracked so writing _user inside the
+        // subscription callback doesn't re-enter any reactive context.
+        untracked(() => this.fetchUserProfile());
       }
     }
 
@@ -54,53 +57,36 @@ export class AuthStore {
           this._isAuthenticated.set(!!token);
           if (!token) {
             this._user.set(null);
+            this.fetchedForToken = null;
+          } else if (token !== this.fetchedForToken) {
+            untracked(() => this.fetchUserProfile());
           }
         }
       });
     }
-
-    // Phase 2: When isAuthenticated flips to true (including on page load),
-    // automatically fetch the user profile — /auth/me/ gates its response
-    // on the access token, so the flow works the same whether the token was
-    // just received from login or already sitting in localStorage.
-    effect(() => {
-      if (this._isAuthenticated()) {
-        this.fetchUserProfile();
-      }
-    });
   }
 
   /**
-   * Best-effort user profile fetch. Silently ignores network/transient
-   * failures (the RetryInterceptor will handle retries, so we only guard
-   * against the case where the session is truly invalid).
+   * Best-effort profile fetch.  Idempotent: if the current access token
+   * exactly matches the one we already fetched we skip the call.
    */
   private fetchUserProfile(): void {
-    if (this._userLoading()) {
-      return; // already in flight
-    }
+    const token = this.getAccessToken();
+    if (!token) return;
+    if (token === this.fetchedForToken && this._user()) return;
 
-    if (!this.getAccessToken()) {
-      // Shouldn't normally happen with the effect gate, but guard against
-      // transient timing where the token was cleared after the effect fired
-      return;
-    }
-
-    this._userLoading.set(true);
+    this.fetchedForToken = token;
 
     this.http.get<AuthUser>('/auth/me/').pipe(
       tap(profile => {
         this._user.set(profile);
-        this._userLoading.set(false);
       }),
       catchError(err => {
-        // A 401 here means the token is stale — clear auth to get a
-        // clean slate (AuthInterceptor already tried the refresh path,
-        // so if we're still getting 401 the refresh token is also gone).
         if (err.status === 401) {
           this.clearAuth();
         }
-        this._userLoading.set(false);
+        // Clear dedup flag so a later login/sign-in can retry
+        this.fetchedForToken = null;
         return of(null);
       })
     ).subscribe();
@@ -118,7 +104,9 @@ export class AuthStore {
       }
     }
     this._isAuthenticated.set(true);
-    // The effect above will trigger fetchUserProfile() — no need to duplicate
+    // Fetch the profile immediately (not via an effect) so the UI can show
+    // the user name without waiting for a second change-detection cycle.
+    untracked(() => this.fetchUserProfile());
   }
 
   private router = inject(Router);
@@ -134,7 +122,7 @@ export class AuthStore {
     }
     this._isAuthenticated.set(false);
     this._user.set(null);
-    this._userLoading.set(false);
+    this.fetchedForToken = null;
     this.router.navigate(['/account']);
   }
 

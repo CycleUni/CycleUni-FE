@@ -510,7 +510,6 @@ export class UiLayout implements OnDestroy {
     // in this tab, or in another tab via AuthStore's storage-event sync).
     effect(() => {
       if (this.authStore.isAuthenticated()) {
-        this.accountService.getMyProfile().subscribe({ error: () => {} });
         this.connectHub();
       } else {
         this.hubConnectedForUserId = null;
@@ -607,19 +606,15 @@ export class UiLayout implements OnDestroy {
           this.cdr.markForCheck();
 
           if (this.authStore.isLoggedIn()) {
-            this.accountService.getMyProfile().subscribe({
-              next: (profile) => {
-                if (profile.school) {
-                  const userSchool = data.schools.find((s: any) => s.id === profile.school);
-                  if (userSchool) {
-                    this.selectedSchool = userSchool.name;
-                    this.schoolStateService.setSchool(this.selectedSchool);
-                    this.cdr.markForCheck();
-                  }
-                }
-              },
-              error: () => { }
-            });
+            const profile = this.authStore.user();
+            if (profile?.school) {
+              const userSchool = data.schools.find((s: any) => s.id === profile.school);
+              if (userSchool) {
+                this.selectedSchool = userSchool.name;
+                this.schoolStateService.setSchool(this.selectedSchool);
+                this.cdr.markForCheck();
+              }
+            }
           }
         }
       }
