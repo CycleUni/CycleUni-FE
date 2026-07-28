@@ -316,7 +316,6 @@ export const en: Record<string, string> = {
   'sell.prev': 'Previous',
   'sell.next': 'Next',
   'sell.free': 'Give away for free',
-  'sell.feeNote': 'No fee for in-campus meetup; a 4% platform fee applies for cross-campus transactions.',
   'sell.submitting': 'Processing...',
   'sell.submit': 'Confirm Listing',
   'sell.errValidation': 'Listing data format is incorrect, please check again',

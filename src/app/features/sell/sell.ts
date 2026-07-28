@@ -49,7 +49,7 @@ import { Html5Qrcode } from 'html5-qrcode';
         <div *ngIf="step === 1" class="step-content">
           <p class="desc">{{ 'sell.isbnDesc' | t }}</p>
           <ui-input [placeholder]="'sell.isbnPlaceholder' | t" [(ngModel)]="searchQuery" (ngModelChange)="onSearchQueryChange()"></ui-input>
-          
+
           <div style="margin-top: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 150px;" *ngIf="!hideSearchButtonForNow && (!bookPreview && searchResults.length === 0 || isSearchQueryDirty)">
               <ui-dropdown [options]="engineOptions" [(ngModel)]="engine" [searchable]="false" style="width: 100%; display: block;"></ui-dropdown>
@@ -61,7 +61,7 @@ import { Html5Qrcode } from 'html5-qrcode';
               {{ (isCheckingIsbn ? 'sell.searching' : 'sell.searchBook') | t }}
             </ui-button>
           </div>
-          
+
           <div id="reader" [hidden]="!isScanning" style="margin-top: 16px; width: 100%; max-width: 100%; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);"></div>
           <div *ngIf="cameraError" class="inline-msg error" style="margin-top: 8px; font-size: 14px;">{{ cameraError }}</div>
           <!-- Search Results List -->
@@ -131,7 +131,7 @@ import { Html5Qrcode } from 'html5-qrcode';
                 <img [src]="url" alt="Uploaded photo">
                 <button class="remove-btn" (click)="removePhoto(i)">×</button>
               </div>
-              <div class="upload-box" *ngIf="uploadedPhotos.length < 3" 
+              <div class="upload-box" *ngIf="uploadedPhotos.length < 3"
                    (click)="fileInput.click()"
                    (dragover)="onDragOver($event)"
                    (dragleave)="onDragLeave($event)"
@@ -162,8 +162,7 @@ import { Html5Qrcode } from 'html5-qrcode';
           </div>
 
 
-
-          <p class="muted info-text">{{ 'sell.feeNote' | t }}</p>
+          
 
           <div *ngIf="apiError && step === 3" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; padding: 12px; background: #f8d7da; color: #842029; border-radius: 4px; font-size: 14px;">
             {{ apiError }}
@@ -176,7 +175,7 @@ import { Html5Qrcode } from 'html5-qrcode';
             </ui-button>
           </div>
         </div>
-        
+
         <!-- Complete -->
         <div *ngIf="step === 4" class="step-content text-center">
           <h2>{{ 'sell.successTitle' | t }}</h2>
@@ -423,7 +422,7 @@ export class Sell implements OnInit, OnDestroy {
   isScanning = false;
   cameraError = '';
   private html5QrCode: Html5Qrcode | null = null;
-  
+
   private authStore = inject(AuthStore);
   private accountService = inject(AccountService);
   private bookService = inject(BookService);
@@ -560,7 +559,7 @@ export class Sell implements OnInit, OnDestroy {
     this.cameraError = '';
     this.isScanning = true;
     this.cdr.markForCheck();
-    
+
     try {
       this.html5QrCode = new Html5Qrcode("reader");
       await this.html5QrCode.start(
@@ -604,7 +603,7 @@ export class Sell implements OnInit, OnDestroy {
     this.apiError = '';
     this.isSearchQueryDirty = false;
     this.hideSearchButtonForNow = false;
-    
+
     this.bookService.searchBooks(this.searchQuery, '', '', 1, this.engine).subscribe({
       next: (data) => {
         this.isCheckingIsbn = false;
@@ -667,7 +666,7 @@ export class Sell implements OnInit, OnDestroy {
 
   async submit() {
     this.apiError = '';
-    
+
     if (this.price === null || this.price < 0) {
       this.apiError = this.i18n.t('sell.priceRequired');
       return;
@@ -712,7 +711,7 @@ export class Sell implements OnInit, OnDestroy {
     } else {
       const fallbackIsbn = this.searchQuery.replace(/[^0-9]/g, '');
       const validFallback = (fallbackIsbn.length === 10 || fallbackIsbn.length === 13) ? fallbackIsbn : '';
-      
+
       const bookData = {
         isbn13: this.bookPreview.isbn || validFallback,
         title: this.bookPreview.title,

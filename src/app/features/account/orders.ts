@@ -62,7 +62,7 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
             <div class="order-actions" *ngIf="hasActions(order, 'buyer')">
               <ui-button *ngIf="order.status === 'pending' || order.status === 'accepted'" variant="ghost" (onClick)="updateStatus(order, 'cancelled', 'buyer_cancelled')">{{ 'order.cancel' | t }}</ui-button>
               <ui-button *ngIf="order.status === 'handed_over'" (onClick)="updateStatus(order, 'completed')">{{ 'order.confirmReceived' | t }}</ui-button>
-              <ui-button *ngIf="(order.status === 'completed' || order.status === 'cancelled') && !order.has_reviewed" variant="ghost" (onClick)="openReviewModal(order)">{{ 'order.reviewAndReport' | t }}</ui-button>
+              <ui-button *ngIf="order.status === 'completed' && !order.has_reviewed" variant="ghost" (onClick)="openReviewModal(order)">{{ 'order.reviewAndReport' | t }}</ui-button>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
               </ng-container>
               <ui-button *ngIf="order.status === 'accepted'" (onClick)="updateStatus(order, 'handed_over')">{{ 'order.markHandedOver' | t }}</ui-button>
               <ui-button variant="ghost" *ngIf="order.status === 'accepted'" (onClick)="updateStatus(order, 'cancelled', 'seller_cancelled')">{{ 'order.cancel' | t }}</ui-button>
-              <ui-button *ngIf="(order.status === 'completed' || order.status === 'cancelled') && !order.has_reviewed" variant="ghost" (onClick)="openReviewModal(order)">{{ 'order.reviewAndReport' | t }}</ui-button>
+              <ui-button *ngIf="order.status === 'completed' && !order.has_reviewed" variant="ghost" (onClick)="openReviewModal(order)">{{ 'order.reviewAndReport' | t }}</ui-button>
             </div>
           </div>
         </div>
@@ -256,7 +256,7 @@ export class OrdersComponent implements OnInit {
   }
 
   hasActions(order: Order, role: 'buyer' | 'seller'): boolean {
-    if ((order.status === 'completed' || order.status === 'cancelled') && !order.has_reviewed) return true;
+    if (order.status === 'completed' && !order.has_reviewed) return true;
     if (role === 'buyer') {
       return order.status === 'pending' || order.status === 'accepted' || order.status === 'handed_over';
     } else {
