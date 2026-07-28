@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiMeetupCard } from '../../shared/ui/meetup-card.component';
@@ -38,7 +39,7 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
                   <span class="role-badge" [class.seller]="chat.other_party_role === 'seller'">
                     {{ ('msg.role_' + chat.other_party_role) | t }}
                   </span>
-                  <span class="unread-dot" *ngIf="chat.unread"></span>
+                  <span class="unread-dot" *ngIf="chat._hubUnread"></span>
                   <button class="chat-delete-btn" type="button" [title]="'msg.deleteConversation' | t" (click)="$event.stopPropagation(); deleteConversation(chat)">×</button>
                 </div>
               </div>
@@ -62,8 +63,35 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
             <div class="connection-status" *ngIf="connectionState === 'reconnecting'">
               <span class="reconnecting-badge">{{ 'msg.reconnecting' | t }}</span>
             </div>
+            <button class="report-btn" type="button" (click)="showReport = true" [title]="'msg.reportConversation' | t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                <line x1="4" y1="22" x2="4" y2="15"/>
+              </svg>
+            </button>
           </div>
           
+          <div class="report-overlay" *ngIf="showReport" (click)="showReport = false">
+            <div class="report-modal" (click)="$event.stopPropagation()">
+              <h4>{{ 'msg.reportTitle' | t }}</h4>
+              <div class="report-reasons">
+                <label *ngFor="let r of reportReasons" class="report-reason">
+                  <input type="radio" name="reportReason" [value]="r.value" [(ngModel)]="reportReason">
+                  <span>{{ r.label }}</span>
+                </label>
+              </div>
+              <textarea [(ngModel)]="reportDetail" [placeholder]="'msg.reportDetail' | t" rows="3"></textarea>
+              <div class="report-actions">
+                <ui-button variant="ghost" (onClick)="showReport = false">{{ 'msg.reportCancel' | t }}</ui-button>
+                <ui-button [disabled]="!reportReason || submittingReport" (onClick)="submitReport()">
+                  {{ submittingReport ? ('msg.reportSubmitting' | t) : ('msg.reportSubmit' | t) }}
+                </ui-button>
+              </div>
+              <div *ngIf="reportError" class="error-msg">{{ reportError }}</div>
+              <div *ngIf="reportSuccess" class="success-msg">{{ reportSuccess }}</div>
+            </div>
+          </div>
+
           <div class="listing-banner" *ngIf="activeChat.listing_title">
             <div class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
               <img *ngIf="activeChat.listing_photo" [src]="activeChat.listing_photo" alt="Cover" class="listing-thumb">
@@ -607,6 +635,31 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
       gap: 8px;
     }
 
+    .report-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .report-btn:hover {
+      color: var(--flag);
+      border-color: var(--flag);
+    }
+    .report-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .report-modal { background: var(--paper); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .report-modal h4 { margin-top: 0; margin-bottom: 16px; }
+    .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+    .report-modal textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 14px; resize: vertical; margin-bottom: 16px; box-sizing: border-box; font-family: inherit; }
+    .report-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .error-msg { color: #dc2626; font-size: 13px; margin-top: 8px; }
+    .success-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }
+
     @media (max-width: 768px) {
       .messages-container,
       .empty-state.full-page {
@@ -652,6 +705,12 @@ export class Messages implements OnInit, OnDestroy {
   userId = '';
   connectionState: 'connected' | 'reconnecting' | 'disconnected' = 'disconnected';
   imeComposing = false;
+  showReport = false;
+  reportReason = '';
+  reportDetail = '';
+  reportError = '';
+  reportSuccess = '';
+  submittingReport = false;
   // Distinguishes "still loading" from "genuinely no conversations" so the
   // empty-inbox state doesn't flash for users who do have conversations,
   // just before loadConversations() resolves.
@@ -664,12 +723,14 @@ export class Messages implements OnInit, OnDestroy {
   readonly i18n = inject(I18nService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private http = inject(HttpClient);
   private wsSubscription?: Subscription;
   private deletionSubscription?: Subscription;
   private ackSubscription?: Subscription;
   private errorSubscription?: Subscription;
   private connectionSubscription?: Subscription;
   private roomUpdateSubscription?: Subscription;
+  private unreadStateSubscription?: Subscription;
 
   private rawEdgeMsgs: any[] = [];
   // Temp ids of messages sent but not yet confirmed by the server, oldest first
@@ -684,6 +745,12 @@ export class Messages implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit() {
+    this.reportReasons = [
+      { value: 'harassment', label: this.i18n.t('msg.reportReasonHarassment') },
+      { value: 'scam', label: this.i18n.t('msg.reportReasonScam') },
+      { value: 'spam', label: this.i18n.t('msg.reportReasonSpam') },
+      { value: 'other', label: this.i18n.t('msg.reportReasonOther') },
+    ];
     this.loadConversations();
 
     // Live "new activity" events for every conversation this user is part
@@ -696,8 +763,16 @@ export class Messages implements OnInit, OnDestroy {
 
       chat.latest_message = update.preview;
       chat.updated_at = new Date(update.timestamp).toISOString();
-      if (update.sender_id !== this.userId && this.activeChat?.id !== update.room_id) {
-        chat.unread = true;
+      this.cdr.markForCheck();
+    });
+
+    // Unread state lives in CFEdgeChat's UserHub, not Django. Merge the hub's
+    // per-conversation unread map into chat objects so the template can show
+    // the dot without relying on the removed `unread` serializer field.
+    this.unreadStateSubscription = this.messageService.conversationUnreadState$.subscribe(state => {
+      for (const chat of this.chats) {
+        const conversationId = String(chat.id);
+        (chat as any)._hubUnread = state.get(conversationId) ?? false;
       }
       this.cdr.markForCheck();
     });
@@ -816,14 +891,22 @@ export class Messages implements OnInit, OnDestroy {
     if (this.roomUpdateSubscription) {
       this.roomUpdateSubscription.unsubscribe();
     }
+    if (this.unreadStateSubscription) {
+      this.unreadStateSubscription.unsubscribe();
+    }
   }
 
   loadConversations() {
     this.messageService.getConversations().subscribe({
       next: (data) => {
-        // `unread` comes straight from the server (Conversation.{buyer,seller}_last_read_at
-        // vs updated_at) — the source of truth, not something computed here.
         this.chats = data;
+        // Apply current Hub unread state immediately after loading
+        // so re-entering the page shows correct dots without waiting
+        // for the next Hub event.
+        const currentState = this.messageService.conversationUnreadState$.value;
+        for (const chat of this.chats) {
+          (chat as any)._hubUnread = currentState.get(String(chat.id)) ?? false;
+        }
         this.loadingChats = false;
 
         this.route.queryParams.subscribe(params => {
@@ -870,8 +953,8 @@ export class Messages implements OnInit, OnDestroy {
     this.pendingTempIds = [];
     this.messages = [];
     this.rawEdgeMsgs = [];
-    chat.unread = false;
-    // Mark read is now handled via CFEdgeChat after we fetch the room token
+    chat._hubUnread = false;
+    // Mark read is handled via CFEdgeChat after we fetch the room token
 
     // Fetch a token scoped to this specific room every time a chat is
     // opened — the backend checks the caller is actually a participant of
@@ -1185,6 +1268,51 @@ export class Messages implements OnInit, OnDestroy {
           console.error('Failed to cancel meetup order', err);
         }
       });
+    });
+  }
+
+  // Initialized in ngOnInit() so i18n.t() calls don't re-fire during
+  // *ngFor change detection (causes infinite loop/freeze).
+  reportReasons: { value: string; label: string }[] = [];
+
+  submitReport() {
+    if (!this.activeChat) return;
+    this.submittingReport = true;
+    this.reportError = '';
+
+    const userId = this.authStore.user()?.id;
+    const buyerId = this.activeChat.buyer_id;
+    const sellerId = this.activeChat.seller_id;
+
+    // Derive the other party's user ID (the one NOT equal to the current user)
+    const reportedParty = String(userId) === String(buyerId) ? sellerId : buyerId;
+
+    this.http.post('/moderation/chat-reports/', {
+      conversation: this.activeChat.id,
+      reported_party: reportedParty,
+      reason: this.reportReason,
+      detail: this.reportDetail || '',
+    }).subscribe({
+      next: () => {
+        this.reportSuccess = this.i18n.t('msg.reportSuccess');
+        this.submittingReport = false;
+        setTimeout(() => {
+          this.showReport = false;
+          this.reportSuccess = '';
+          this.reportReason = '';
+          this.reportDetail = '';
+        }, 2000);
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.reportError = err?.error?.error?.code
+          ? this.i18n.t(err.error.error.code)
+          : err?.error?.error?.detail
+            ? err?.error?.error?.detail
+            : this.i18n.t('msg.reportError');
+        this.submittingReport = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 

@@ -26,7 +26,7 @@ describe('App', () => {
     const paths = routes.map((r) => r.path);
     expect(paths).toEqual([
       '', 'search', 'book', 'sell', 'account',
-      'checkout/success', 'checkout/:id', 'listing/:id', 'seller/:id', 'messages', 'verify', 'forgot-password', 'admin',
+      'checkout/success', 'checkout/:id', 'listing/:id', 'seller/:id', 'messages', 'verify', 'forgot-password', 'admin', '**',
     ]);
   });
 });

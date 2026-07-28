@@ -75,6 +75,18 @@ export interface AdminCategory {
   translations: any;
 }
 
+export interface AdminChatReport {
+  id: string;
+  conversation_id: string;
+  listing_title: string;
+  reporter_email: string;
+  reported_party_email: string;
+  reason: string;
+  detail?: string;
+  status: 'open' | 'actioned' | 'dismissed';
+  created_at: string;
+}
+
 function buildParams(query: Record<string, string | number | undefined | null>): HttpParams {
   let params = new HttpParams();
   for (const [key, value] of Object.entries(query)) {
@@ -177,5 +189,17 @@ export class AdminService {
 
   bulkImport(endpoint: 'schools' | 'categories', action: 'preview' | 'apply', items: any[]): Observable<any> {
     return this.http.post<any>(`/admin/${endpoint}/bulk/`, { action, items });
+  }
+
+  getChatReports(status?: string, page?: number): Observable<Paginated<AdminChatReport>> {
+    return this.http.get<Paginated<AdminChatReport>>('/admin/chat-reports/', { params: buildParams({ status, page }) });
+  }
+
+  actionChatReport(id: string, status: 'actioned' | 'dismissed'): Observable<AdminChatReport> {
+    return this.http.patch<AdminChatReport>(`/admin/chat-reports/${id}/`, { status });
+  }
+
+  getChatReportToken(id: string): Observable<{ token: string; edge_chat_url: string; room_id: string }> {
+    return this.http.get<{ token: string; edge_chat_url: string; room_id: string }>(`/admin/chat-reports/${id}/chat-token/`);
   }
 }
