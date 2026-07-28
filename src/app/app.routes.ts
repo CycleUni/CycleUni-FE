@@ -64,6 +64,7 @@ export const routes: Routes = [
       { path: 'orders', loadComponent: () => import('./features/admin/orders-list.component').then(m => m.AdminOrdersListComponent) },
       { path: 'orders/:id', loadComponent: () => import('./features/admin/order-detail-admin.component').then(m => m.AdminOrderDetailComponent) },
       { path: 'reports', loadComponent: () => import('./features/admin/reports-list.component').then(m => m.AdminReportsListComponent) },
+      { path: 'chat-reports', loadComponent: () => import('./features/admin/chat-reports-list.component').then(m => m.AdminChatReportsListComponent) },
       { path: 'managers', loadComponent: () => import('./features/admin/managers-list.component').then(m => m.AdminManagersListComponent) },
     ]
   },

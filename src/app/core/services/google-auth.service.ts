@@ -24,6 +24,15 @@ export class GoogleAuthService {
       this.i18n.lang();
       const isAuth = this.authStore.isAuthenticated();
       
+      if (isAuth && isPlatformBrowser(this.platformId)) {
+        // User just logged in (via Google or password) — mark session
+        // so One Tap won't show again. Cancel any in-flight prompt.
+        sessionStorage.setItem('google_one_tap_done', '1');
+        if ((window as any).google?.accounts?.id) {
+          (window as any).google.accounts.id.cancel();
+        }
+      }
+      
       if (!isAuth && isPlatformBrowser(this.platformId)) {
         this.initializeGoogleAuth();
       }
@@ -62,6 +71,9 @@ export class GoogleAuthService {
 
   public initializeGoogleAuth() {
     if (!isPlatformBrowser(this.platformId) || this.isInitializing) return;
+    
+    // If user already completed a login this session, skip One Tap entirely
+    if (sessionStorage.getItem('google_one_tap_done')) return;
     
     // If logged in, we shouldn't prompt One Tap
     if (this.authStore.isAuthenticated()) return;
@@ -152,16 +164,17 @@ export class GoogleAuthService {
     if (response && response.credential) {
       this.authStore.loginWithGoogle(response.credential).subscribe({
         next: () => {
+          // Mark session so One Tap won't show again this session
+          sessionStorage.setItem('google_one_tap_done', '1');
+          // Cancel One Tap UI immediately
+          if ((window as any).google?.accounts?.id) {
+            (window as any).google.accounts.id.cancel();
+          }
           // Navigating away ensures we can clear up prompt state. 
           // If already on /account, maybe redirect to /account/listings
           const currentUrl = this.router.url;
           if (currentUrl === '/account') {
             this.router.navigate(['/account/listings']);
-          } else {
-            // Cancel prompt UI if it's still showing
-            if ((window as any).google) {
-              (window as any).google.accounts.id.cancel();
-            }
           }
         },
         error: (err) => {

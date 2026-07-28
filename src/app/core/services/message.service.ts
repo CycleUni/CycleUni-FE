@@ -74,13 +74,14 @@ export class MessageService {
   private hubClosingIntentionally = false;
 
   public roomUpdates$ = new Subject<RoomUpdate>();
-  // Total unread conversation count across the whole account (server-computed
-  // from Conversation.{buyer,seller}_last_read_at vs updated_at), for the
-  // nav badge. Kept fresh by re-querying whenever the hub reports activity or
-  // a conversation gets marked read, rather than maintained as a local
-  // running total — avoids drift between this and the per-conversation
-  // `unread` flags the server also computes.
+  // Total unread conversation count from CFEdgeChat's UserHub. Kept fresh
+  // via hub snapshot + live `unread_count` events, not locally calculated
+  // to avoid drift between this and per-conversation unread state.
   public unreadCount$ = new BehaviorSubject<number>(0);
+
+  // Per-conversation unread state from CFEdgeChat's UserHub. Keyed by
+  // conversation id (string). Updated from hub snapshot + live events.
+  public conversationUnreadState$ = new BehaviorSubject<Map<string, boolean>>(new Map());
 
   getConversations(): Observable<any[]> {
     return this.http.get<any>('/messaging/conversations/').pipe(
@@ -323,7 +324,15 @@ export class MessageService {
       // Without this, the badge would be wrong on every reconnect until
       // some unrelated room_update or mark-read refreshed it.
       this.getHubSnapshot(edgeChatUrl, userId, token).subscribe({
-        next: (snap) => this.unreadCount$.next(snap.count),
+        next: (snap) => {
+          this.unreadCount$.next(snap.count);
+          // Populate per-conversation unread state from the Hub snapshot.
+          const state = new Map<string, boolean>();
+          for (const roomId of (snap.unread || [])) {
+            state.set(roomId, true);
+          }
+          this.conversationUnreadState$.next(state);
+        },
         error: () => { /* hub may not yet be ready in the Worker — events will catch up */ }
       });
     };
@@ -334,12 +343,26 @@ export class MessageService {
         const data = JSON.parse(event.data);
         if (data.type === 'room_update') {
           this.roomUpdates$.next(data as RoomUpdate);
-          // unread count is updated by the matching `unread_count` from the
-          // hub — emitted in the same DO-to-DO call ChatRoom uses to push
-          // `room_update`. Don't double-count here.
+          // Optimistically mark this room as unread so the inbox dot appears
+          // immediately. The matching `unread_count` event from the hub will
+          // provide the authoritative state shortly after.
+          if (data.room_id) {
+            const current = this.conversationUnreadState$.value;
+            const updated = new Map(current);
+            updated.set(data.room_id, true);
+            this.conversationUnreadState$.next(updated);
+          }
         } else if (data.type === 'unread_count') {
           if (typeof data.count === 'number') {
             this.unreadCount$.next(data.count);
+          }
+          // Rebuild per-conversation state from the Hub's current unread list.
+          if (Array.isArray(data.unread)) {
+            const state = new Map<string, boolean>();
+            for (const roomId of data.unread) {
+              state.set(roomId, true);
+            }
+            this.conversationUnreadState$.next(state);
           }
         }
       } catch (e) {
@@ -382,6 +405,7 @@ export class MessageService {
     this.currentHubEdgeChatUrl = null;
     this.hubClosingIntentionally = true;
     this.unreadCount$.next(0);
+    this.conversationUnreadState$.next(new Map());
 
     if (this.hubWs) {
       this.hubWs.close();

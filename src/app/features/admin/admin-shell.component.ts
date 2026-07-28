@@ -18,6 +18,7 @@ import { TPipe } from '../../core/i18n.service';
           <a routerLink="listings" routerLinkActive="active">{{ 'admin.navListings' | t }}</a>
           <a routerLink="orders" routerLinkActive="active">{{ 'admin.navOrders' | t }}</a>
           <a routerLink="reports" routerLinkActive="active">{{ 'admin.navReports' | t }}</a>
+          <a routerLink="chat-reports" routerLinkActive="active">{{ 'admin.navChatReports' | t }}</a>
           <a routerLink="managers" routerLinkActive="active">{{ 'admin.navManagers' | t }}</a>
         </nav>
       </header>
