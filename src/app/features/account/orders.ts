@@ -9,11 +9,13 @@ import { UiButton } from '../../shared/ui/button.component';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReviewModalComponent } from './review-modal.component';
+import { MeetupModalComponent } from './meetup-modal.component';
+import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton, ReviewModalComponent, UiSearchBarComponent],
+  imports: [CommonModule, RouterModule, TPipe, UiButton, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, UiSearchBarComponent],
   template: `
     <div class="content-header">
       <h2>{{ 'acct.myOrders' | t }}</h2>
@@ -50,7 +52,7 @@ import { ReviewModalComponent } from './review-modal.component';
               <div class="info">
                 <h3 class="book-title-serif">{{ order.listing_title }}</h3>
                 <p>{{ 'order.seller' | t }}: {{ order.seller_name }}</p>
-                <p *ngIf="order.meetup_time" class="meetup-detail">{{ 'order.meetupTime' | t:{time: order.meetup_time} }}</p>
+                <p *ngIf="order.meetup_time" class="meetup-detail">{{ 'order.meetupTime' | t }}: {{ order.meetup_time | dateTimeFormat }}</p>
                 <p *ngIf="order.meetup_location" class="meetup-detail">{{ 'order.meetupLocation' | t:{location: order.meetup_location} }}</p>
               </div>
               <div class="price">
@@ -78,7 +80,7 @@ import { ReviewModalComponent } from './review-modal.component';
               <div class="info">
                 <h3 class="book-title-serif">{{ order.listing_title }}</h3>
                 <p>{{ 'order.buyer' | t }}: {{ order.buyer_name }}</p>
-                <p *ngIf="order.meetup_time" class="meetup-detail">{{ 'order.meetupTime' | t:{time: order.meetup_time} }}</p>
+                <p *ngIf="order.meetup_time" class="meetup-detail">{{ 'order.meetupTime' | t }}: {{ order.meetup_time | dateTimeFormat }}</p>
                 <p *ngIf="order.meetup_location" class="meetup-detail">{{ 'order.meetupLocation' | t:{location: order.meetup_location} }}</p>
               </div>
               <div class="price">
@@ -99,6 +101,7 @@ import { ReviewModalComponent } from './review-modal.component';
       </div>
       
       <app-review-modal *ngIf="reviewingOrderId" [orderId]="reviewingOrderId" (onClosed)="onReviewModalClosed($event)"></app-review-modal>
+      <app-meetup-modal *ngIf="showMeetupModal" [bookTitle]="meetupModalOrder?.listing_title || ''" (onConfirmed)="onMeetupConfirmed($event)" (onClosed)="onMeetupModalClosed()"></app-meetup-modal>
   `,
   styles: [`
     .content-header {
@@ -221,6 +224,8 @@ export class OrdersComponent implements OnInit {
   boughtOrders: Order[] = [];
   soldOrders: Order[] = [];
   reviewingOrderId: string | null = null;
+  showMeetupModal = false;
+  meetupModalOrder: Order | null = null;
   searchQuery = '';
   highlightOrderId: string | null = null;
 
@@ -394,11 +399,21 @@ export class OrdersComponent implements OnInit {
   }
 
   approveOrder(order: Order) {
-    // Simple prompt for MVP
-    const meetupTime = window.prompt(this.i18n.t('order.promptMeetupTime'));
-    const meetupLocation = window.prompt(this.i18n.t('order.promptMeetupLocation'));
-    
-    this.updateStatus(order, 'accepted', undefined, meetupTime || undefined, meetupLocation || undefined);
+    this.meetupModalOrder = order;
+    this.showMeetupModal = true;
+  }
+
+  onMeetupConfirmed(result: { time: string; location: string }) {
+    const order = this.meetupModalOrder;
+    this.meetupModalOrder = null;
+    this.showMeetupModal = false;
+    if (!order) return;
+    this.updateStatus(order, 'accepted', undefined, result.time || undefined, result.location || undefined);
+  }
+
+  onMeetupModalClosed() {
+    this.meetupModalOrder = null;
+    this.showMeetupModal = false;
   }
 
   hasExclusiveConflict(order: Order): boolean {
