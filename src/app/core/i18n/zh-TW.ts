@@ -316,7 +316,6 @@ export const zhTW: Record<string, string> = {
   'sell.prev': '上一步',
   'sell.next': '下一步',
   'sell.free': '0 元贈出',
-  'sell.feeNote': '同校面交免手續費；跨校交易將收取 4% 平台服務費。',
   'sell.submitting': '處理中...',
   'sell.submit': '確認刊登',
   'sell.successTitle': '刊登成功！',

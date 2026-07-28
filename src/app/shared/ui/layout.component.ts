@@ -152,23 +152,14 @@ import { Subscription } from 'rxjs';
 
       <footer class="app-footer">
         <div class="footer-content">
-          <div class="footer-col">
-            <h4>CycleUni</h4>
-            <p>{{ 'footer.tagline' | t }}</p>
+          <div class="footer-brand-area">
+            <span class="footer-brand">CycleUni</span>
+            <span class="footer-tagline">{{ 'footer.tagline' | t }}</span>
           </div>
-          <div class="footer-col">
-            <h4>{{ 'footer.about' | t }}</h4>
-            <a href="javascript:void(0)">{{ 'footer.how' | t }}</a>
-            <a href="javascript:void(0)">{{ 'footer.faq' | t }}</a>
+          <div class="footer-links">
+            <a href="javascript:void(0)">{{ 'footer.about' | t }}</a>
+            <a href="javascript:void(0)">{{ 'footer.terms' | t }}</a>
           </div>
-          <div class="footer-col">
-            <h4>{{ 'footer.terms' | t }}</h4>
-            <a href="javascript:void(0)">{{ 'footer.tos' | t }}</a>
-            <a href="javascript:void(0)">{{ 'footer.privacy' | t }}</a>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          {{ 'footer.copyright' | t }}
         </div>
       </footer>
     </div>
@@ -291,46 +282,41 @@ import { Subscription } from 'rxjs';
     .app-footer {
       border-top: 1px solid var(--line);
       background-color: var(--paper-warm);
-      padding: 48px 16px 24px;
+      padding: 16px 16px;
       margin-top: 64px;
     }
     .footer-content {
       max-width: 1120px;
       margin: 0 auto;
       display: flex;
-      gap: 64px;
-      margin-bottom: 48px;
+      justify-content: space-between;
+      align-items: center;
     }
-    .footer-col h4 {
-      margin-top: 0;
-      margin-bottom: 16px;
-      font-size: 16px;
+    .footer-brand-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .footer-col p {
+    .footer-brand {
+      font-weight: 600;
       color: var(--muted);
-      margin: 0;
       font-size: 14px;
-      max-width: 240px;
-      line-height: 1.6;
     }
-    .footer-col a {
-      display: block;
+    .footer-tagline {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a {
       color: var(--muted);
       text-decoration: none;
-      margin-bottom: 8px;
       font-size: 14px;
     }
-    .footer-col a:hover {
+    .footer-links a:hover {
       color: var(--accent);
-    }
-    .footer-bottom {
-      max-width: 1120px;
-      margin: 0 auto;
-      border-top: 1px solid var(--line);
-      padding-top: 24px;
-      color: var(--muted);
-      font-size: 14px;
-      text-align: center;
     }
 
     @media (max-width: 768px) {
@@ -424,14 +410,19 @@ import { Subscription } from 'rxjs';
         font-weight: 700;
         line-height: 1;
       }
+      .app-footer {
+        padding: 16px 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
+        margin-top: 48px;
+      }
       .footer-content {
         flex-direction: column;
-        gap: 32px;
-        margin-bottom: 32px;
+        align-items: center;
+        text-align: center;
+        gap: 8px;
       }
-      .app-footer {
-        padding: 32px 16px 24px;
-        margin-top: 48px;
+      .footer-brand-area {
+        flex-direction: column;
+        gap: 4px;
       }
     }
 
