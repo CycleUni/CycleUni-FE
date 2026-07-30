@@ -19,7 +19,9 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -30,7 +32,11 @@
               "src/styles.css"
             ],
             "security": {
-              "allowedHosts": ["localhost", "127.0.0.1"]
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                "frontend"
+              ]
             }
           },
           "configurations": {
@@ -71,7 +77,9 @@
               ],
               "outputHashing": "all",
               "security": {
-                "allowedHosts": ["localhost"]
+                "allowedHosts": [
+                  "localhost"
+                ]
               }
             },
             "development": {
@@ -79,7 +87,9 @@
               "extractLicenses": false,
               "sourceMap": true,
               "security": {
-                "allowedHosts": ["localhost"]
+                "allowedHosts": [
+                  "localhost"
+                ]
               }
             }
           },
