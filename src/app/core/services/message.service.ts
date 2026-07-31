@@ -120,7 +120,7 @@ export class MessageService {
     return this.http.post<void>(
       `${edgeChatUrl}/api/cycleuni/${roomId}/read`,
       {},
-      { headers: { Authorization: `Bearer ${token}` }, params: { userId } }
+      { headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }, params: { userId } }
     );
   }
 
@@ -130,7 +130,7 @@ export class MessageService {
   getHubSnapshot(edgeChatUrl: string, userId: string, token: string): Observable<{ unread: string[]; lastReadAt: Record<string, number>; count: number }> {
     return this.http.get<{ unread: string[]; lastReadAt: Record<string, number>; count: number }>(
       `${edgeChatUrl}/api/internal/users/${userId}/snapshot`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' } }
     );
   }
 
@@ -144,9 +144,13 @@ export class MessageService {
 
   // EdgeChat endpoints. Token goes in the Authorization header, not the URL,
   // so it doesn't end up in server logs, Referer headers, or browser history.
+  // `ngsw-bypass` skips the Angular service worker: these are absolute
+  // cross-origin URLs, so the ApiUrlInterceptor (which only bypasses relative
+  // Django URLs) never sees them, and without this the SW would intercept
+  // and mishandle the cross-origin request itself.
   getEdgeMessages(roomId: string, token: string, edgeChatUrl: string): Observable<EdgeChatMessage[]> {
     return this.http.get<EdgeChatMessage[]>(`${edgeChatUrl}/api/cycleuni/${roomId}/messages`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }
     });
   }
 
