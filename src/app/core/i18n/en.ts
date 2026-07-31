@@ -28,12 +28,9 @@ export const en: Record<string, string> = {
   'nav.admin': 'Admin',
   'footer.tagline': 'Connecting university students across Taiwan to buy and sell secondhand textbooks.',
   'footer.about': 'About',
-  'footer.how': 'How it works',
-  'footer.faq': 'FAQ',
   'footer.terms': 'Legal',
   'footer.tos': 'Terms of Service',
   'footer.privacy': 'Privacy Policy',
-  'footer.copyright': '© 2026 CycleUni. All rights reserved.',
 
   // Home
   'home.heroTitle': 'Find your next book on campus',

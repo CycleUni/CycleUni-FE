@@ -28,12 +28,9 @@ export const zhTW: Record<string, string> = {
   'nav.admin': '後台管理',
   'footer.tagline': '台灣大學生專屬的二手教科書媒合平台',
   'footer.about': '關於',
-  'footer.how': '運作方式',
-  'footer.faq': '常見問題',
   'footer.terms': '條款',
   'footer.tos': '服務條款',
   'footer.privacy': '隱私權政策',
-  'footer.copyright': '© 2026 CycleUni. All rights reserved.',
 
   // Home
   'home.heroTitle': '在校園內輕鬆買賣二手書',
