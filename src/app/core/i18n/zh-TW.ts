@@ -455,6 +455,7 @@ export const zhTW: Record<string, string> = {
   'msg.imagePlaceholder': '[圖片]',
   'msg.close': '關閉',
   'msg.uploadFailed': '上傳失敗',
+  'msg.imageLoadFailed': '圖片已過期',
   'msg.errInvalidImageType': '請選擇有效的圖片檔案',
   'msg.errImageTooLarge': '圖片大小不可超過 5MB',
 
