@@ -311,8 +311,19 @@ export class MessageService {
         this.delayedReconnectingTimer = null;
       }
       this.reconnectAttempts = 0;
+      // Mark as intentional so onclose doesn't trigger scheduleReconnect()
+      // or sendErrors$ — both of which would cause false "send failed" flags
+      // on any message that was pending when the socket was closed.
       this.closingIntentionally = true;
       this.connectionState$.next('disconnected');
+    } else {
+      // Called from connectEdgeChat() when switching rooms. We don't want
+      // onclose to trigger sendErrors$ ("Connection lost") since this is a
+      // deliberate tear-down, not a network drop. The superseded-socket guard
+      // (this.ws !== ws) in onclose already makes it a no-op if a new socket
+      // has been assigned before onclose fires, but in case there's any window
+      // between ws.close() and the new socket being assigned, flag it too.
+      this.closingIntentionally = true;
     }
     
     if (this.ws) {

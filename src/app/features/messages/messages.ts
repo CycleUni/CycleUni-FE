@@ -953,7 +953,12 @@ export class Messages implements OnInit, OnDestroy {
   }
 
   sendMessage() {
-    if (this.connectionState === 'reconnecting') return;
+    // Block sending if the WebSocket is not fully open. In 'disconnected'
+    // state the socket is still being established (initial connect) — sending
+    // at that moment causes sendEdgeMessage() to return false and the message
+    // is immediately marked as failed before the connection even had a chance
+    // to open. 'reconnecting' is already handled, but 'disconnected' was not.
+    if (this.connectionState !== 'connected') return;
     if (this.newMessage.trim() && this.activeChat) {
       const text = this.newMessage.trim();
       this.newMessage = '';
