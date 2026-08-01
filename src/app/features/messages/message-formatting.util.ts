@@ -1,6 +1,22 @@
 // Pure formatting/parsing helpers extracted from the Messages component so
 // they can be unit-tested standalone, without Angular DI or component state.
 
+/**
+ * Inbox-preview placeholder for an image message.
+ *
+ * Carries an i18n key instead of literal text because this preview is
+ * persisted server-side (Django's `conversation.latest_message_body`) and
+ * shown to *both* participants — who may be reading in different languages.
+ * Resolving it at write time would bake one language into the database.
+ * `formatSystemMessageForPreview` resolves it per viewer, using the same
+ * `[SYSTEM:<i18nKey>]` convention the backend already uses for order
+ * notifications.
+ *
+ * Must stay in sync with CFEdgeChat's IMAGE_PREVIEW_TOKEN (src/ChatRoom.ts),
+ * which is what actually writes it for messages sent by the other party.
+ */
+export const IMAGE_PREVIEW_TOKEN = '[SYSTEM:msg.imagePlaceholder]';
+
 /** Format a message timestamp relative to "now": time-only if today, weekday
  * if within the last week, month/day if this year, else full date. */
 export function formatMessageTime(dateString: string, lang: 'en-US' | 'zh-TW'): string {

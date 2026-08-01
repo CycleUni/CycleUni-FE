@@ -507,7 +507,14 @@ export class Sell implements OnInit, OnDestroy {
   }
 
   removePhoto(index: number) {
+    const url = this.uploadedPhotos[index];
     this.uploadedPhotos.splice(index, 1);
+    
+    // Asynchronously tell the server to delete the physical file
+    this.listingService.deletePhoto(url).subscribe({
+      next: () => console.log('Successfully deleted orphaned photo from server'),
+      error: (err) => console.error('Failed to delete orphaned photo from server', err)
+    });
   }
 
   ngOnInit() {

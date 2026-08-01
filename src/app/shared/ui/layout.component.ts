@@ -157,8 +157,8 @@ import { Subscription } from 'rxjs';
             <span class="footer-tagline">{{ 'footer.tagline' | t }}</span>
           </div>
           <div class="footer-links">
-            <a href="javascript:void(0)">{{ 'footer.about' | t }}</a>
-            <a href="javascript:void(0)">{{ 'footer.terms' | t }}</a>
+            <a href="https://cycleuni.github.io/About/" target="_blank" rel="noopener noreferrer">{{ 'footer.about' | t }}</a>
+            <a href="https://cycleuni.github.io/About/" target="_blank" rel="noopener noreferrer">{{ 'footer.terms' | t }}</a>
           </div>
         </div>
       </footer>
@@ -198,6 +198,7 @@ import { Subscription } from 'rxjs';
       display: flex;
       align-items: center;
       gap: 6px;
+      flex: 1;
       min-width: 0; /* let the label ellipsis instead of forcing the button to grow */
     }
     .school-icon {
@@ -447,6 +448,7 @@ import { Subscription } from 'rxjs';
 export class UiLayout implements OnDestroy {
   selectedSchool = '';
   schools: { value: string, label: string }[] = [];
+  rawSchools: any[] = [];
   unreadCount = 0;
   readonly langOptions = [
     { value: 'zh-TW', label: '中文 (繁體)' },
@@ -529,6 +531,20 @@ export class UiLayout implements OnDestroy {
         }
       });
     }
+    
+    // Automatically set the school to the user's verified school once the profile loads
+    // (if they haven't manually chosen a school yet).
+    effect(() => {
+      const profile = this.authStore.user();
+      if (profile?.school && this.rawSchools.length > 0 && this.schoolStateService.getManualSchool() === null) {
+        const userSchool = this.rawSchools.find(s => s.id === profile.school);
+        if (userSchool && this.selectedSchool !== userSchool.name) {
+          this.selectedSchool = userSchool.name;
+          this.schoolStateService.setSchool(this.selectedSchool);
+          this.cdr.markForCheck();
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -562,6 +578,7 @@ export class UiLayout implements OnDestroy {
     this.metadataService.getMetadata().subscribe({
       next: (data) => {
         if (data.schools && data.schools.length > 0) {
+          this.rawSchools = data.schools;
           this.schools = [
             { value: '', label: this.i18n.t('layout.allSchools') || '全部大學' },
             ...data.schools.map((s: any) => ({
@@ -584,29 +601,18 @@ export class UiLayout implements OnDestroy {
 
           // Check for manual school selection from sessionStorage (single-session memory)
           const manualSchool = this.schoolStateService.getManualSchool();
-          if (manualSchool && this.schools.some(s => s.value === manualSchool)) {
+          if (manualSchool !== null && this.schools.some(s => s.value === manualSchool)) {
             this.selectedSchool = manualSchool;
             this.schoolStateService.setSchool(this.selectedSchool);
             this.cdr.markForCheck();
             return;
           }
 
-          // Default to "All Schools"
+          // Default to "All Schools" initially; the effect above will override this 
+          // once AuthStore.user() resolves.
           this.selectedSchool = '';
           this.schoolStateService.setSchool(this.selectedSchool);
           this.cdr.markForCheck();
-
-          if (this.authStore.isLoggedIn()) {
-            const profile = this.authStore.user();
-            if (profile?.school) {
-              const userSchool = data.schools.find((s: any) => s.id === profile.school);
-              if (userSchool) {
-                this.selectedSchool = userSchool.name;
-                this.schoolStateService.setSchool(this.selectedSchool);
-                this.cdr.markForCheck();
-              }
-            }
-          }
         }
       }
     });

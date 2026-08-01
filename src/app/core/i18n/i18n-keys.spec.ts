@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { en } from './en';
 import { zhTW } from './zh-TW';
+import { IMAGE_PREVIEW_TOKEN } from '../../features/messages/message-formatting.util';
 
 /**
  * Static checks on the translation dictionaries themselves. These catch
@@ -134,5 +135,24 @@ describe('i18n translation keys (en.ts / zh-TW.ts)', () => {
       .sort();
 
     expect(unused).toEqual([]);
+  });
+
+  it('should resolve the image-preview token CFEdgeChat writes', () => {
+    // Cross-repo contract. CFEdgeChat stamps this token into the inbox
+    // preview (persisted by Django into conversation.latest_message_body,
+    // and shown to both participants), and this app resolves it per viewer.
+    // It used to be a hardcoded "[圖片]", which meant an English reader saw
+    // Chinese; if the two repos ever drift apart again, previews silently
+    // render the raw "[SYSTEM:...]" token instead of translated text.
+    const key = IMAGE_PREVIEW_TOKEN.replace(/^\[SYSTEM:/, '').replace(/\]$/, '');
+
+    expect(en[key]).toBeTruthy();
+    expect(zhTW[key]).toBeTruthy();
+    expect(en[key]).not.toEqual(zhTW[key]);
+
+    const chatRoom = path.join(process.cwd(), '..', 'CFEdgeChat', 'src', 'ChatRoom.ts');
+    if (fs.existsSync(chatRoom)) {
+      expect(fs.readFileSync(chatRoom, 'utf-8')).toContain(IMAGE_PREVIEW_TOKEN);
+    }
   });
 });

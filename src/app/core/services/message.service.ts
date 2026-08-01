@@ -1,9 +1,10 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, Subject, BehaviorSubject, from } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import imageCompression from 'browser-image-compression';
 
 // Debug logging only outside production, to keep the prod console noise-free.
 function devLog(...args: unknown[]): void {
@@ -23,6 +24,8 @@ export interface EdgeChatMessage {
   user_id: string;
   content: string;
   timestamp: number;
+  message_type?: 'text' | 'image';
+  metadata?: Record<string, unknown>;
 }
 
 export interface RoomUpdate {
@@ -138,8 +141,43 @@ export class MessageService {
     return this.http.delete<{status: string}>(`/messaging/conversations/${conversationId}/delete/`);
   }
 
+  // Upload chat image: compress client-side, then upload via presigned URL to R2
+  // (falls back to proxy-through-Django in local dev without R2 credentials).
+  // Returns the public URL of the uploaded image.
+  uploadChatPhoto(file: File, conversationId: string): Observable<{ url: string }> {
+    return from(imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1280,
+      initialQuality: 0.7,
+      useWebWorker: true,
+      fileType: 'image/webp',
+    })).pipe(
+      switchMap(compressed => this.http.post<any>(`/messaging/uploads/`, { 
+        content_type: compressed.type,
+        conversation_id: conversationId
+      }).pipe(
+        switchMap(presign => {
+          if (presign.mode === 'direct') {
+            const formData = new FormData();
+            formData.append('file', compressed, file.name);
+            formData.append('conversation_id', conversationId);
+            return this.http.post<{ url: string }>(`/messaging/uploads/direct/`, formData);
+          }
 
+          if (presign.mode === 'presigned_put') {
+            // R2 PUT presigned URL: just PUT the raw file body
+            return this.http.put(presign.upload_url, compressed, {
+              headers: { 'Content-Type': compressed.type }
+            }).pipe(
+              map(() => ({ url: presign.photo_url }))
+            );
+          }
 
+          throw new Error('Unknown upload mode');
+        })
+      ))
+    );
+  }
 
 
   // EdgeChat endpoints. Token goes in the Authorization header, not the URL,
@@ -287,9 +325,9 @@ export class MessageService {
   // Returns false if the message couldn't be sent at all (socket not open),
   // so the caller can flag it as failed immediately instead of waiting on a
   // server round trip that will never come.
-  sendEdgeMessage(content: string): boolean {
+  sendEdgeMessage(content: string, messageType: 'text' | 'image' = 'text', metadata?: Record<string, unknown>): boolean {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: 'message', content }));
+      this.ws.send(JSON.stringify({ type: 'message', content, message_type: messageType, metadata }));
       return true;
     }
     devError('[EdgeChat] Cannot send message, WebSocket is not open');

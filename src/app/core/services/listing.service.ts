@@ -101,6 +101,7 @@ export class ListingService {
       maxSizeMB: 1.5,
       maxWidthOrHeight: 1600,
       useWebWorker: true,
+      fileType: 'image/webp',
     })).pipe(
       switchMap(compressed => this.http.post<any>(`${this.apiUrl}uploads/`, { content_type: compressed.type }).pipe(
         switchMap(presign => {
@@ -135,5 +136,9 @@ export class ListingService {
 
   reportListing(listingId: string | number, reason: 'fake' | 'scam' | 'other', detail?: string): Observable<any> {
     return this.http.post<any>('/moderation/', { listing: listingId, reason, detail: detail || '' });
+  }
+
+  deletePhoto(url: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}uploads/delete/`, { params: { url } });
   }
 }

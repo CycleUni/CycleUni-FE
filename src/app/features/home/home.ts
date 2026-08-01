@@ -70,7 +70,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 
         <section class="section flex-1">
           <h3 class="section-title">{{ 'home.waitlistTitle' | t }}</h3>
-          <ng-container *ngIf="metadataLoading || waitlist; else waitlistLoaded">
+          <ng-container *ngIf="metadataLoading || metadataError; else waitlistLoaded">
             <ui-skeleton *ngIf="metadataLoading && !metadataError" [count]="2"></ui-skeleton>
           </ng-container>
           <ng-template #waitlistLoaded>
