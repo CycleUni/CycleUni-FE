@@ -443,6 +443,16 @@ export const en: Record<string, string> = {
   'msg.reportSuccess': 'Report submitted. We will review it shortly.',
   'msg.reportError': 'Failed to submit report. Please try again.',
 
+  // Chat Image
+  'msg.attachImage': 'Attach image',
+  'msg.image': 'Image',
+  'msg.imagePreview': 'Image preview',
+  'msg.imagePlaceholder': '[Image]',
+  'msg.close': 'Close',
+  'msg.uploadFailed': 'Upload failed',
+  'msg.errInvalidImageType': 'Please select a valid image file',
+  'msg.errImageTooLarge': 'Image must be smaller than 5MB',
+
   // Seller Page
   'seller.joined': 'Joined: ',
   'seller.listingsTitle': '{name}\'s Listings',

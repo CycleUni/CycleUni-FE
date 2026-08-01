@@ -12,7 +12,7 @@ import { OrderService } from '../../core/services/order.service';
 import { ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { Subscription } from 'rxjs';
-import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-formatting.util';
+import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKEN } from './message-formatting.util';
 
 @Component({
   selector: 'app-messages',
@@ -92,6 +92,14 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
             </div>
           </div>
 
+          <!-- Image Modal -->
+          <div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
+            <div class="image-modal" (click)="$event.stopPropagation()">
+              <button class="image-modal-close" (click)="closeImageModal()" [title]="'msg.close' | t">×</button>
+              <img [src]="selectedImageUrl" [alt]="'msg.imagePreview' | t" class="image-modal-img">
+            </div>
+          </div>
+
           <div class="listing-banner" *ngIf="activeChat.listing_title">
             <div class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
               <img *ngIf="activeChat.listing_photo" [src]="activeChat.listing_photo" alt="Cover" class="listing-thumb">
@@ -133,7 +141,7 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
           </div>
           
           <div class="message-history" #scrollMe>
-            <div class="msg-bubble" *ngFor="let msg of messages" [class.self]="msg.is_mine" [class.failed]="msg.failed" [class.meetup-card]="isMeetupRequest(msg.body)">
+            <div class="msg-bubble" *ngFor="let msg of messages" [class.self]="msg.is_mine" [class.failed]="msg.failed" [class.meetup-card]="isMeetupRequest(msg.body)" [class.image-msg]="msg.message_type === 'image'">
               <ng-container *ngIf="isMeetupRequest(msg.body); else normalMsg">
                 <ui-meetup-card
                   [body]="msg.body"
@@ -145,15 +153,27 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
                 ></ui-meetup-card>
               </ng-container>
               <ng-template #normalMsg>
-                <div class="msg-content">
-                  {{ msg.body }}
-                  <button
-                    class="msg-delete-btn"
-                    type="button"
-                    [title]="'msg.delete' | t"
-                    (click)="deleteMessage(msg.id)"
-                  >×</button>
-                </div>
+                <ng-container *ngIf="msg.message_type === 'image'; else textMsg">
+                  <img 
+                    [src]="msg.body" 
+                    [alt]="'msg.image' | t" 
+                    class="chat-image"
+                    (click)="openImageModal(msg.body, $event)"
+                    (error)="onImageError($event)"
+                    (load)="scrollToBottom(false)"
+                  >
+                </ng-container>
+                <ng-template #textMsg>
+                  <div class="msg-content">
+                    {{ msg.body }}
+                    <button
+                      class="msg-delete-btn"
+                      type="button"
+                      [title]="'msg.delete' | t"
+                      (click)="deleteMessage(msg.id)"
+                    >×</button>
+                  </div>
+                </ng-template>
               </ng-template>
               <div class="msg-status" *ngIf="msg.failed">
                 <span class="msg-failed-text">{{ 'msg.sendFailed' | t }}</span>
@@ -164,17 +184,45 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
           </div>
 
           <div class="message-input-area">
-            <ui-input
-              [placeholder]="'msg.placeholder' | t"
-              style="flex: 1;"
-              [(ngModel)]="newMessage"
-              (compositionstart)="imeComposing = true"
-              (compositionend)="onCompositionEnd()"
-              (keyup.enter)="onEnterKey($event)"
-            ></ui-input>
+            <div class="input-wrapper">
+              <input
+                type="file"
+                #fileInput
+                accept="image/*"
+                capture="environment"
+                (change)="onFileSelected($event)"
+                style="display: none;"
+              >
+              <button 
+                type="button" 
+                class="attach-btn" 
+                (click)="fileInput.click()"
+                [disabled]="uploadingImage || connectionState === 'reconnecting'"
+                [title]="'msg.attachImage' | t"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </button>
+              <ui-input
+                [placeholder]="'msg.placeholder' | t"
+                style="flex: 1;"
+                [noMargin]="true"
+                [(ngModel)]="newMessage"
+                (compositionstart)="imeComposing = true"
+                (compositionend)="onCompositionEnd()"
+                (keyup.enter)="onEnterKey($event)"
+              ></ui-input>
+            </div>
+            <div *ngIf="uploadingImage" class="upload-progress">
+              <div class="progress-bar" [style.width.%]="uploadProgress"></div>
+              <span>{{ uploadProgress }}%</span>
+            </div>
             <ui-button 
               (onClick)="sendMessage()" 
-              [disabled]="connectionState === 'reconnecting'"
+              [disabled]="connectionState === 'reconnecting' || uploadingImage"
             >{{ 'msg.send' | t }}</ui-button>
           </div>
         </div>
@@ -632,6 +680,7 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
       padding: 16px;
       border-top: 1px solid var(--line);
       display: flex;
+      align-items: center;
       gap: 8px;
     }
 
@@ -693,6 +742,119 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody } from './message-f
         max-width: 85%;
       }
     }
+
+    /* Image message styles */
+    .msg-bubble.image-msg {
+      max-width: 300px;
+    }
+    .chat-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      cursor: zoom-in;
+      object-fit: contain;
+      background: var(--paper-warm);
+    }
+    .msg-bubble.self .chat-image {
+      background: #f0f7f4;
+    }
+
+    /* Input wrapper for attach button + input */
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .attach-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .attach-btn:hover:not(:disabled) {
+      background: var(--paper-warm);
+      border-color: var(--muted);
+      color: var(--accent);
+    }
+    .attach-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Upload progress */
+    .upload-progress {
+      position: absolute;
+      bottom: 60px;
+      left: 16px;
+      right: 16px;
+      height: 6px;
+      background: var(--line);
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.2s;
+    }
+    .message-input-area {
+      position: relative;
+    }
+
+    /* Image modal */
+    .image-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .image-modal {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+    .image-modal-img {
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    }
+    .image-modal-close {
+      position: absolute;
+      top: -44px;
+      right: 0;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 24px;
+      line-height: 36px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .image-modal-close:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
   `]
 })
 export class Messages implements OnInit, OnDestroy {
@@ -711,11 +873,18 @@ export class Messages implements OnInit, OnDestroy {
   reportError = '';
   reportSuccess = '';
   submittingReport = false;
+  // Image upload state
+  uploadingImage = false;
+  uploadProgress = 0;
+  // Image modal state
+  showImageModal = false;
+  selectedImageUrl = '';
   // Distinguishes "still loading" from "genuinely no conversations" so the
   // empty-inbox state doesn't flash for users who do have conversations,
   // just before loadConversations() resolves.
   loadingChats = true;
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+  @ViewChild('fileInput') private fileInput!: HTMLInputElement;
 
   private messageService = inject(MessageService);
   private authStore = inject(AuthStore);
@@ -785,10 +954,14 @@ export class Messages implements OnInit, OnDestroy {
             id: msg.id,
             body: msg.content,
             is_mine: String(msg.user_id) === String(this.userId),
-            created_at: new Date(msg.timestamp).toISOString()
+            created_at: new Date(msg.timestamp).toISOString(),
+            message_type: msg.message_type || 'text'
           });
         }
-        this.activeChat.latest_message = msg.content;
+        // An image message's content is its URL — show the placeholder
+        // instead of a raw https://…/chat/….webp in the inbox preview.
+        this.activeChat.latest_message =
+          (msg.message_type || 'text') === 'image' ? IMAGE_PREVIEW_TOKEN : msg.content;
 
         // Order-status system messages (meetup requested/approved/rejected/
         // cancelled/delivered) change what `isPendingApproval()` should
@@ -995,9 +1168,14 @@ export class Messages implements OnInit, OnDestroy {
     });
   }
 
-  scrollToBottom(): void {
+  scrollToBottom(force: boolean = true): void {
     try {
-      this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
+      const el = this.myScrollContainer.nativeElement;
+      const threshold = 200;
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      if (force || isNearBottom) {
+        el.scrollTop = el.scrollHeight;
+      }
     } catch (err) { }
   }
 
@@ -1045,7 +1223,7 @@ export class Messages implements OnInit, OnDestroy {
   }
 
   private trySend(msg: any) {
-    const sent = this.messageService.sendEdgeMessage(msg.body);
+    const sent = this.messageService.sendEdgeMessage(msg.body, msg.message_type || 'text', msg.metadata);
     if (sent) {
       // Resolved later by realTimeAcks$ (success) or sendErrors$ (failure).
       this.pendingTempIds.push(msg.id);
@@ -1055,6 +1233,91 @@ export class Messages implements OnInit, OnDestroy {
       msg.failed = true;
       this.cdr.markForCheck();
     }
+  }
+
+  // Image upload handling
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.activeChat) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert(this.i18n.t('msg.errInvalidImageType'));
+      input.value = '';
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert(this.i18n.t('msg.errImageTooLarge'));
+      input.value = '';
+      return;
+    }
+
+    this.uploadingImage = true;
+    this.uploadProgress = 0;
+    this.cdr.markForCheck();
+
+    this.messageService.uploadChatPhoto(file, this.activeChat.id).subscribe({
+      next: (res) => {
+        this.uploadProgress = 100;
+        this.cdr.markForCheck();
+
+        // Send the image message
+        const tempMsg: any = {
+          id: 'temp_' + Date.now(),
+          body: res.url,
+          message_type: 'image',
+          metadata: { filename: file.name },
+          is_mine: true,
+          created_at: new Date().toISOString()
+        };
+        this.messages.push(tempMsg);
+        this.activeChat.latest_message = IMAGE_PREVIEW_TOKEN;
+        this.cdr.markForCheck();
+        setTimeout(() => this.scrollToBottom(), 10);
+
+        this.trySend(tempMsg);
+
+        // Reset
+        this.uploadingImage = false;
+        this.uploadProgress = 0;
+        input.value = '';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.uploadingImage = false;
+        this.uploadProgress = 0;
+        input.value = '';
+        this.cdr.markForCheck();
+        console.error('Image upload failed', err);
+        alert(this.i18n.t('msg.uploadFailed'));
+      }
+    });
+  }
+
+  openImageModal(url: string, event?: Event) {
+    if (event) {
+      const img = event.target as HTMLImageElement;
+      if (img.classList.contains('expired')) {
+        return; // Don't open modal if image is expired
+      }
+    }
+    this.selectedImageUrl = url;
+    this.showImageModal = true;
+  }
+
+  closeImageModal() {
+    this.showImageModal = false;
+    this.selectedImageUrl = '';
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.classList.add('expired');
+    img.alt = this.i18n.t('msg.imageLoadFailed') || '圖片已過期';
+    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2IiByeD0iOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+5ZyW54mH5bey6YGO5pyfPC90ZXh0Pjwvc3ZnPg==';
   }
 
   deleteMessage(id: string) {
@@ -1114,7 +1377,8 @@ export class Messages implements OnInit, OnDestroy {
         id: m.id || bodyText,
         body: bodyText,
         is_mine: isMine,
-        created_at: createdDate
+        created_at: createdDate,
+        message_type: m.message_type || 'text'
       };
     });
 
@@ -1123,7 +1387,8 @@ export class Messages implements OnInit, OnDestroy {
     );
 
     this.cdr.markForCheck();
-    setTimeout(() => this.scrollToBottom(), 50);
+    setTimeout(() => this.scrollToBottom(true), 50);
+    setTimeout(() => this.scrollToBottom(true), 500); // Backup for slow rendering
   }
 
   private isMeetupRequestMsg(msg: any): boolean {
@@ -1160,6 +1425,9 @@ export class Messages implements OnInit, OnDestroy {
   }
 
   formatSystemMessageForPreview(body: string): string {
+    // Back-compat: conversations whose preview was written before image
+    // previews became an i18n token still hold a literal Chinese string.
+    if (body === '[圖片]') return this.i18n.t('msg.imagePlaceholder') || body;
     if (!body || !body.startsWith('[SYSTEM:')) return body;
     const match = body.match(/\[SYSTEM:([^\]]+)\]/);
     if (!match) return body;

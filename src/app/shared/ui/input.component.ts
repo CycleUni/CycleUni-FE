@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="input-wrapper">
+    <div class="input-wrapper" [class.no-margin]="noMargin">
       <label *ngIf="label">{{ label }}</label>
       <input
         [type]="type"
@@ -36,6 +36,9 @@ import { CommonModule } from '@angular/common';
       flex-direction: column;
       gap: 4px;
       margin-bottom: 12px;
+    }
+    .input-wrapper.no-margin {
+      margin-bottom: 0;
     }
     label {
       font-size: 14px;
@@ -72,6 +75,7 @@ export class UiInput implements ControlValueAccessor {
   @Input() placeholder: string = '';
   @Input() type: string = 'text';
   @Input() error: string = '';
+  @Input() noMargin: boolean = false;
   
   value: string = '';
   disabled: boolean = false;

@@ -445,6 +445,19 @@ export const zhTW: Record<string, string> = {
   'msg.reportSuccess': '檢舉已送出，我們會盡快處理。',
   'msg.reportError': '檢舉失敗，請稍後再試。',
 
+  // Chat Image
+  'msg.attachImage': '附加圖片',
+  'msg.image': '圖片',
+  'msg.imagePreview': '圖片預覽',
+  // Inbox-preview placeholder standing in for an image message. Brackets
+  // live in the translation, not the code, so each locale can use its own
+  // convention (e.g. 「写真」 in Japanese).
+  'msg.imagePlaceholder': '[圖片]',
+  'msg.close': '關閉',
+  'msg.uploadFailed': '上傳失敗',
+  'msg.errInvalidImageType': '請選擇有效的圖片檔案',
+  'msg.errImageTooLarge': '圖片大小不可超過 5MB',
+
   // Seller Page
   'seller.joined': '加入時間：',
   'seller.listingsTitle': '{name} 的所有商品',
