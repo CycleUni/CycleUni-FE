@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, BehaviorSubject, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import imageCompression from 'browser-image-compression';
 
 // Debug logging only outside production, to keep the prod console noise-free.
 function devLog(...args: unknown[]): void {
@@ -145,13 +144,13 @@ export class MessageService {
   // (falls back to proxy-through-Django in local dev without R2 credentials).
   // Returns the public URL of the uploaded image.
   uploadChatPhoto(file: File, conversationId: string): Observable<{ url: string }> {
-    return from(imageCompression(file, {
+    return from(import('browser-image-compression').then(m => m.default(file, {
       maxSizeMB: 0.5,
       maxWidthOrHeight: 1280,
       initialQuality: 0.7,
       useWebWorker: true,
       fileType: 'image/webp',
-    })).pipe(
+    }))).pipe(
       switchMap(compressed => this.http.post<any>(`/messaging/uploads/`, { 
         content_type: compressed.type,
         conversation_id: conversationId

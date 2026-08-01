@@ -1,10 +1,14 @@
-import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiMeetupCard } from '../../shared/ui/meetup-card.component';
+import { UiImageLightbox } from '../../shared/ui/image-lightbox.component';
+import { UiReportModal } from '../../shared/ui/report-modal.component';
+import { UiRoleBadge } from '../../shared/ui/role-badge.component';
+import { MessagesInboxList } from './inbox-list.component';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from '../../core/services/message.service';
 import { AuthStore } from '../../core/auth.store';
@@ -17,36 +21,16 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList],
   template: `
       <div class="messages-container" [class.mobile-chat-open]="!!activeChat" *ngIf="loadingChats || chats.length > 0">
         <div class="sidebar">
-          <div class="sidebar-header">
-            <h3>{{ 'msg.inbox' | t }}</h3>
-          </div>
-          <div class="chat-list">
-            <div
-              class="chat-item"
-              *ngFor="let chat of chats"
-              [class.active]="activeChat?.id === chat.id"
-              [class.role-buyer]="chat.other_party_role === 'buyer'"
-              [class.role-seller]="chat.other_party_role === 'seller'"
-              (click)="selectChat(chat)"
-            >
-              <div class="chat-meta">
-                <span class="chat-partner">{{ chat.other_party }}</span>
-                <div class="chat-meta-right">
-                  <span class="role-badge" [class.seller]="chat.other_party_role === 'seller'">
-                    {{ ('msg.role_' + chat.other_party_role) | t }}
-                  </span>
-                  <span class="unread-dot" *ngIf="chat._hubUnread"></span>
-                  <button class="chat-delete-btn" type="button" [title]="'msg.deleteConversation' | t" (click)="$event.stopPropagation(); deleteConversation(chat)">×</button>
-                </div>
-              </div>
-              <div class="chat-subject">{{ 'msg.bookPrefix' | t:{title: chat.listing_title} }}</div>
-              <div class="chat-preview">{{ formatSystemMessageForPreview(chat.latest_message) }}</div>
-            </div>
-          </div>
+          <messages-inbox-list
+            [chats]="chats"
+            [activeChatId]="activeChat?.id ?? null"
+            (select)="selectChat($event)"
+            (remove)="deleteConversation($event)"
+          ></messages-inbox-list>
         </div>
 
         <div class="chat-area" *ngIf="activeChat">
@@ -55,9 +39,7 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
             <div class="partner-info">
               <h4>
                 {{ 'msg.conversationWith' | t:{name: activeChat.other_party} }}
-                <span class="role-badge" [class.seller]="activeChat.other_party_role === 'seller'">
-                  {{ ('msg.role_' + activeChat.other_party_role) | t }}
-                </span>
+                <ui-role-badge [role]="activeChat.other_party_role"></ui-role-badge>
               </h4>
             </div>
             <div class="connection-status" *ngIf="connectionState === 'reconnecting'">
@@ -71,34 +53,14 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
             </button>
           </div>
           
-          <div class="report-overlay" *ngIf="showReport" (click)="showReport = false">
-            <div class="report-modal" (click)="$event.stopPropagation()">
-              <h4>{{ 'msg.reportTitle' | t }}</h4>
-              <div class="report-reasons">
-                <label *ngFor="let r of reportReasons" class="report-reason">
-                  <input type="radio" name="reportReason" [value]="r.value" [(ngModel)]="reportReason">
-                  <span>{{ r.label }}</span>
-                </label>
-              </div>
-              <textarea [(ngModel)]="reportDetail" [placeholder]="'msg.reportDetail' | t" rows="3"></textarea>
-              <div class="report-actions">
-                <ui-button variant="ghost" (onClick)="showReport = false">{{ 'msg.reportCancel' | t }}</ui-button>
-                <ui-button [disabled]="!reportReason || submittingReport" (onClick)="submitReport()">
-                  {{ submittingReport ? ('msg.reportSubmitting' | t) : ('msg.reportSubmit' | t) }}
-                </ui-button>
-              </div>
-              <div *ngIf="reportError" class="error-msg">{{ reportError }}</div>
-              <div *ngIf="reportSuccess" class="success-msg">{{ reportSuccess }}</div>
-            </div>
-          </div>
+          <ui-report-modal
+            *ngIf="showReport"
+            [conversationId]="activeChat.id"
+            [reportedPartyId]="reportedPartyId"
+            (close)="showReport = false"
+          ></ui-report-modal>
 
-          <!-- Image Modal -->
-          <div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
-            <div class="image-modal" (click)="$event.stopPropagation()">
-              <button class="image-modal-close" (click)="closeImageModal()" [title]="'msg.close' | t">×</button>
-              <img [src]="selectedImageUrl" [alt]="'msg.imagePreview' | t" class="image-modal-img">
-            </div>
-          </div>
+          <ui-image-lightbox [src]="selectedImageUrl" (close)="closeImageModal()"></ui-image-lightbox>
 
           <div class="listing-banner" *ngIf="activeChat.listing_title">
             <div class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
@@ -155,11 +117,12 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
               <ng-template #normalMsg>
                 <ng-container *ngIf="msg.message_type === 'image'; else textMsg">
                   <img 
-                    [src]="msg.body" 
+                    [src]="msg._expired ? expiredImageSrc() : msg.body" 
                     [alt]="'msg.image' | t" 
                     class="chat-image"
+                    [class.expired]="msg._expired"
                     (click)="openImageModal(msg.body, $event)"
-                    (error)="onImageError($event)"
+                    (error)="onImageError(msg)"
                     (load)="scrollToBottom(false)"
                   >
                 </ng-container>
@@ -263,110 +226,6 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
       display: flex;
       flex-direction: column;
       background-color: var(--paper-warm);
-    }
-    .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid var(--line);
-    }
-    .sidebar-header h3 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .chat-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-    .chat-item {
-      padding: 16px;
-      border-bottom: 1px solid var(--line);
-      cursor: pointer;
-    }
-    .chat-item:hover {
-      background-color: var(--paper);
-    }
-    .chat-item.active {
-      background-color: var(--paper);
-      border-left: 3px solid var(--accent);
-    }
-    .chat-item.active.role-buyer {
-      border-left-color: var(--flag);
-    }
-    .chat-item.active.role-seller {
-      border-left-color: var(--accent);
-    }
-    .chat-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-    .chat-partner {
-      font-weight: 700;
-      color: var(--ink);
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .chat-meta-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .chat-time {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .unread-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: var(--accent);
-      flex-shrink: 0;
-    }
-    .chat-delete-btn {
-      display: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1;
-      padding: 0 2px;
-      flex-shrink: 0;
-    }
-    .chat-delete-btn:hover {
-      color: var(--flag);
-    }
-    .chat-item:hover .chat-delete-btn {
-      display: inline-block;
-    }
-    .chat-subject {
-      font-size: 13px;
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-    .role-badge {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 3px;
-      text-transform: uppercase;
-      background-color: var(--flag);
-      color: white;
-    }
-    .role-badge.seller {
-      background-color: var(--accent);
-    }
-    .chat-preview {
-      font-size: 14px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .chat-area {
@@ -515,17 +374,7 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
       align-items: center;
       gap: 8px;
     }
-    .role-badge {
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--flag);
-      color: white;
-      font-weight: normal;
-    }
-    .role-badge.seller {
-      background: var(--accent);
-    }
+
     .partner-info p {
       margin: 0;
       font-size: 14px;
@@ -552,11 +401,6 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
       0% { opacity: 1; }
       50% { opacity: 0.5; }
       100% { opacity: 1; }
-    }
-    .listing-price {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--accent);
     }
 
     .message-history {
@@ -618,34 +462,7 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
     .msg-bubble.meetup-card {
       max-width: 340px;
     }
-    .msg-bubble.meetup-card .meetup-card-content {
-      background-color: var(--paper-warm);
-      border: 1px solid var(--line);
-      border-left: 4px solid var(--accent);
-      border-radius: 8px;
-      padding: 12px 14px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-    }
-    .meetup-card-header {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 6px;
-    }
-    .meetup-icon {
-      font-size: 16px;
-    }
-    .meetup-title {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 13px;
-    }
-    .meetup-card-body {
-      font-size: 13px;
-      color: var(--ink);
-      margin: 0;
-      line-height: 1.4;
-    }
+
     .msg-time {
       font-size: 11px;
       color: var(--muted);
@@ -699,15 +516,6 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
       color: var(--flag);
       border-color: var(--flag);
     }
-    .report-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .report-modal { background: var(--paper); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; }
-    .report-modal h4 { margin-top: 0; margin-bottom: 16px; }
-    .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
-    .report-modal textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 14px; resize: vertical; margin-bottom: 16px; box-sizing: border-box; font-family: inherit; }
-    .report-actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .error-msg { color: #dc2626; font-size: 13px; margin-top: 8px; }
-    .success-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }
 
     @media (max-width: 768px) {
       .messages-container,
@@ -815,46 +623,6 @@ import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKE
       position: relative;
     }
 
-    /* Image modal */
-    .image-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      padding: 20px;
-    }
-    .image-modal {
-      position: relative;
-      max-width: 90vw;
-      max-height: 90vh;
-    }
-    .image-modal-img {
-      max-width: 100%;
-      max-height: 90vh;
-      border-radius: 8px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-    }
-    .image-modal-close {
-      position: absolute;
-      top: -44px;
-      right: 0;
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      font-size: 24px;
-      line-height: 36px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .image-modal-close:hover {
-      background: rgba(255, 255, 255, 0.4);
-    }
   `]
 })
 export class Messages implements OnInit, OnDestroy {
@@ -868,16 +636,11 @@ export class Messages implements OnInit, OnDestroy {
   connectionState: 'connected' | 'reconnecting' | 'disconnected' = 'disconnected';
   imeComposing = false;
   showReport = false;
-  reportReason = '';
-  reportDetail = '';
-  reportError = '';
-  reportSuccess = '';
-  submittingReport = false;
   // Image upload state
   uploadingImage = false;
   uploadProgress = 0;
-  // Image modal state
-  showImageModal = false;
+  // Lightbox state: the URL alone drives it (empty = closed), so there is
+  // no separate open flag that could disagree with it.
   selectedImageUrl = '';
   // Distinguishes "still loading" from "genuinely no conversations" so the
   // empty-inbox state doesn't flash for users who do have conversations,
@@ -914,12 +677,6 @@ export class Messages implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit() {
-    this.reportReasons = [
-      { value: 'harassment', label: this.i18n.t('msg.reportReasonHarassment') },
-      { value: 'scam', label: this.i18n.t('msg.reportReasonScam') },
-      { value: 'spam', label: this.i18n.t('msg.reportReasonSpam') },
-      { value: 'other', label: this.i18n.t('msg.reportReasonOther') },
-    ];
     this.loadConversations();
 
     // Live "new activity" events for every conversation this user is part
@@ -1305,19 +1062,23 @@ export class Messages implements OnInit, OnDestroy {
       }
     }
     this.selectedImageUrl = url;
-    this.showImageModal = true;
   }
 
   closeImageModal() {
-    this.showImageModal = false;
     this.selectedImageUrl = '';
   }
 
-  onImageError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    img.classList.add('expired');
-    img.alt = this.i18n.t('msg.imageLoadFailed') || '圖片已過期';
-    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2IiByeD0iOCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+5ZyW54mH5bey6YGO5pyfPC90ZXh0Pjwvc3ZnPg==';
+  readonly expiredImageSrc = computed(() => {
+    // Read the signal so this computed updates when language changes
+    this.i18n.lang(); 
+    const fallbackMsg = this.i18n.t('msg.imageLoadFailed') || '';
+    const svg = `<svg width="200" height="150" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#f3f4f6" rx="8"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="#9ca3af" text-anchor="middle" dominant-baseline="middle">${fallbackMsg}</text></svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  });
+
+  onImageError(msg: any) {
+    msg._expired = true;
+    this.cdr.markForCheck();
   }
 
   deleteMessage(id: string) {
@@ -1424,16 +1185,6 @@ export class Messages implements OnInit, OnDestroy {
     return cleanMeetupBody(body);
   }
 
-  formatSystemMessageForPreview(body: string): string {
-    // Back-compat: conversations whose preview was written before image
-    // previews became an i18n token still hold a literal Chinese string.
-    if (body === '[圖片]') return this.i18n.t('msg.imagePlaceholder') || body;
-    if (!body || !body.startsWith('[SYSTEM:')) return body;
-    const match = body.match(/\[SYSTEM:([^\]]+)\]/);
-    if (!match) return body;
-    const i18nKey = match[1];
-    return this.i18n.t(i18nKey) || body;
-  }
 
   // Re-resolves activeChat.order_id/order_status from the server, always —
   // unlike getOrFetchOrderId, which short-circuits once order_id is cached.
@@ -1541,47 +1292,12 @@ export class Messages implements OnInit, OnDestroy {
 
   // Initialized in ngOnInit() so i18n.t() calls don't re-fire during
   // *ngFor change detection (causes infinite loop/freeze).
-  reportReasons: { value: string; label: string }[] = [];
-
-  submitReport() {
-    if (!this.activeChat) return;
-    this.submittingReport = true;
-    this.reportError = '';
-
+  /** The other participant — whoever in this conversation isn't the viewer. */
+  get reportedPartyId(): string | number {
     const userId = this.authStore.user()?.id;
-    const buyerId = this.activeChat.buyer_id;
-    const sellerId = this.activeChat.seller_id;
-
-    // Derive the other party's user ID (the one NOT equal to the current user)
-    const reportedParty = String(userId) === String(buyerId) ? sellerId : buyerId;
-
-    this.http.post('/moderation/chat-reports/', {
-      conversation: this.activeChat.id,
-      reported_party: reportedParty,
-      reason: this.reportReason,
-      detail: this.reportDetail || '',
-    }).subscribe({
-      next: () => {
-        this.reportSuccess = this.i18n.t('msg.reportSuccess');
-        this.submittingReport = false;
-        setTimeout(() => {
-          this.showReport = false;
-          this.reportSuccess = '';
-          this.reportReason = '';
-          this.reportDetail = '';
-        }, 2000);
-        this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        this.reportError = err?.error?.error?.code
-          ? this.i18n.t(err.error.error.code)
-          : err?.error?.error?.detail
-            ? err?.error?.error?.detail
-            : this.i18n.t('msg.reportError');
-        this.submittingReport = false;
-        this.cdr.markForCheck();
-      },
-    });
+    return String(userId) === String(this.activeChat?.buyer_id)
+      ? this.activeChat?.seller_id
+      : this.activeChat?.buyer_id;
   }
 
   deleteConversation(chat: any) {

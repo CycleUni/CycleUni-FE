@@ -1,0 +1,114 @@
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { I18nService, TPipe } from '../../core/i18n.service';
+import { UiButton } from './button.component';
+
+/**
+ * "Report this conversation" dialog.
+ *
+ * Owns the whole interaction — reason list, draft state, the POST, and its
+ * success/error feedback — rather than being a dumb shell driven by the host.
+ * The host only says which conversation is being reported and reacts to
+ * `close`; nothing about reporting leaks back into the Messages page.
+ *
+ * Extracted from the Messages page, which had grown past the
+ * `anyComponentStyle` build budget — see also UiImageLightbox and
+ * MessagesInboxList.
+ */
+@Component({
+  selector: 'ui-report-modal',
+  standalone: true,
+  imports: [CommonModule, FormsModule, UiButton, TPipe],
+  template: `
+    <div class="report-overlay" (click)="close.emit()">
+      <div class="report-modal" (click)="$event.stopPropagation()">
+        <h4>{{ 'msg.reportTitle' | t }}</h4>
+        <div class="report-reasons">
+          <label *ngFor="let r of reasons" class="report-reason">
+            <input type="radio" name="reportReason" [value]="r.value" [(ngModel)]="reason">
+            <span>{{ r.label }}</span>
+          </label>
+        </div>
+        <textarea [(ngModel)]="detail" [placeholder]="'msg.reportDetail' | t" rows="3"></textarea>
+        <div class="report-actions">
+          <ui-button variant="ghost" (onClick)="close.emit()">{{ 'msg.reportCancel' | t }}</ui-button>
+          <ui-button [disabled]="!reason || submitting" (onClick)="submit()">
+            {{ submitting ? ('msg.reportSubmitting' | t) : ('msg.reportSubmit' | t) }}
+          </ui-button>
+        </div>
+        <div *ngIf="error" class="error-msg">{{ error }}</div>
+        <div *ngIf="success" class="success-msg">{{ success }}</div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .report-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .report-modal { background: var(--paper); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .report-modal h4 { margin-top: 0; margin-bottom: 16px; }
+    .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+    .report-modal textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 14px; resize: vertical; margin-bottom: 16px; box-sizing: border-box; font-family: inherit; }
+    .report-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .error-msg { color: #dc2626; font-size: 13px; margin-top: 8px; }
+    .success-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }
+  `]
+})
+export class UiReportModal implements OnInit {
+  @Input() conversationId!: string;
+  /** The other party in the conversation — the user being reported. */
+  @Input() reportedPartyId!: string | number;
+  @Output() close = new EventEmitter<void>();
+
+  reasons: { value: string; label: string }[] = [];
+  reason = '';
+  detail = '';
+  error = '';
+  success = '';
+  submitting = false;
+
+  private http = inject(HttpClient);
+  private i18n = inject(I18nService);
+  private cdr = inject(ChangeDetectorRef);
+
+  ngOnInit() {
+    this.reasons = [
+      { value: 'harassment', label: this.i18n.t('msg.reportReasonHarassment') },
+      { value: 'scam', label: this.i18n.t('msg.reportReasonScam') },
+      { value: 'spam', label: this.i18n.t('msg.reportReasonSpam') },
+      { value: 'other', label: this.i18n.t('msg.reportReasonOther') },
+    ];
+  }
+
+  submit() {
+    if (!this.conversationId || this.submitting) return;
+    this.submitting = true;
+    this.error = '';
+
+    this.http.post('/moderation/chat-reports/', {
+      conversation: this.conversationId,
+      reported_party: this.reportedPartyId,
+      reason: this.reason,
+      detail: this.detail || '',
+    }).subscribe({
+      next: () => {
+        this.success = this.i18n.t('msg.reportSuccess');
+        this.submitting = false;
+        // Leave the confirmation up briefly so it's actually readable before
+        // the dialog disappears.
+        setTimeout(() => this.close.emit(), 2000);
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.error = err?.error?.error?.code
+          ? this.i18n.t(err.error.error.code)
+          : err?.error?.error?.detail
+            ? err?.error?.error?.detail
+            : this.i18n.t('msg.reportError');
+        this.submitting = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+}

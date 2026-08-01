@@ -2,7 +2,6 @@ import { Injectable, inject, effect } from '@angular/core';
 import { HttpClient, HttpParams, HttpContext } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
 import { shareReplay, catchError, switchMap, map } from 'rxjs/operators';
-import imageCompression from 'browser-image-compression';
 import { I18nService } from '../i18n.service';
 import { SKIP_AUTH } from '../auth.interceptor';
 
@@ -97,12 +96,12 @@ export class ListingService {
   // local dev without real R2 credentials — falls back to the old
   // proxy-through-Django path. See listings/views.py ListingUploadURLView.
   uploadPhoto(file: File): Observable<{ url: string }> {
-    return from(imageCompression(file, {
+    return from(import('browser-image-compression').then(m => m.default(file, {
       maxSizeMB: 1.5,
       maxWidthOrHeight: 1600,
       useWebWorker: true,
       fileType: 'image/webp',
-    })).pipe(
+    }))).pipe(
       switchMap(compressed => this.http.post<any>(`${this.apiUrl}uploads/`, { content_type: compressed.type }).pipe(
         switchMap(presign => {
           if (presign.mode === 'direct') {

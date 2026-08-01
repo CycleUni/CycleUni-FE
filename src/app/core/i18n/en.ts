@@ -450,6 +450,7 @@ export const en: Record<string, string> = {
   'msg.imagePlaceholder': '[Image]',
   'msg.close': 'Close',
   'msg.uploadFailed': 'Upload failed',
+  'msg.imageLoadFailed': 'Image expired',
   'msg.errInvalidImageType': 'Please select a valid image file',
   'msg.errImageTooLarge': 'Image must be smaller than 5MB',
 
