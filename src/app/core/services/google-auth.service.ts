@@ -16,6 +16,7 @@ export class GoogleAuthService {
   private googleClientId = '';
   private isScriptLoaded = false;
   private isInitializing = false;
+  private isGoogleInitialized = false;
   private loadedLang = '';
 
   constructor() {
@@ -53,6 +54,7 @@ export class GoogleAuthService {
       
       // We must remove google object to force a clean re-initialization if language changes
       delete (window as any).google;
+      this.isGoogleInitialized = false;
 
       const script = document.createElement('script');
       script.id = 'google-jssdk';
@@ -106,11 +108,14 @@ export class GoogleAuthService {
   private setupGoogle() {
     this.loadGoogleScript().then(() => {
       if ((window as any).google && this.googleClientId) {
-        (window as any).google.accounts.id.initialize({
-          client_id: this.googleClientId,
-          callback: (window as any).handleGoogleCredential,
-          cancel_on_tap_outside: false
-        });
+        if (!this.isGoogleInitialized) {
+          (window as any).google.accounts.id.initialize({
+            client_id: this.googleClientId,
+            callback: (window as any).handleGoogleCredential,
+            cancel_on_tap_outside: false
+          });
+          this.isGoogleInitialized = true;
+        }
         
         // Show One Tap prompt
         (window as any).google.accounts.id.prompt();
@@ -143,10 +148,13 @@ export class GoogleAuthService {
   private loadAndRenderButton(elementId: string) {
     this.loadGoogleScript().then(() => {
       if ((window as any).google && this.googleClientId) {
-        (window as any).google.accounts.id.initialize({
-          client_id: this.googleClientId,
-          callback: (window as any).handleGoogleCredential
-        });
+        if (!this.isGoogleInitialized) {
+          (window as any).google.accounts.id.initialize({
+            client_id: this.googleClientId,
+            callback: (window as any).handleGoogleCredential
+          });
+          this.isGoogleInitialized = true;
+        }
         const container = document.getElementById(elementId);
         if (container) {
           container.innerHTML = '';
