@@ -10,6 +10,8 @@ export const en: Record<string, string> = {
   'common.error': 'An error occurred',
   'common.noMatches': 'No matches',
   'common.noData': 'No data available',
+  'common.bookCover': 'Book cover',
+  'common.photoIndex': 'photo {n}',
   'common.yes': 'Yes',
   'common.no': 'No',
 
@@ -26,6 +28,7 @@ export const en: Record<string, string> = {
   'nav.messages': 'Messages',
   'nav.account': 'Account',
   'nav.admin': 'Admin',
+  'nav.languageSwitcher': 'Change language',
   'footer.tagline': 'Connecting university students across Taiwan to buy and sell secondhand textbooks.',
   'footer.about': 'About',
   'footer.terms': 'Legal',
@@ -62,6 +65,8 @@ export const en: Record<string, string> = {
   'search.all': 'All',
   'search.inStockOnly': 'In Stock Only',
   'search.priceTitle': 'Price Range',
+  'search.priceMinPlaceholder': 'Min',
+  'search.priceMaxPlaceholder': 'Max',
   'search.categoryTitle': 'Category',
   'search.allCategories': 'All Categories',
   'search.engineTitle': 'Data Source',
@@ -101,6 +106,7 @@ export const en: Record<string, string> = {
   'auth.register': 'Sign up',
   'auth.studentLogin': 'Login',
   'auth.welcomeBack': 'Welcome back to CycleUni.',
+  'auth.loginRequiredHint': 'Please log in to continue.',
   'auth.emailLabel': 'Email',
   'auth.passwordLabel': 'Password',
   'auth.passwordPlaceholder': 'Enter your password',
@@ -147,6 +153,7 @@ export const en: Record<string, string> = {
 
   // Settings / Account
   'acct.defaultUser': 'Student',
+  'acct.avatarAlt': 'avatar',
   'acct.avatarFallback': 'S',
   'acct.noSchool': 'School not set',
   'acct.logout': 'Log out',

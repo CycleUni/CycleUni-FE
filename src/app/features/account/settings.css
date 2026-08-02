@@ -1,0 +1,50 @@
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .content-header h2 { margin: 0; }
+    .verify-section { margin-bottom: 24px; }
+    .alert-box {
+      padding: 16px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+    }
+    .alert-box.warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffe69c;
+      color: #664d03;
+    }
+    .alert-box.success {
+      background-color: #d1e7dd;
+      border: 1px solid #a3cfbb;
+      color: #0f5132;
+    }
+    .alert-box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .alert-box p {
+      margin: 0;
+      font-size: 14px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .inline-msg {
+      padding: 8px;
+      border-radius: 4px;
+      background-color: #d1e7dd;
+      color: #0f5132;
+    }
+    .inline-msg.error {
+      background-color: #f8d7da;
+      color: #842029;
+    }

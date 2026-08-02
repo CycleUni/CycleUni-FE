@@ -10,6 +10,8 @@ export const zhTW: Record<string, string> = {
   'common.error': '發生錯誤',
   'common.noMatches': '沒有符合的選項',
   'common.noData': '目前沒有資料',
+  'common.bookCover': '書籍封面',
+  'common.photoIndex': '第 {n} 張照片',
   'common.yes': '是',
   'common.no': '否',
 
@@ -26,6 +28,7 @@ export const zhTW: Record<string, string> = {
   'nav.messages': '訊息',
   'nav.account': '會員',
   'nav.admin': '後台管理',
+  'nav.languageSwitcher': '切換語言',
   'footer.tagline': '台灣大學生專屬的二手教科書媒合平台',
   'footer.about': '關於',
   'footer.terms': '條款',
@@ -62,6 +65,8 @@ export const zhTW: Record<string, string> = {
   'search.all': '全部',
   'search.inStockOnly': '僅顯示有庫存',
   'search.priceTitle': '價格區間',
+  'search.priceMinPlaceholder': '最低',
+  'search.priceMaxPlaceholder': '最高',
   'search.categoryTitle': '學院分類',
   'search.allCategories': '全部學院',
   'search.engineTitle': '資料來源',
@@ -101,6 +106,7 @@ export const zhTW: Record<string, string> = {
   'auth.register': '註冊',
   'auth.studentLogin': '登入',
   'auth.welcomeBack': '歡迎回到 CycleUni 易校網。',
+  'auth.loginRequiredHint': '請先登入以繼續操作。',
   'auth.emailLabel': '登入信箱',
   'auth.passwordLabel': '密碼',
   'auth.passwordPlaceholder': '請輸入密碼',
@@ -147,6 +153,7 @@ export const zhTW: Record<string, string> = {
 
   // Settings / Account
   'acct.defaultUser': '學生會員',
+  'acct.avatarAlt': '大頭貼',
   'acct.avatarFallback': '學',
   'acct.noSchool': '尚未設定學校',
   'acct.logout': '登出',

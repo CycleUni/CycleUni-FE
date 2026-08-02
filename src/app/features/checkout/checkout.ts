@@ -27,8 +27,8 @@ import { TPipe, I18nService } from '../../core/i18n.service';
           <div class="summary-card">
             <h3>{{ 'checkout.summary' | t }}</h3>
             <div class="book-info">
-              <img *ngIf="listing.photos?.length > 0" [src]="listing.photos[0]" alt="Book Cover" class="book-cover">
-              <img *ngIf="!listing.photos?.length && listing.book_cover_url" [src]="listing.book_cover_url" alt="Book Cover" class="book-cover">
+              <img *ngIf="listing.photos?.length > 0" [src]="listing.photos[0]" [attr.alt]="listing.book_title" class="book-cover">
+              <img *ngIf="!listing.photos?.length && listing.book_cover_url" [src]="listing.book_cover_url" [attr.alt]="listing.book_title" class="book-cover">
               <div class="placeholder-cover" *ngIf="!listing.photos?.length && !listing.book_cover_url"></div>
               <div>
                 <h4 class="book-title-serif">{{ listing.book_title }}</h4>

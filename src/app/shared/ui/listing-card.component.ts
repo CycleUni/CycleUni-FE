@@ -11,8 +11,8 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     <div class="listing-card" (click)="onClickCard.emit(item.id)">
       <div class="listing-content">
         <div class="listing-photo-container">
-          <img *ngIf="item.photo_url || item.photos?.[0]" [src]="item.photo_url || item.photos?.[0]" alt="" />
-          <span *ngIf="!item.photo_url && !item.photos?.length">{{ 'book.noPhoto' | t }}</span>
+          <img *ngIf="(item.photo_url || item.photos?.[0]) && !imageBroken" [src]="item.photo_url || item.photos?.[0]" alt="" (error)="onImageError()" />
+          <span *ngIf="!item.photo_url && !item.photos?.length || imageBroken">{{ 'book.noPhoto' | t }}</span>
         </div>
         <div class="listing-header">
           <span class="price">NT$ {{ item.price }}</span>
@@ -120,6 +120,11 @@ export class UiListingCard {
   @Output() onContactSeller = new EventEmitter<string>();
 
   private i18n = inject(I18nService);
+  imageBroken = false;
+
+  onImageError() {
+    this.imageBroken = true;
+  }
 
   getConditionLabel(cond: string): string {
     const translated = this.i18n.t(`cond.${cond}`);

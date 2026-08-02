@@ -1,0 +1,136 @@
+    <div class="content-header">
+      <h2>{{ 'acct.settingsTitle' | t }}</h2>
+    </div>
+
+    <!-- Campus email verification section -->
+    <div class="verify-section" *ngIf="!verifiedAt">
+      <div class="alert-box warning">
+        <strong>{{ 'acct.unverifiedTitle' | t }}</strong>
+        <p>{{ 'acct.unverifiedDesc' | t }}</p>
+      </div>
+
+      <!-- Auto verify section if login email is .edu.tw -->
+      <div class="form-group" style="max-width: 400px; margin-top: 16px; padding: 16px; background-color: #f8f9fa; border-radius: 4px; border: 1px solid #dee2e6;" *ngIf="!showPendingVerification && email && email.endsWith('.edu.tw')">
+        <label style="color: #0f5132; margin-bottom: 4px;">{{ 'acct.autoVerifyLabel' | t }}</label>
+        <p style="font-size: 14px; margin-bottom: 12px; color: #666; margin-top: 0;">{{ 'acct.autoVerifyDesc' | t:{email: email} }}</p>
+        <ui-button (onClick)="onAutoVerify()" [disabled]="isLoading">
+          {{ (isLoading ? 'acct.sending' : 'acct.autoVerifyBtn') | t }}
+        </ui-button>
+        <div *ngIf="autoVerifyMessage" class="inline-msg" [class.error]="autoVerifyIsError" style="margin-top: 8px; font-size: 14px;">
+          {{ autoVerifyMessage }}
+        </div>
+      </div>
+
+      <ng-container *ngIf="!showPendingVerification; else pendingVerificationBlock">
+        <div class="form-group" style="max-width: 400px; margin-top: 16px;">
+          <label>{{ 'acct.eduEmailLabel' | t }}</label>
+          <ui-input placeholder="student@ntu.edu.tw" [(ngModel)]="eduEmail" style="width: 100%;"></ui-input>
+          <ui-button style="margin-top: 8px;" (onClick)="onRequestVerification()" [disabled]="isLoading || resendCooldownSeconds > 0">
+            {{
+              isLoading
+                ? ('acct.sending' | t)
+                : (resendCooldownSeconds > 0
+                  ? ('acct.resendIn' | t:{minutes: resendCooldownMinutes, seconds: resendCooldownSecondsPart})
+                  : ('acct.sendVerification' | t))
+            }}
+          </ui-button>
+          <div *ngIf="verifyMessage" class="inline-msg" [class.error]="verifyIsError" style="margin-top: 8px; font-size: 14px;">
+            {{ verifyMessage }}
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #pendingVerificationBlock>
+        <div class="form-group" style="max-width: 400px; margin-top: 16px; padding: 16px; background-color: #f8f9fa; border-radius: 4px; border: 1px solid #dee2e6;">
+          <label style="margin-bottom: 4px;">{{ 'acct.pendingEmailLabel' | t }}</label>
+          <p style="font-size: 14px; margin-top: 0; margin-bottom: 8px; color: #666;">{{ pendingEduEmailDisplay }}</p>
+          <p style="font-size: 14px; margin-top: 0; margin-bottom: 12px; color: #666;">{{ 'acct.pendingEmailDesc' | t:{email: pendingEduEmailDisplay} }}</p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <ui-button variant="white" (onClick)="onReenterEduEmail()" [disabled]="isLoading">{{ 'acct.reenterEmail' | t }}</ui-button>
+            <ui-button (onClick)="onResendVerification()" [disabled]="isLoading || resendCooldownSeconds > 0">
+              {{
+                isLoading
+                  ? ('acct.sending' | t)
+                  : (resendCooldownSeconds > 0
+                    ? ('acct.resendIn' | t:{minutes: resendCooldownMinutes, seconds: resendCooldownSecondsPart})
+                    : ('acct.resendVerification' | t))
+              }}
+            </ui-button>
+          </div>
+          <div *ngIf="verifyMessage" class="inline-msg" [class.error]="verifyIsError" style="margin-top: 8px; font-size: 14px;">
+            {{ verifyMessage }}
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="verify-section" *ngIf="verifiedAt">
+      <div class="alert-box success">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <strong>{{ 'acct.verifiedTitle' | t }}</strong>
+            <p>{{ 'acct.boundTo' | t:{email: eduEmail} }}</p>
+            <p style="font-size: 12px; margin-top: 4px;">{{ 'acct.verifiedAtPrefix' | t }}{{ verifiedAt | date:'yyyy/MM/dd HH:mm' }}</p>
+          </div>
+          <ui-button variant="white" (onClick)="onUnbindEduEmail()" [disabled]="isLoading">{{ 'acct.unbindEmail' | t }}</ui-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="max-width: 400px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px;">
+      <div style="margin-bottom: 16px;">
+        <label>{{ 'acct.loginEmailLabel' | t }}</label>
+        <ui-input [(ngModel)]="email" style="width: 100%;" [disabled]="isGoogleLinked"></ui-input>
+        <div *ngIf="isGoogleLinked" style="font-size: 12px; color: #666; margin-top: 4px;">
+          {{ 'acct.googleLinkedEmailDesc' | t }}
+        </div>
+      </div>
+      <div style="display: flex; gap: 16px;">
+        <div style="flex: 1;">
+          <label>{{ 'auth.lastNameLabel' | t }}</label>
+          <ui-input [(ngModel)]="lastName" style="width: 100%;"></ui-input>
+        </div>
+        <div style="flex: 1;">
+          <label>{{ 'auth.firstNameLabel' | t }}</label>
+          <ui-input [(ngModel)]="firstName" style="width: 100%;"></ui-input>
+        </div>
+      </div>
+      
+      <ui-button style="margin-top: 16px;" (onClick)="onUpdateProfile()" [disabled]="isLoading">
+        {{ (isLoading ? 'acct.saving' : 'acct.saveProfile') | t }}
+      </ui-button>
+      <div *ngIf="settingsMessage" class="inline-msg" [class.error]="settingsIsError" style="margin-top: 8px; font-size: 14px;">
+        {{ settingsMessage }}
+      </div>
+    </div>
+
+    <div class="form-group" style="max-width: 400px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px;">
+      <div style="margin-bottom: 16px;" *ngIf="hasPassword">
+        <label>{{ 'acct.currentPassword' | t }}</label>
+        <ui-input type="password" [(ngModel)]="oldPassword" style="width: 100%;"></ui-input>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label>{{ 'acct.newPassword' | t }}</label>
+        <ui-input type="password" [(ngModel)]="newPassword" style="width: 100%;"></ui-input>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label>{{ 'acct.confirmNewPassword' | t }}</label>
+        <ui-input type="password" [(ngModel)]="confirmPassword" style="width: 100%;"></ui-input>
+      </div>
+      
+      <ui-button style="margin-top: 8px;" (onClick)="onChangePassword()" [disabled]="isLoading">
+        {{ (hasPassword ? 'acct.changePasswordBtn' : 'acct.setPasswordBtn') | t }}
+      </ui-button>
+      <div *ngIf="pwdMessage" class="inline-msg" [class.error]="pwdIsError" style="margin-top: 8px; font-size: 14px;">
+        {{ pwdMessage }}
+      </div>
+    </div>
+
+    <!-- Delete Account Section -->
+    <div class="form-group" style="max-width: 400px; margin-top: 48px; border-top: 1px solid #f5c2c7; padding-top: 32px;">
+      <h3 style="color: #dc3545; margin-top: 0; margin-bottom: 8px; font-size: 18px;">{{ 'acct.deleteAccountBtn' | t }}</h3>
+      <p style="font-size: 14px; color: #666; margin-bottom: 16px;">{{ 'acct.deleteAccountConfirm' | t }}</p>
+      <ui-button variant="white" (onClick)="onDeleteAccount()" [disabled]="isLoading">
+        <span style="color: #dc3545">{{ 'acct.deleteAccountBtn' | t }}</span>
+      </ui-button>
+    </div>
