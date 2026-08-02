@@ -183,9 +183,16 @@ export class UiLayout implements OnDestroy {
             return;
           }
 
-          // Default to "All Schools" initially; the effect above will override this 
-          // once AuthStore.user() resolves.
-          this.selectedSchool = '';
+          // Default to "All Schools" — unless the user's profile has already
+          // resolved by now. The effect below only re-runs when the profile
+          // signal itself changes, so if the profile arrived *before* this
+          // metadata call finished, that effect already ran once with an
+          // empty `rawSchools` and did nothing — it will never fire again to
+          // correct us. Checking the signal directly here closes that gap
+          // regardless of which of the two requests happens to resolve first.
+          const profile = this.authStore.user();
+          const userSchool = profile?.school ? this.rawSchools.find(s => s.id === profile.school) : undefined;
+          this.selectedSchool = userSchool ? userSchool.name : '';
           this.schoolStateService.setSchool(this.selectedSchool);
           this.cdr.markForCheck();
         }

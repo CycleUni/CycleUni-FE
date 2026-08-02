@@ -1,6 +1,9 @@
-import { Component, Input, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, Input, inject, ChangeDetectorRef, effect, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subject, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 import { UiListingRow } from './listing-row.component';
 import { UiSkeleton } from './skeleton.component';
 import { UiPagination } from './pagination.component';
@@ -76,8 +79,38 @@ export class UiRecentListings {
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+
+  // `school`/`limit` inputs can each fire their own fetch in quick succession
+  // (e.g. `school` starts as '' and is then updated once the user's actual
+  // school resolves asynchronously). Routing every fetch through switchMap
+  // guarantees an older, still-in-flight request can never overwrite the UI
+  // after a newer one has already resolved.
+  private fetchTrigger$ = new Subject<void>();
 
   constructor() {
+    this.fetchTrigger$.pipe(
+      switchMap(() => {
+        this.loading = true;
+        this.cdr.markForCheck();
+        return this.listingService.getRecentBooks(this.school, this.currentPage, this.limit).pipe(
+          catchError(() => of(null))
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((data) => {
+      if (data === null) {
+        this.recentListings = [];
+        this.errorMessage = this.i18n.t('common.error') || 'Error loading listings';
+      } else {
+        this.recentListings = data.results || data;
+        this.totalCount = data.count || this.recentListings.length;
+        this.errorMessage = '';
+      }
+      this.loading = false;
+      this.cdr.markForCheck();
+    });
+
     effect(() => {
       // Re-fetch when language changes so localized error/titles update if needed
       this.i18n.lang();
@@ -86,22 +119,7 @@ export class UiRecentListings {
   }
 
   private fetchRecentListings() {
-    this.loading = true;
-    this.cdr.markForCheck();
-    this.listingService.getRecentBooks(this.school, this.currentPage, this.limit).subscribe({
-      next: (data) => {
-        this.recentListings = data.results || data;
-        this.totalCount = data.count || this.recentListings.length;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.recentListings = [];
-        this.loading = false;
-        this.errorMessage = this.i18n.t('common.error') || 'Error loading listings';
-        this.cdr.markForCheck();
-      }
-    });
+    this.fetchTrigger$.next();
   }
 
   onPageChange(page: number) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,12 +6,12 @@ import { AdminService, AdminUser } from '../../core/services/admin.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
-import { UiSelect } from '../../shared/ui/select.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiSelect],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown],
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
@@ -27,7 +27,7 @@ import { UiSelect } from '../../shared/ui/select.component';
         <div class="field"><label>{{ 'admin.staffBadge' | t }}</label><span class="status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span></div>
       </div>
 
-      <ui-select [label]="'admin.colSchool' | t" [options]="schoolOptions" [(ngModel)]="schoolId"></ui-select>
+      <ui-dropdown [label]="'admin.colSchool' | t" [options]="schoolOptions" [(ngModel)]="schoolId"></ui-dropdown>
 
       <div class="toggle-row">
         <label class="toggle">
@@ -126,22 +126,32 @@ export class AdminUserDetailComponent implements OnInit {
   isActive = false;
   isVerified = false;
   schoolId: string | number | '' = '';
-  schools: { id: string | number; name: string }[] = [];
+  schools: { id: string | number; name: string; display_name?: string }[] = [];
 
   get schoolOptions() {
     return [
       { value: '', label: this.i18n.t('admin.noSchool') },
-      ...this.schools.map(s => ({ value: String(s.id), label: s.name })),
+      ...this.schools.map(s => ({ value: String(s.id), label: s.display_name || s.name })),
     ];
+  }
+
+  constructor() {
+    // School display_name is localized server-side (School.localized_name),
+    // so it has to be re-fetched on language switch — same pattern as the
+    // header's school selector (layout.component.ts) — otherwise the school
+    // list keeps showing whatever language was active when this page first
+    // loaded.
+    effect(() => {
+      this.i18n.lang();
+      this.metadataService.getMetadata().subscribe({
+        next: (meta) => { this.schools = meta?.schools || []; this.cdr.markForCheck(); },
+        error: () => {}
+      });
+    });
   }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
-
-    this.metadataService.getMetadata().subscribe({
-      next: (meta) => { this.schools = meta?.schools || []; this.cdr.markForCheck(); },
-      error: () => {}
-    });
 
     this.adminService.getUser(id).subscribe({
       next: (user) => {
