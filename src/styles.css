@@ -13,7 +13,7 @@
   --accent:     #1E5C46; /* primary action color (deep green: links, primary buttons, prices) */
   --accent-ink: #14402F; /* darkened hover state */
   --flag:       #A34A2A; /* warnings and the "N people waiting" badge (brick red, these two uses only) */
-  --muted:      #6B7280; /* secondary text */
+  --muted:      #647079; /* secondary text */
 }
 
 *,

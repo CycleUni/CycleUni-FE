@@ -71,9 +71,9 @@ import { combineLatest } from 'rxjs';
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.priceTitle' | t }}</h4>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <ui-input placeholder="Min" [(ngModel)]="priceMin" style="width: 80px;"></ui-input>
+              <ui-input [placeholder]="'search.priceMinPlaceholder' | t" [(ngModel)]="priceMin" style="width: 80px;"></ui-input>
               <span>-</span>
-              <ui-input placeholder="Max" [(ngModel)]="priceMax" style="width: 80px;"></ui-input>
+              <ui-input [placeholder]="'search.priceMaxPlaceholder' | t" [(ngModel)]="priceMax" style="width: 80px;"></ui-input>
             </div>
           </div>
           <div class="filter-group">

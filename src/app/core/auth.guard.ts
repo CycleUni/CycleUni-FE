@@ -9,8 +9,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   if (auth.isLoggedIn()) {
     return true;
   }
-  
-  return router.parseUrl('/account');
+
+  return router.createUrlTree(['/account'], { queryParams: { returnUrl: state.url } });
 };
 
 export const accountIndexGuard: CanActivateFn = () => {

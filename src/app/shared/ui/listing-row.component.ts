@@ -11,8 +11,8 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   template: `
     <div class="listing-row">
       <div class="cover">
-        <img *ngIf="coverUrl" [src]="coverUrl" [alt]="title || ('home.unknownBook' | t)" />
-        <div class="placeholder" *ngIf="!coverUrl"></div>
+        <img *ngIf="coverUrl && !imageBroken" [src]="coverUrl" [alt]="title || ('home.unknownBook' | t)" (error)="onImageError()" />
+        <div class="placeholder" *ngIf="!coverUrl || imageBroken"></div>
       </div>
       <div class="info">
         <h3 class="title book-title-serif">{{ title }}</h3>
@@ -185,10 +185,18 @@ export class UiListingRow implements OnChanges {
 
   private i18n = inject(I18nService);
   conditionText: string = '';
+  imageBroken = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['condition']) {
       this.conditionText = this.condition ? this.i18n.t(`cond.${this.condition}`) : '';
     }
+    if (changes['coverUrl']) {
+      this.imageBroken = false;
+    }
+  }
+
+  onImageError() {
+    this.imageBroken = true;
   }
 }

@@ -23,6 +23,7 @@ export interface DropdownOption {
           [class.icon-only]="iconOnly"
           [disabled]="disabled"
           [attr.aria-expanded]="open"
+          [attr.aria-label]="triggerAriaLabel"
           aria-haspopup="listbox"
           (click)="toggle()"
         >
@@ -231,6 +232,9 @@ export class UiDropdown implements ControlValueAccessor, AfterViewInit, OnDestro
   // Independent of customTrigger: a custom-trigger dropdown can still want
   // the bordered field look (e.g. a compact select-style school picker).
   @Input() iconOnly: boolean = false;
+  // Accessible name for the trigger button, needed when the projected
+  // trigger content (e.g. an icon-only SVG) has no visible text.
+  @Input() triggerAriaLabel: string | null = null;
   // Drops the form-field bottom margin, for inline header usage rather
   // than a stacked form field.
   @Input() compact: boolean = false;

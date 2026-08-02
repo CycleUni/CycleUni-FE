@@ -49,7 +49,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
           </div>
         </ng-container>
         <ng-template #categoriesLoaded>
-          <div class="categories-wrapper" *ngIf="categories?.length">
+          <div class="categories-wrapper" *ngIf="categories?.length" [class.has-left]="canScrollLeft" [class.has-right]="canScrollRight">
             <button class="scroll-btn left" *ngIf="canScrollLeft" (click)="scrollCategories(-1)">&#8249;</button>
             <div class="categories-grid" #categoriesGrid (scroll)="checkScroll()">
               <a [routerLink]="['/search']" [queryParams]="{ category: cat.slug }" class="category-card" *ngFor="let cat of categories; trackBy: trackBySlug">
@@ -118,6 +118,21 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     .section { max-width: 1120px; margin: 0 auto 48px; padding: 0 16px; }
     .section-title { font-size: 20px; margin-top: 0; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
     .categories-wrapper { position: relative; }
+    .categories-wrapper::before, .categories-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 8px;
+      width: 56px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .categories-wrapper::before { left: 0; background: linear-gradient(to right, var(--paper) 0%, transparent 100%); }
+    .categories-wrapper::after { right: 0; background: linear-gradient(to left, var(--paper) 0%, transparent 100%); }
+    .categories-wrapper.has-left::before { opacity: 1; }
+    .categories-wrapper.has-right::after { opacity: 1; }
     .scroll-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background-color: var(--paper); border: 1px solid var(--line); border-radius: 50%; font-size: 24px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.2s; }
     .scroll-btn:hover { background-color: var(--paper-warm); color: var(--accent); border-color: var(--accent); }
     .scroll-btn.left { left: 8px; }
@@ -160,7 +175,9 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       .two-cols { flex-direction: column; gap: 0; }
       .two-cols .section { width: 100%; margin: 0 0 24px; }
       .steps-grid { grid-template-columns: 1fr; }
-      @media(max-width: 420px) { .category-card { flex: 0 0 calc(100vw - 64px); } }
+      @media(max-width: 420px) {
+        .category-card { flex: 0 0 calc(100vw - 64px); }
+      }
     }
   `]
 })

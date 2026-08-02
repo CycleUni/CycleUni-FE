@@ -20,7 +20,7 @@ import { TPipe, I18nService } from '../../core/i18n.service';
           {{ getAvatarInitial() }}
         </div>
         <div class="seller-avatar-image-container" *ngIf="avatarUrl">
-          <img [src]="avatarUrl" alt="Avatar" class="seller-avatar-image" referrerpolicy="no-referrer">
+          <img [src]="avatarUrl" [attr.alt]="seller.display_name ? (seller.display_name + ' ' + ('acct.avatarAlt' | t)) : ('acct.avatarAlt' | t)" class="seller-avatar-image" referrerpolicy="no-referrer">
         </div>
         <div class="seller-info">
           <h1 class="seller-name">{{ seller.display_name }}</h1>
