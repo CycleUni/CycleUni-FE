@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -102,7 +102,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     }
   `]
 })
-export class AdminUsersListComponent implements OnInit {
+export class AdminUsersListComponent {
   private adminService = inject(AdminService);
   private i18n = inject(I18nService);
   private cdr = inject(ChangeDetectorRef);
@@ -123,8 +123,17 @@ export class AdminUsersListComponent implements OnInit {
     ];
   }
 
-  ngOnInit() {
-    this.reload();
+  constructor() {
+    // school_name is localized server-side, and every filter/header label
+    // here goes through the i18n `t` pipe — but none of that re-fetches the
+    // already-loaded rows. Re-run the query on language change so the table
+    // actually reflects the new language instead of staying stuck on
+    // whatever was active when the page first loaded (same fix as the user
+    // detail page's school dropdown).
+    effect(() => {
+      this.i18n.lang();
+      this.reload();
+    });
   }
 
   onSearch(q: string) {

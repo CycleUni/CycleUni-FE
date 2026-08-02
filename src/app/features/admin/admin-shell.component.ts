@@ -50,6 +50,13 @@ import { TPipe } from '../../core/i18n.service';
     .admin-nav {
       display: flex;
       gap: 4px;
+      /* On narrow screens this has 8 tabs and no wrap — without a scroll
+         container of its own, the overflow is simply clipped (the flex item
+         shrinks to the header's width) and the later tabs become completely
+         unreachable, not just visually cramped. */
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .admin-nav a {
       padding: 8px 14px;
@@ -58,6 +65,8 @@ import { TPipe } from '../../core/i18n.service';
       color: var(--ink);
       text-decoration: none;
       border: 1px solid transparent;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .admin-nav a:hover {
       background: var(--paper-warm);
@@ -67,6 +76,16 @@ import { TPipe } from '../../core/i18n.service';
       background: var(--paper-warm);
       color: var(--accent);
       font-weight: 600;
+    }
+    /* Every admin page renders a data table wider than a phone screen
+       (email/name/school/status columns, etc). Rather than duplicate a
+       scroll wrapper in each of the ~8 admin list/detail components, contain
+       the overflow once here — .admin-content is a real DOM ancestor of
+       whatever the router-outlet renders, so this clips/scrolls any child
+       page's wide content regardless of Angular's view encapsulation. */
+    .admin-content {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
   `]
 })
