@@ -619,4 +619,8 @@ export const zhTW: Record<string, string> = {
   'notfound.title': '找不到頁面',
   'notfound.desc': '您要找的頁面不存在或已被移除。',
   'notfound.backHome': '返回首頁',
+  
+  // SEO
+  'seo.title': 'CycleUni 易校網',
+  'seo.description': 'CycleUni 易校網是一個專為大學生設計的二手書籍與物品交易平台，讓校園資源循環利用更簡單。',
 };
