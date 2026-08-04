@@ -146,7 +146,7 @@ import { combineLatest } from 'rxjs';
                   <ng-container *ngIf="item.activeListings > 0">
                     <ui-button>{{ 'search.viewAll' | t }}</ui-button>
                     <span class="local-badge" *ngIf="currentSchool && item.localActiveListings === 0">
-                      {{ 'search.noLocalListings' | t:{school: currentSchool} }}
+                      {{ 'search.noLocalListings' | t:{school: currentSchoolLabel} }}
                     </span>
                   </ng-container>
                 </div>
@@ -243,6 +243,10 @@ export class Search implements OnInit {
   filtersOpen = false;
   results: any[] = []; categories: any[] = []; courses: string[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
 
+  get currentSchoolLabel(): string {
+    return this.schoolStateService.getSchoolLabel(this.currentSchool);
+  }
+
   get categoryOptions() {
     return [
       { label: this.i18n.t('search.allCategories'), value: '' },
@@ -303,6 +307,10 @@ export class Search implements OnInit {
   }
 
   ngOnInit() {
+    this.schoolStateService.schools$.subscribe(() => {
+      this.cdr.markForCheck();
+    });
+
     combineLatest([this.route.queryParams, this.schoolStateService.selectedSchool$]).subscribe(([params, school]) => {
       this.currentSchool = school; this.cdr.markForCheck();
       this.searchQuery = params['q'] || ''; this.activeQuery = this.searchQuery;

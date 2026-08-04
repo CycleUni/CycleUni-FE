@@ -62,7 +62,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           <h3>{{ 'book.currentListings' | t:{n: totalListings} }}</h3>
           
           <div class="no-local-alert" *ngIf="listings.length > 0 && localListingsCount === 0 && currentSchool">
-            {{ 'search.noLocalListings' | t:{school: currentSchool} }}
+            {{ 'search.noLocalListings' | t:{school: currentSchoolLabel} }}
           </div>
 
           <div class="listings-grid" *ngIf="listings.length > 0">
@@ -233,6 +233,10 @@ export class Book implements OnInit {
   currentPage = 1;
   private isLocalCache = false;
 
+  get currentSchoolLabel(): string {
+    return this.schoolStateService.getSchoolLabel(this.currentSchool);
+  }
+
   private bookService = inject(BookService);
   private messageService = inject(MessageService);
   private accountService = inject(AccountService);
@@ -256,6 +260,10 @@ export class Book implements OnInit {
     this.schoolStateService.selectedSchool$.subscribe(school => {
       this.currentSchool = school;
       this.sortListings();
+      this.cdr.markForCheck();
+    });
+
+    this.schoolStateService.schools$.subscribe(() => {
       this.cdr.markForCheck();
     });
 

@@ -8,8 +8,23 @@ export const MANUAL_SCHOOL_KEY = 'cycleuni_manual_school';
 })
 export class SchoolStateService {
   private selectedSchoolSubject = new BehaviorSubject<string>('');
+  private rawSchools: any[] = [];
+  private schoolsSubject = new BehaviorSubject<any[]>([]);
+  
   hasInitialized = false;
   selectedSchool$ = this.selectedSchoolSubject.asObservable();
+  schools$ = this.schoolsSubject.asObservable();
+
+  setSchools(schools: any[]) {
+    this.rawSchools = schools;
+    this.schoolsSubject.next(schools);
+  }
+
+  getSchoolLabel(schoolName: string): string {
+    const s = this.rawSchools.find(x => x.name === schoolName);
+    if (!s) return schoolName;
+    return s.display_name || s.name;
+  }
 
   setSchool(school: string) {
     if (school !== this.selectedSchoolSubject.value) {
