@@ -614,4 +614,8 @@ export const en: Record<string, string> = {
   'notfound.title': 'Page Not Found',
   'notfound.desc': 'The page you are looking for does not exist or has been moved.',
   'notfound.backHome': 'Back to Home',
+
+  // SEO
+  'seo.title': 'CycleUni',
+  'seo.description': 'CycleUni is a second-hand book and item trading platform designed for university students, making campus resource recycling simple.',
 };
