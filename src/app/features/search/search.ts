@@ -15,7 +15,7 @@ import { MetadataService } from '../../core/services/metadata.service';
 import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
-import { combineLatest } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-search',
@@ -242,6 +242,7 @@ export class Search implements OnInit {
   loading = true; fetchError = false;
   filtersOpen = false;
   results: any[] = []; categories: any[] = []; courses: string[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
+  private searchSub?: Subscription;
 
   get currentSchoolLabel(): string {
     return this.schoolStateService.getSchoolLabel(this.currentSchool);
@@ -336,7 +337,12 @@ export class Search implements OnInit {
     this.loading = true;
     this.fetchError = false;
     this.cdr.markForCheck();
-    this.bookService.searchBooks(this.activeQuery, this.category, this.course, this.schoolStateService.currentSchool, this.currentPage, this.engine).subscribe({
+    
+    if (this.searchSub) {
+      this.searchSub.unsubscribe();
+    }
+    
+    this.searchSub = this.bookService.searchBooks(this.activeQuery, this.category, this.course, this.schoolStateService.currentSchool, this.currentPage, this.engine).subscribe({
       next: data => {
         this.results = data.results || data;
         this.totalCount = data.count || this.results.length;
