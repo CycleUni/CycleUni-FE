@@ -64,6 +64,15 @@ import { combineLatest } from 'rxjs';
             ></ui-dropdown>
           </div>
           <div class="filter-group">
+            <h4 class="filter-title">{{ 'search.courseTitle' | t }}</h4>
+            <ui-dropdown
+              [(ngModel)]="course"
+              (ngModelChange)="onCourseChange($event)"
+              [options]="courseOptions"
+              style="width: 100%; display: block;"
+            ></ui-dropdown>
+          </div>
+          <div class="filter-group">
             <h4 class="filter-title">{{ 'search.stockTitle' | t }}</h4>
             <label class="filter-label"><input type="radio" name="stock" value="all" [(ngModel)]="stockFilter">{{ 'search.all' | t }}</label>
             <label class="filter-label"><input type="radio" name="stock" value="inStock" [(ngModel)]="stockFilter">{{ 'search.inStockOnly' | t }}</label>
@@ -134,7 +143,12 @@ import { combineLatest } from 'rxjs';
                     <ui-button *ngIf="!item.is_subscribed" variant="ghost" (onClick)="$event.stopPropagation(); subscribeBook(item)">{{ 'search.notifyMe' | t }}</ui-button>
                     <ui-button *ngIf="item.is_subscribed" variant="ghost" style="color: var(--muted); border-color: var(--muted);" (onClick)="$event.stopPropagation(); unsubscribeBook(item)">{{ 'search.cancelNotify' | t }}</ui-button>
                   </ng-container>
-                  <ui-button *ngIf="item.activeListings > 0">{{ 'search.viewAll' | t }}</ui-button>
+                  <ng-container *ngIf="item.activeListings > 0">
+                    <ui-button>{{ 'search.viewAll' | t }}</ui-button>
+                    <span class="local-badge" *ngIf="currentSchool && item.localActiveListings === 0">
+                      {{ 'search.noLocalListings' | t:{school: currentSchool} }}
+                    </span>
+                  </ng-container>
                 </div>
               </div>
             </div>
@@ -189,7 +203,8 @@ import { combineLatest } from 'rxjs';
     .stock-status { font-size:14px; font-weight:500; color:var(--ink); padding:8px 12px; background-color:var(--paper-warm); border-radius:4px; display:inline-block; }
     .stock-status.empty { color:var(--flag); background-color:#fff0eb; }
     .price { color:var(--accent); font-weight:700; font-size:16px; }
-    .book-action { display:flex; align-items:center; }
+    .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light, #fee2e2); border-radius:4px; }
+    .book-action { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
     .empty-state { text-align:center; padding:64px 24px; border:1px solid var(--line); border-radius:4px; background-color:var(--paper-warm); }
     .empty-state h3 { margin-top:0; margin-bottom:16px; }
     .empty-state p { color:var(--muted); margin-bottom:24px; }
@@ -214,22 +229,29 @@ import { combineLatest } from 'rxjs';
       .book-info { min-width:0; }
       .book-meta .meta-author::after { content:''; margin:0; }
       .book-meta .meta-isbn { display:block; margin-top:4px; }
-      .book-action { width:100%; justify-content:flex-end; }
+      .book-action { width:100%; flex-direction:row-reverse; justify-content:flex-start; align-items:center; gap:12px; }
     }
   `]
 })
 export class Search implements OnInit {
-  searchQuery = ''; activeQuery = ''; category = '';
+  searchQuery = ''; activeQuery = ''; category = ''; course = '';
   engine: 'google' | 'openlibrary' = 'google';
   googleUnavailable = false;
   loading = true; fetchError = false;
   filtersOpen = false;
-  results: any[] = []; categories: any[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
+  results: any[] = []; categories: any[] = []; courses: string[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
 
   get categoryOptions() {
     return [
       { label: this.i18n.t('search.allCategories'), value: '' },
       ...this.categories.map(c => ({ label: c.title, value: c.slug }))
+    ];
+  }
+  
+  get courseOptions() {
+    return [
+      { label: this.i18n.t('search.allCourses'), value: '' },
+      ...this.courses.map(c => ({ label: c, value: c }))
     ];
   }
   get engineOptions() { return this.bookService.getEngineOptions(this.i18n); }
@@ -283,9 +305,15 @@ export class Search implements OnInit {
       this.currentSchool = school; this.cdr.markForCheck();
       this.searchQuery = params['q'] || ''; this.activeQuery = this.searchQuery;
       this.category = params['category'] || '';
+      this.course = params['course'] || '';
       this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : 'google';
       this.currentPage = parseInt(params['page'] || '1', 10);
-      if (this.activeQuery || this.category) {
+      
+      this.bookService.getTopCourses(this.currentSchool, this.category).subscribe({
+        next: data => { this.courses = data; this.cdr.markForCheck(); }
+      });
+
+      if (this.activeQuery || this.category || this.course) {
         this.fetchResults();
       } else {
         this.results = []; this.totalCount = 0; this.loading = false; this.fetchError = false;
@@ -298,7 +326,7 @@ export class Search implements OnInit {
     this.loading = true;
     this.fetchError = false;
     this.cdr.markForCheck();
-    this.bookService.searchBooks(this.activeQuery, this.category, this.schoolStateService.currentSchool, this.currentPage, this.engine).subscribe({
+    this.bookService.searchBooks(this.activeQuery, this.category, this.course, this.schoolStateService.currentSchool, this.currentPage, this.engine).subscribe({
       next: data => {
         this.results = data.results || data;
         this.totalCount = data.count || this.results.length;
@@ -319,6 +347,7 @@ export class Search implements OnInit {
   onPageChange(page: number) {
     const params: any = {}; if (this.activeQuery) params.q = this.activeQuery;
     if (this.category) params.category = this.category;
+    if (this.course) params.course = this.course;
     if (this.engine !== 'google') params.engine = this.engine;
     params.page = page;
     this.router.navigate(['/search'], { queryParams: params });
@@ -334,6 +363,16 @@ export class Search implements OnInit {
     const params: any = {};
     if (this.activeQuery) params.q = this.activeQuery;
     if (cat) params.category = cat;
+    // We intentionally drop this.course when category changes
+    if (this.engine !== 'google') params.engine = this.engine;
+    this.router.navigate(['/search'], { queryParams: params });
+  }
+  
+  onCourseChange(course: string) {
+    const params: any = {};
+    if (this.activeQuery) params.q = this.activeQuery;
+    if (this.category) params.category = this.category;
+    if (course) params.course = course;
     if (this.engine !== 'google') params.engine = this.engine;
     this.router.navigate(['/search'], { queryParams: params });
   }

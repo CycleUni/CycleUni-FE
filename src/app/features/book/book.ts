@@ -9,6 +9,7 @@ import { AccountService } from '../../core/services/account.service';
 import { AuthStore } from '../../core/auth.store';
 import { ChangeDetectorRef } from '@angular/core';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { SchoolStateService } from '../../core/services/school-state.service';
 import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { BookCoverPipe } from '../../shared/pipes/book-cover.pipe';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -60,6 +61,10 @@ import { UiPagination } from '../../shared/ui/pagination.component';
         <div class="listings-section">
           <h3>{{ 'book.currentListings' | t:{n: totalListings} }}</h3>
           
+          <div class="no-local-alert" *ngIf="listings.length > 0 && localListingsCount === 0 && currentSchool">
+            {{ 'search.noLocalListings' | t:{school: currentSchool} }}
+          </div>
+
           <div class="listings-grid" *ngIf="listings.length > 0">
             <ui-listing-card *ngFor="let item of listings" 
               [item]="item"
@@ -162,6 +167,15 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 24px;
     }
+    .no-local-alert {
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      background-color: var(--danger-light, #fee2e2);
+      color: var(--danger, #ef4444);
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+    }
     .course-info {
       font-size: 14px;
       color: var(--muted);
@@ -214,6 +228,8 @@ export class Book implements OnInit {
   book: any = null;
   listings: any[] = [];
   totalListings = 0;
+  localListingsCount = -1;
+  currentSchool = '';
   currentPage = 1;
   private isLocalCache = false;
 
@@ -223,6 +239,7 @@ export class Book implements OnInit {
   private auth = inject(AuthStore);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private schoolStateService = inject(SchoolStateService);
 
   isVerified = false;
 
@@ -236,6 +253,12 @@ export class Book implements OnInit {
   }
 
   ngOnInit() {
+    this.schoolStateService.selectedSchool$.subscribe(school => {
+      this.currentSchool = school;
+      this.sortListings();
+      this.cdr.markForCheck();
+    });
+
     this.route.queryParamMap.subscribe(params => {
       this.bookId = params.get('isbn') || params.get('id');
       const localCache = params.get('local_cache');
@@ -315,6 +338,7 @@ export class Book implements OnInit {
           this.listings = data.listings || [];
           this.totalListings = this.listings.length;
         }
+        this.sortListings();
         this.cdr.markForCheck();
       },
       error: () => {
@@ -326,6 +350,19 @@ export class Book implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  sortListings() {
+    if (this.currentSchool && this.listings.length > 0) {
+      this.listings.sort((a, b) => {
+        const aLocal = a.school_name === this.currentSchool ? 1 : 0;
+        const bLocal = b.school_name === this.currentSchool ? 1 : 0;
+        return bLocal - aLocal;
+      });
+      this.localListingsCount = this.listings.filter(l => l.school_name === this.currentSchool).length;
+    } else {
+      this.localListingsCount = -1;
+    }
   }
 
   onPageChange(page: number) {
