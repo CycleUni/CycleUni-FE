@@ -227,7 +227,7 @@ export class Sell implements OnInit, OnDestroy {
     this.isSearchQueryDirty = false;
     this.hideSearchButtonForNow = false;
 
-    this.bookService.searchBooks(this.searchQuery, '', '', 1, this.engine).subscribe({
+    this.bookService.searchBooks(this.searchQuery, '', '', '', 1, this.engine).subscribe({
       next: (data) => {
         this.isCheckingIsbn = false;
         const items = data.results || data;

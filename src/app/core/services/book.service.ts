@@ -16,10 +16,13 @@ const PUBLIC = new HttpContext().set(SKIP_AUTH, true);
 export class BookService {
   private http = inject(HttpClient);
 
-  searchBooks(query: string, category?: string, school?: string, page: number = 1, engine?: string): Observable<any> {
+  searchBooks(query: string, category?: string, course?: string, school?: string, page: number = 1, engine?: string): Observable<any> {
     let url = `/search/books/?q=${encodeURIComponent(query)}&page=${page}`;
     if (category) {
       url += `&category=${encodeURIComponent(category)}`;
+    }
+    if (course) {
+      url += `&course=${encodeURIComponent(course)}`;
     }
     if (school) {
       url += `&school=${encodeURIComponent(school)}`;
@@ -38,6 +41,18 @@ export class BookService {
 
   createManualBook(bookData: any): Observable<any> {
     return this.http.post<any>('/books/manual/', bookData);
+  }
+
+  getBookDetails(id: string): Observable<any> {
+    return this.http.get(`/catalog/books/${id}/`, { context: PUBLIC_NO_LANG });
+  }
+
+  getTopCourses(school?: string, category?: string): Observable<string[]> {
+    let url = `/search/courses/?`;
+    const params = new URLSearchParams();
+    if (school) params.set('school', school);
+    if (category) params.set('category', category);
+    return this.http.get<string[]>(url + params.toString(), { context: PUBLIC_NO_LANG });
   }
 
   subscribe(bookId: string): Observable<any> {
