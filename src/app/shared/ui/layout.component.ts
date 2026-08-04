@@ -153,6 +153,7 @@ export class UiLayout implements OnDestroy {
     this.metadataService.getMetadata().subscribe({
       next: (data) => {
         if (data.schools && data.schools.length > 0) {
+          this.schoolStateService.setSchools(data.schools);
           this.rawSchools = data.schools;
           this.schools = [
             { value: '', label: this.i18n.t('layout.allSchools') || '全部大學' },
