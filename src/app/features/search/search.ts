@@ -205,6 +205,7 @@ import { combineLatest } from 'rxjs';
     .price { color:var(--accent); font-weight:700; font-size:16px; }
     .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light, #fee2e2); border-radius:4px; }
     .book-action { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+    .book-action ui-button { align-self: flex-end; }
     .empty-state { text-align:center; padding:64px 24px; border:1px solid var(--line); border-radius:4px; background-color:var(--paper-warm); }
     .empty-state h3 { margin-top:0; margin-bottom:16px; }
     .empty-state p { color:var(--muted); margin-bottom:24px; }
@@ -230,6 +231,7 @@ import { combineLatest } from 'rxjs';
       .book-meta .meta-author::after { content:''; margin:0; }
       .book-meta .meta-isbn { display:block; margin-top:4px; }
       .book-action { width:100%; flex-direction:row-reverse; justify-content:flex-start; align-items:center; gap:12px; }
+      .book-action ui-button { align-self: auto; }
     }
   `]
 })
