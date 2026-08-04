@@ -239,19 +239,21 @@ export class OrdersComponent implements OnInit {
 
   get filteredBoughtOrders() {
     if (!this.searchQuery) return this.boughtOrders;
-    const q = this.searchQuery.toLowerCase();
+    const rawQ = this.searchQuery.toLowerCase().trim();
+    const cleanQ = rawQ.replace(/^#/, '').trim();
     return this.boughtOrders.filter(o => 
-      (o.listing_title && o.listing_title.toLowerCase().includes(q)) ||
-      (o.id && String(o.id).includes(q))
+      (o.listing_title && o.listing_title.toLowerCase().includes(rawQ)) ||
+      (o.id && String(o.id).includes(cleanQ))
     );
   }
 
   get filteredSoldOrders() {
     if (!this.searchQuery) return this.soldOrders;
-    const q = this.searchQuery.toLowerCase();
+    const rawQ = this.searchQuery.toLowerCase().trim();
+    const cleanQ = rawQ.replace(/^#/, '').trim();
     return this.soldOrders.filter(o => 
-      (o.listing_title && o.listing_title.toLowerCase().includes(q)) ||
-      (o.id && String(o.id).includes(q))
+      (o.listing_title && o.listing_title.toLowerCase().includes(rawQ)) ||
+      (o.id && String(o.id).includes(cleanQ))
     );
   }
 
