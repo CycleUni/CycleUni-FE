@@ -33,7 +33,8 @@ describe('HomeComponent', () => {
       getMetadata: vi.fn().mockReturnValue(of({
         categories: [{ slug: 'cat1', title: 'Cat 1', desc: 'Cat 1 desc' }],
         waitlist: [{ title: 'Wait 1', count: 5 }]
-      }))
+      })),
+      getActiveAds: vi.fn().mockReturnValue(of({ results: [] }))
     };
 
     mockSchoolStateService = {

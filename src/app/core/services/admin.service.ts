@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 
 export interface Paginated<T> {
   count: number;
@@ -46,6 +47,36 @@ export interface AdminOrder {
   total_amount: number;
   created_at: string;
   updated_at: string;
+}
+
+
+export interface AdminAdvertiser {
+  id: number;
+  user: number | null;
+  company_name: string;
+  contact_email: string;
+  contact_phone: string;
+  all_schools: boolean;
+  schools: number[];
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AdminAd {
+  id: number;
+  advertiser: number;
+  advertiser_name?: string;
+  title: string;
+  image_url: string;
+  target_url: string;
+  position: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  is_internal_image?: boolean;
+  clicks_count: number;
+  views_count: number;
+  created_at: string;
 }
 
 export interface AdminReport {
@@ -201,5 +232,72 @@ export class AdminService {
 
   getChatReportToken(id: string): Observable<{ token: string; edge_chat_url: string; room_id: string }> {
     return this.http.get<{ token: string; edge_chat_url: string; room_id: string }>(`/admin/chat-reports/${id}/chat-token/`);
+  }
+
+  getAdvertisers(opts: { page?: number; q?: string; page_size?: number } = {}): Observable<Paginated<AdminAdvertiser>> {
+    return this.http.get<Paginated<AdminAdvertiser>>('/admin/advertisers/', { params: buildParams(opts) });
+  }
+
+  getAdvertiser(id: string | number): Observable<AdminAdvertiser> {
+    return this.http.get<AdminAdvertiser>(`/admin/advertisers/${id}/`);
+  }
+
+  createAdvertiser(data: Partial<AdminAdvertiser>): Observable<AdminAdvertiser> {
+    return this.http.post<AdminAdvertiser>('/admin/advertisers/', data);
+  }
+
+  updateAdvertiser(id: string | number, data: Partial<AdminAdvertiser>): Observable<AdminAdvertiser> {
+    return this.http.patch<AdminAdvertiser>(`/admin/advertisers/${id}/`, data);
+  }
+
+  deleteAdvertiser(id: string | number): Observable<void> {
+    return this.http.delete<void>(`/admin/advertisers/${id}/`);
+  }
+
+  getAds(opts: { page?: number; advertiser_id?: number; q?: string } = {}): Observable<Paginated<AdminAd>> {
+    return this.http.get<Paginated<AdminAd>>('/admin/ads/', { params: buildParams(opts) });
+  }
+
+  getAd(id: string | number): Observable<AdminAd> {
+    return this.http.get<AdminAd>(`/admin/ads/${id}/`);
+  }
+
+  createAd(data: Partial<AdminAd>): Observable<AdminAd> {
+    return this.http.post<AdminAd>('/admin/ads/', data);
+  }
+
+  updateAd(id: string | number, data: Partial<AdminAd>): Observable<AdminAd> {
+    return this.http.patch<AdminAd>(`/admin/ads/${id}/`, data);
+  }
+
+  deleteAd(id: string | number): Observable<void> {
+    return this.http.delete<void>(`/admin/ads/${id}/`);
+  }
+
+  uploadAdPhoto(file: File): Observable<{ url: string }> {
+    return this.http.post<any>('/admin/ads/uploads/presign/', {
+      content_type: file.type
+    }).pipe(
+      switchMap((presign: any) => {
+        if (presign.mode === 'direct') {
+          const formData = new FormData();
+          formData.append('file', file);
+          // BE now returns { mode: 'direct', photo_url: '...' } for consistency
+          return this.http.post<{ photo_url: string }>('/admin/ads/uploads/direct/', formData).pipe(
+            map((resp) => ({ url: resp.photo_url }))
+          );
+        }
+
+        if (presign.mode === 'presigned_put') {
+          return this.http.put(presign.upload_url, file, {
+            headers: { 'Content-Type': file.type }
+          }).pipe(
+            map(() => ({ url: presign.photo_url }))
+          );
+        }
+
+        throw new Error('Unknown upload mode');
+      })
+    );
   }
 }

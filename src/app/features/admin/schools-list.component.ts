@@ -4,12 +4,13 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminSchool, Paginated } from '../../core/services/admin.service';
 import { TPipe } from '../../core/i18n.service';
+import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
 
 @Component({
   selector: 'app-admin-schools-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, BulkImportModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navSchools' | t }}</h2>
@@ -20,8 +21,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     </div>
 
     <div class="filters">
-      <input type="text" class="search-input" [placeholder]="'admin.searchSchools' | t" [(ngModel)]="q" (keyup.enter)="loadPage(1)">
-      <button class="btn btn-secondary" (click)="loadPage(1)">{{ 'common.search' | t }}</button>
+      <ui-search-bar [placeholder]="'admin.searchSchools' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
     </div>
 
     <div class="table-container" *ngIf="schoolsData">
@@ -87,8 +87,9 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
   `,
   styles: [`
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .filters { display: flex; gap: 12px; margin-bottom: 24px; }
-    .search-input { flex: 1; max-width: 400px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; }
+    .filters { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; flex-wrap: wrap; }
+    .filters ui-search-bar { flex: 1; min-width: 240px; }
+    
     .table-container { background: white; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
     .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
     .admin-table th, .admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); }
@@ -139,6 +140,11 @@ export class AdminSchoolsListComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  onSearch(q: string) {
+    this.q = q;
+    this.loadPage(1);
   }
 
   openCreateModal() {

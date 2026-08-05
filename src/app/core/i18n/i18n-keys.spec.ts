@@ -89,7 +89,7 @@ describe('i18n translation keys (en.ts / zh-TW.ts)', () => {
     // pattern — extend the prefix/source detection below rather than
     // deleting the check. If it fails on a key that's genuinely dead,
     // delete it from en.ts and zh-TW.ts.
-    const feFiles = walk(SRC_DIR, ['.ts'], ['i18n']).filter(f => !f.endsWith('.spec.ts'));
+    const feFiles = walk(SRC_DIR, ['.ts', '.html'], ['i18n']).filter(f => !f.endsWith('.spec.ts'));
     let combinedSource = '';
     const dynamicPrefixes = new Set<string>();
     const dynamicPrefixPattern = /['"]([a-zA-Z0-9_.]+[._])['"]\s*\+/g;
