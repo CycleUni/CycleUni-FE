@@ -234,48 +234,49 @@ export class AdminService {
     return this.http.get<{ token: string; edge_chat_url: string; room_id: string }>(`/admin/chat-reports/${id}/chat-token/`);
   }
 
+  // API endpoints below renamed from 'advertisers' and 'ads' to 'sponsors' and 'promotions' to evade adblockers
   getAdvertisers(opts: { page?: number; q?: string; page_size?: number } = {}): Observable<Paginated<AdminAdvertiser>> {
-    return this.http.get<Paginated<AdminAdvertiser>>('/admin/advertisers/', { params: buildParams(opts) });
+    return this.http.get<Paginated<AdminAdvertiser>>('/admin/sponsors/', { params: buildParams(opts) });
   }
 
   getAdvertiser(id: string | number): Observable<AdminAdvertiser> {
-    return this.http.get<AdminAdvertiser>(`/admin/advertisers/${id}/`);
+    return this.http.get<AdminAdvertiser>(`/admin/sponsors/${id}/`);
   }
 
   createAdvertiser(data: Partial<AdminAdvertiser>): Observable<AdminAdvertiser> {
-    return this.http.post<AdminAdvertiser>('/admin/advertisers/', data);
+    return this.http.post<AdminAdvertiser>('/admin/sponsors/', data);
   }
 
   updateAdvertiser(id: string | number, data: Partial<AdminAdvertiser>): Observable<AdminAdvertiser> {
-    return this.http.patch<AdminAdvertiser>(`/admin/advertisers/${id}/`, data);
+    return this.http.patch<AdminAdvertiser>(`/admin/sponsors/${id}/`, data);
   }
 
   deleteAdvertiser(id: string | number): Observable<void> {
-    return this.http.delete<void>(`/admin/advertisers/${id}/`);
+    return this.http.delete<void>(`/admin/sponsors/${id}/`);
   }
 
   getAds(opts: { page?: number; advertiser_id?: number; q?: string } = {}): Observable<Paginated<AdminAd>> {
-    return this.http.get<Paginated<AdminAd>>('/admin/ads/', { params: buildParams(opts) });
+    return this.http.get<Paginated<AdminAd>>('/admin/promotions/', { params: buildParams(opts) });
   }
 
   getAd(id: string | number): Observable<AdminAd> {
-    return this.http.get<AdminAd>(`/admin/ads/${id}/`);
+    return this.http.get<AdminAd>(`/admin/promotions/${id}/`);
   }
 
   createAd(data: Partial<AdminAd>): Observable<AdminAd> {
-    return this.http.post<AdminAd>('/admin/ads/', data);
+    return this.http.post<AdminAd>('/admin/promotions/', data);
   }
 
   updateAd(id: string | number, data: Partial<AdminAd>): Observable<AdminAd> {
-    return this.http.patch<AdminAd>(`/admin/ads/${id}/`, data);
+    return this.http.patch<AdminAd>(`/admin/promotions/${id}/`, data);
   }
 
   deleteAd(id: string | number): Observable<void> {
-    return this.http.delete<void>(`/admin/ads/${id}/`);
+    return this.http.delete<void>(`/admin/promotions/${id}/`);
   }
 
   uploadAdPhoto(file: File): Observable<{ url: string }> {
-    return this.http.post<any>('/admin/ads/uploads/presign/', {
+    return this.http.post<any>('/admin/promotions/uploads/presign/', {
       content_type: file.type
     }).pipe(
       switchMap((presign: any) => {
@@ -283,7 +284,7 @@ export class AdminService {
           const formData = new FormData();
           formData.append('file', file);
           // BE now returns { mode: 'direct', photo_url: '...' } for consistency
-          return this.http.post<{ photo_url: string }>('/admin/ads/uploads/direct/', formData).pipe(
+          return this.http.post<{ photo_url: string }>('/admin/promotions/uploads/direct/', formData).pipe(
             map((resp) => ({ url: resp.photo_url }))
           );
         }

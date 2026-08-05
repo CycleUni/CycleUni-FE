@@ -34,20 +34,21 @@ export class MetadataService {
     if (schoolId) {
       params = params.set('school', String(schoolId));
     }
-    return this.http.get<any>('/ads/active/', {
+    // Endpoint renamed from '/ads/active/' to '/promotions/active/' to evade adblockers
+    return this.http.get<any>('/promotions/active/', {
       context: new HttpContext().set(SKIP_AUTH, true),
       params
     });
   }
 
   recordAdView(id: number): Observable<any> {
-    return this.http.post<any>(`/ads/${id}/view/`, {}, {
+    return this.http.post<any>(`/promotions/${id}/view/`, {}, {
       context: new HttpContext().set(SKIP_AUTH, true)
     });
   }
 
   recordAdClick(id: number): Observable<any> {
-    return this.http.post<any>(`/ads/${id}/click/`, {}, {
+    return this.http.post<any>(`/promotions/${id}/click/`, {}, {
       context: new HttpContext().set(SKIP_AUTH, true)
     });
   }

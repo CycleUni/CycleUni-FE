@@ -67,7 +67,8 @@ export const routes: Routes = [
       { path: 'chat-reports', loadComponent: () => import('./features/admin/chat-reports-list.component').then(m => m.AdminChatReportsListComponent) },
       { path: 'managers', loadComponent: () => import('./features/admin/managers-list.component').then(m => m.AdminManagersListComponent) },
       { path: 'advertisers', loadComponent: () => import('./features/admin/advertisers-list.component').then(m => m.AdminAdvertisersListComponent) },
-      { path: 'ads', loadComponent: () => import('./features/admin/ads-list.component').then(m => m.AdminAdsListComponent) },
+      // Route renamed from 'ads' to 'promotions' to avoid adblocker chunk loading issues
+      { path: 'promotions', loadComponent: () => import('./features/admin/ads-list.component').then(m => m.AdminAdsListComponent) },
     ]
   },
   {
