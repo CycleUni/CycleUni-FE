@@ -38,10 +38,10 @@ import { SchoolStateService } from '../../core/services/school-state.service';
         </div>
       </section>
 
-      <!-- Active Ads Banner -->
-      <section class="section ads-section" *ngIf="activeAds?.length">
-        <div class="ads-carousel">
-          <a *ngFor="let ad of activeAds" (click)="onAdClick($event, ad)" class="ad-banner" [style.cursor]="'pointer'">
+      <!-- Active Ads Banner (CSS classes renamed to 'promotions' to avoid adblocker CSS hiding) -->
+      <section class="section promotions-section" *ngIf="activeAds?.length">
+        <div class="promotions-carousel">
+          <a *ngFor="let ad of activeAds" (click)="onAdClick($event, ad)" class="promo-banner" [style.cursor]="'pointer'">
             <img [src]="ad.image_url" [alt]="ad.title" (error)="onImgError($event)">
           </a>
         </div>
@@ -118,11 +118,11 @@ import { SchoolStateService } from '../../core/services/school-state.service';
   `,
   styles: [`
     .hero-search { padding: 64px 16px; text-align: center; background-color: var(--paper-warm); border-bottom: 1px solid var(--line); margin-bottom: 48px; }
-    .ads-section { margin-bottom: 48px; }
-    .ads-carousel { display: flex; overflow-x: auto; gap: 16px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
-    .ads-carousel::-webkit-scrollbar { height: 0; display: none; }
-    .ad-banner { flex: 0 0 100%; scroll-snap-align: start; display: block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: var(--paper-warm); position: relative; padding-top: 25%; /* 4:1 aspect ratio roughly */ }
-    .ad-banner img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .promotions-section { margin-bottom: 48px; }
+    .promotions-carousel { display: flex; overflow-x: auto; gap: 16px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+    .promotions-carousel::-webkit-scrollbar { height: 0; display: none; }
+    .promo-banner { flex: 0 0 100%; scroll-snap-align: start; display: block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: var(--paper-warm); position: relative; padding-top: 25%; /* 4:1 aspect ratio roughly */ }
+    .promo-banner img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .search-title { font-size: 28px; margin-top: 0; margin-bottom: 32px; }
     .search-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
     .hero-input { display: inline-block; width: 100%; max-width: 500px; }
@@ -310,7 +310,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   onImgError(event: Event) {
-    const anchor = (event.target as HTMLElement).closest('.ad-banner') as HTMLElement;
+    const anchor = (event.target as HTMLElement).closest('.promo-banner') as HTMLElement;
     if (anchor) {
       anchor.style.display = 'none';
     }
