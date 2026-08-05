@@ -9,6 +9,7 @@ export const zhTW: Record<string, string> = {
   'common.delete': '刪除',
   'common.create': '新增',
   'common.error': '發生錯誤',
+  'common.loading': '載入中...',
   'common.noMatches': '沒有符合的選項',
   'common.noData': '目前沒有資料',
   'common.bookCover': '書籍封面',

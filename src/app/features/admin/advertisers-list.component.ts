@@ -62,7 +62,7 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
     </div>
     
     <div class="empty-state" *ngIf="loading">
-      <p>載入中...</p>
+      <p>{{ 'common.loading' | t }}</p>
     </div>
 
     <div class="modal-overlay" *ngIf="showModal">

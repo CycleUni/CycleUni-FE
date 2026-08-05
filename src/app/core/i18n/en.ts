@@ -9,6 +9,7 @@ export const en: Record<string, string> = {
   'common.delete': 'Delete',
   'common.create': 'Create',
   'common.error': 'An error occurred',
+  'common.loading': 'Loading...',
   'common.noMatches': 'No matches',
   'common.noData': 'No data available',
   'common.bookCover': 'Book cover',
