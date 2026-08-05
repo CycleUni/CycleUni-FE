@@ -66,6 +66,8 @@ export const routes: Routes = [
       { path: 'reports', loadComponent: () => import('./features/admin/reports-list.component').then(m => m.AdminReportsListComponent) },
       { path: 'chat-reports', loadComponent: () => import('./features/admin/chat-reports-list.component').then(m => m.AdminChatReportsListComponent) },
       { path: 'managers', loadComponent: () => import('./features/admin/managers-list.component').then(m => m.AdminManagersListComponent) },
+      { path: 'advertisers', loadComponent: () => import('./features/admin/advertisers-list.component').then(m => m.AdminAdvertisersListComponent) },
+      { path: 'ads', loadComponent: () => import('./features/admin/ads-list.component').then(m => m.AdminAdsListComponent) },
     ]
   },
   {

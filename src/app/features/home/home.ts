@@ -7,12 +7,12 @@ import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { FormsModule } from '@angular/forms';
 import { ListingService } from '../../core/services/listing.service';
-import { MetadataService } from '../../core/services/metadata.service';
-import { SchoolStateService } from '../../core/services/school-state.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, distinctUntilChanged } from 'rxjs/operators';
 import { ChangeDetectorRef, effect } from '@angular/core';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { MetadataService, PublicAd } from '../../core/services/metadata.service';
+import { SchoolStateService } from '../../core/services/school-state.service';
 
 @Component({
   selector: 'app-home',
@@ -35,6 +35,15 @@ import { I18nService, TPipe } from '../../core/i18n.service';
           <button type="button" class="tag-btn" (click)="setSearchQueryFromKey('home.tagCalculus')">{{ 'home.tagCalculus' | t }}</button>
           <button type="button" class="tag-btn" (click)="setSearchQueryFromKey('home.tagEconomics')">{{ 'home.tagEconomics' | t }}</button>
           <button type="button" class="tag-btn" (click)="setSearchQueryFromKey('home.tagAnatomy')">{{ 'home.tagAnatomy' | t }}</button>
+        </div>
+      </section>
+
+      <!-- Active Ads Banner -->
+      <section class="section ads-section" *ngIf="activeAds?.length">
+        <div class="ads-carousel">
+          <a *ngFor="let ad of activeAds" (click)="onAdClick($event, ad)" class="ad-banner" [style.cursor]="'pointer'">
+            <img [src]="ad.image_url" [alt]="ad.title" (error)="onImgError($event)">
+          </a>
         </div>
       </section>
 
@@ -109,6 +118,11 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   `,
   styles: [`
     .hero-search { padding: 64px 16px; text-align: center; background-color: var(--paper-warm); border-bottom: 1px solid var(--line); margin-bottom: 48px; }
+    .ads-section { margin-bottom: 48px; }
+    .ads-carousel { display: flex; overflow-x: auto; gap: 16px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+    .ads-carousel::-webkit-scrollbar { height: 0; display: none; }
+    .ad-banner { flex: 0 0 100%; scroll-snap-align: start; display: block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: var(--paper-warm); position: relative; padding-top: 25%; /* 4:1 aspect ratio roughly */ }
+    .ad-banner img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
     .search-title { font-size: 28px; margin-top: 0; margin-bottom: 32px; }
     .search-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
     .hero-input { display: inline-block; width: 100%; max-width: 500px; }
@@ -189,6 +203,7 @@ export class Home implements OnInit, OnDestroy {
   searchQuery = '';
   categories: any[] = [];
   waitlist: any[] = [];
+  activeAds: PublicAd[] = [];
   currentSchool: string = '';
 
   categoriesLoading = false;
@@ -214,7 +229,7 @@ export class Home implements OnInit, OnDestroy {
     this.metadataLoading = true;
     this.metadataError = false;
 
-    this.metadataService.getMetadata().subscribe({
+    this.metadataService.getMetadata(this.currentSchool).subscribe({
       next: (data) => {
         if (data.categories) {
           this.categories = data.categories;
@@ -250,11 +265,55 @@ export class Home implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.schoolStateService.selectedSchool$.pipe(
-      takeUntil(this.destroy$)
+      takeUntil(this.destroy$),
+      distinctUntilChanged()
     ).subscribe(school => {
-      this.currentSchool = school;
+      this.currentSchool = school || '';
+      this.loadAds();
+      this.loadMetadata();
       this.cdr.markForCheck();
     });
+  }
+
+  loadAds() {
+    this.metadataService.getActiveAds('home_banner', this.currentSchool).subscribe({
+      next: (resp: any) => {
+        // BE returns paginated format { count, results } after adding pagination_class
+        this.activeAds = resp?.results ?? (Array.isArray(resp) ? resp : []);
+        this.cdr.markForCheck();
+
+        this.activeAds.forEach(ad => {
+          const viewedKey = `ad_viewed_${ad.id}`;
+          if (!sessionStorage.getItem(viewedKey)) {
+            sessionStorage.setItem(viewedKey, '1');
+            this.metadataService.recordAdView(ad.id)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({ error: () => {} });
+          }
+        });
+      },
+      error: () => {
+        this.activeAds = [];
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onAdClick(event: Event, ad: PublicAd) {
+    event.preventDefault();
+    if (ad.target_url) {
+      window.open(ad.target_url, '_blank');
+      this.metadataService.recordAdClick(ad.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ error: () => {} });
+    }
+  }
+
+  onImgError(event: Event) {
+    const anchor = (event.target as HTMLElement).closest('.ad-banner') as HTMLElement;
+    if (anchor) {
+      anchor.style.display = 'none';
+    }
   }
 
   @HostListener('window:resize')
