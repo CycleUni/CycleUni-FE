@@ -291,6 +291,13 @@ export class Messages implements OnInit, OnDestroy {
     // it, so this can't be used to open someone else's conversation.
     this.messageService.getChatToken(chat.id).subscribe({
       next: (res) => {
+        // Responses can arrive out of order when the user switches chats
+        // faster than these requests resolve. If a newer selectChat() call
+        // has since moved activeChat elsewhere, this response belongs to a
+        // conversation the user is no longer looking at — drop it instead
+        // of overwriting the token/history/socket for the current one.
+        if (this.activeChat?.id !== chat.id) return;
+
         this.chatToken = res.token;
         this.edgeChatUrl = res.edge_chat_url;
         try {
@@ -304,20 +311,22 @@ export class Messages implements OnInit, OnDestroy {
         // WebSocket connection to reach 'connected' (it may be delayed or
         // fail, leaving the message pane blank).
         this.messageService.getEdgeMessages(chat.id, this.chatToken, this.edgeChatUrl).subscribe({
-      next: (data) => {
-        console.log('[selectChat] getEdgeMessages raw response:', JSON.stringify(data).substring(0, 200));
-        this.setEdgeMessages(data || []);
-      },
-      error: (err) => {
-        console.error('[selectChat] getEdgeMessages failed:', err);
-        this.setEdgeMessages([]);
-      }
-    });
+          next: (data) => {
+            if (this.activeChat?.id !== chat.id) return;
+            this.setEdgeMessages(data || []);
+          },
+          error: (err) => {
+            console.error('[selectChat] getEdgeMessages failed:', err);
+            if (this.activeChat?.id !== chat.id) return;
+            this.setEdgeMessages([]);
+          }
+        });
 
         this.messageService.connectEdgeChat(chat.id, this.chatToken, this.userId, this.edgeChatUrl);
       },
       error: (err) => {
         console.error('Failed to fetch chat token', err);
+        if (this.activeChat?.id !== chat.id) return;
         alert(this.i18n.t('msg.chatOpenFailed'));
         this.activeChat = null;
         this.cdr.markForCheck();
