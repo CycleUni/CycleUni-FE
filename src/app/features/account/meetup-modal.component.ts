@@ -212,8 +212,9 @@ import { UiInput } from '../../shared/ui/input.component';
       color: var(--ink);
       background: var(--paper);
     }
-    .native-date-input:focus {
-      outline: none;
+    /* No outline reset: the global :focus-visible ring is the indicator;
+       the border colour change is only a secondary cue. */
+    .native-date-input:focus-visible {
       border-color: var(--accent);
     }
 

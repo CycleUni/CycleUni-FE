@@ -95,6 +95,11 @@
             </div>
             <h3>{{ displayName || ('acct.defaultUser' | t) }}</h3>
             <p class="school-name">{{ schoolName || ('acct.noSchool' | t) }}</p>
+            <p class="profile-stats">
+              <span>{{ 'acct.statActive' | t:{n: activeListingsCount} }}</span>
+              <span>{{ 'acct.statSold' | t:{n: soldListingsCount} }}</span>
+              <span>{{ 'acct.statSubs' | t:{n: subscriptionsCount} }}</span>
+            </p>
             <p class="email">{{ auth.getUser()?.email }}</p>
             <ui-button variant="white" style="width: 100%; margin-top: 16px;" (onClick)="doLogout()">{{ 'acct.logout' | t }}</ui-button>
           </div>

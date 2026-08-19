@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthStore } from '../auth.store';
 import { I18nService } from '../i18n.service';
+import { ThemeService } from './theme.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ import { I18nService } from '../i18n.service';
 export class GoogleAuthService {
   private authStore = inject(AuthStore);
   private i18n = inject(I18nService);
+  private themeService = inject(ThemeService);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   
@@ -145,6 +147,15 @@ export class GoogleAuthService {
     }
   }
 
+  private get isDarkTheme(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    if (this.themeService.mode() === 'dark') return true;
+    if (this.themeService.mode() === 'system') {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  }
+
   private loadAndRenderButton(elementId: string) {
     this.loadGoogleScript().then(() => {
       if ((window as any).google && this.googleClientId) {
@@ -159,9 +170,14 @@ export class GoogleAuthService {
         if (container) {
           container.innerHTML = '';
           const langCode = this.i18n.lang() === 'en' ? 'en' : 'zh-TW';
+          const btnTheme = this.isDarkTheme ? 'filled_black' : 'outline';
+          
+          let targetWidth = container.clientWidth || 280;
+          targetWidth = Math.max(200, Math.min(targetWidth, 400));
+
           (window as any).google.accounts.id.renderButton(
             container,
-            { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', locale: langCode }
+            { theme: btnTheme, size: 'large', type: 'standard', text: 'continue_with', locale: langCode, width: targetWidth }
           );
         }
       }

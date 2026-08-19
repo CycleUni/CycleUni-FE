@@ -1,6 +1,6 @@
 import { Component, effect, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SwUpdate } from '@angular/service-worker';
 import { UiDropdown } from './dropdown.component';
@@ -12,6 +12,8 @@ import { MessageService } from '../../core/services/message.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { Lang } from '../../core/i18n';
 import { Subscription } from 'rxjs';
+import { ThemeService, ThemeMode } from '../../core/services/theme.service';
+import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 
 @Component({
   selector: 'ui-layout',
@@ -29,6 +31,15 @@ export class UiLayout implements OnDestroy {
     { value: 'zh-TW', label: '中文 (繁體)' },
     { value: 'en', label: 'English' }
   ];
+  readonly theme = inject(ThemeService);
+  readonly mobileLayout = inject(MobileLayoutService);
+  get themeOptions() {
+    return [
+      { value: 'system', label: this.i18n.t('nav.themeSystem') || 'System' },
+      { value: 'light', label: this.i18n.t('nav.themeLight') || 'Light' },
+      { value: 'dark', label: this.i18n.t('nav.themeDark') || 'Dark' }
+    ];
+  }
 
   private metadataService = inject(MetadataService);
   private authStore = inject(AuthStore);
@@ -36,10 +47,24 @@ export class UiLayout implements OnDestroy {
   private schoolStateService = inject(SchoolStateService);
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
+
   private swUpdate = inject(SwUpdate);
   readonly i18n = inject(I18nService);
+  private router = inject(Router);
+
+  /**
+   * Routes that own the whole viewport rather than sitting inside the page.
+   * Messages is a two-pane app surface with its own internal scrolling: the
+   * site footer underneath it pushed that surface into a boxed panel with the
+   * page scrolling around it, so the chat read as a small page inside a page.
+   */
+  private static readonly FULL_BLEED_ROUTES = ['/messages'];
+
+  /** True while a full-bleed route is active; suppresses the footer. */
+  fullBleed = false;
 
   private unreadCountSubscription: Subscription;
+  private routerSubscription?: Subscription;
   private swUpdateSubscription?: Subscription;
   private hubConnectedForUserId: string | null = null;
 
@@ -63,6 +88,17 @@ export class UiLayout implements OnDestroy {
   }
 
   constructor() {
+    // Set for the initial URL as well as every later navigation: NavigationEnd
+    // does not fire for the route the app boots on.
+    this.applyFullBleed();
+    this.routerSubscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.applyFullBleed();
+        this.mobileLayout.setHideBottomNav(false);
+        this.cdr.markForCheck();
+      }
+    });
+
     // Runs on init and again whenever the language changes, so school labels
     // are re-fetched in the newly selected language
     effect(() => {
@@ -122,7 +158,13 @@ export class UiLayout implements OnDestroy {
     });
   }
 
+  private applyFullBleed() {
+    const url = this.router.url.split('?')[0];
+    this.fullBleed = UiLayout.FULL_BLEED_ROUTES.some(r => url === r || url.startsWith(r + '/'));
+  }
+
   ngOnDestroy() {
+    this.routerSubscription?.unsubscribe();
     this.unreadCountSubscription.unsubscribe();
     this.swUpdateSubscription?.unsubscribe();
   }
@@ -147,6 +189,10 @@ export class UiLayout implements OnDestroy {
 
   onLangChange(lang: string) {
     this.switchLang(lang as Lang);
+  }
+
+  onThemeChange(mode: string) {
+    this.theme.setMode(mode as ThemeMode);
   }
 
   private loadMetadata() {

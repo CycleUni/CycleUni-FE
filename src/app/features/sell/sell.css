@@ -56,39 +56,41 @@
       display: flex;
       justify-content: space-between;
     }
-    .preview {
+    .book-match {
       display: flex;
       gap: 16px;
       padding: 16px;
       background-color: var(--paper-warm);
       border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
       margin-top: 16px;
-      border-radius: 4px;
+      border-radius: var(--radius-xs);
     }
-    .preview.selectable {
+    .book-match.selectable {
       cursor: pointer;
       transition: border-color 0.2s, transform 0.2s;
     }
-    .preview.selectable:hover {
-      border-color: var(--primary);
+    .book-match.selectable:hover {
+      border-color: var(--accent);
+      border-left-color: var(--accent);
       transform: translateY(-2px);
     }
     .select-hint {
       margin-top: 24px;
       margin-bottom: -4px;
     }
-    .preview .cover {
+    .book-match .cover {
       width: 60px;
       height: 84px;
       background-color: var(--line);
       flex-shrink: 0;
     }
-    .preview .cover img {
+    .book-match .cover img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .preview h3 {
+    .book-match h3 {
       margin: 0 0 4px;
     }
     .photo-upload label {
@@ -97,22 +99,26 @@
       font-weight: 500;
       font-size: 14px;
     }
-    .upload-box {
-      border: 1px dashed var(--line);
-      padding: 32px;
+    .dropzone {
+      border: 1.5px dashed var(--line);
+      padding: 24px;
       text-align: center;
       color: var(--muted);
+      font-size: 13px;
       cursor: pointer;
       flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       min-height: 100px;
-      transition: background-color 0.2s;
+      border-radius: var(--radius-xs);
+      transition: background-color 0.2s, border-color 0.2s;
     }
-    .upload-box.drag-over {
+    .dropzone.drag-over {
       background-color: var(--paper-warm);
-      border-color: var(--primary);
+      border-color: var(--accent);
     }
     .upload-container {
       display: flex;
@@ -149,6 +155,45 @@
       align-items: center;
       justify-content: center;
     }
+    .price-field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .price-field {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1.5px solid var(--line-strong);
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+    .price-field:focus-within {
+      border-bottom-color: var(--accent);
+    }
+    .price-currency {
+      font-size: 14px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .price-input {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: none;
+      /* No outline reset. This one sat in the base rule rather than on
+         :focus, so the field never drew a ring at all — the wrapper\'s
+         underline colour was the entire keyboard-focus signal. */
+      font-family: 'Noto Serif TC', serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-size: 25px;
+      color: var(--accent);
+      padding: 0;
+    }
     .free-btn {
       margin-bottom: 16px;
     }
@@ -165,9 +210,9 @@
       padding: 24px;
       border-radius: 4px;
       text-align: center;
-      background-color: #fff3cd;
-      border: 1px solid #ffe69c;
-      color: #664d03;
+      background-color: var(--warn-bg);
+      border: 1px solid var(--line);
+      color: var(--warn-ink);
     }
     .alert-box h3 {
       margin-top: 0;
@@ -186,7 +231,7 @@
       .form-container {
         padding: 20px 16px;
       }
-      .preview {
+      .book-match {
         flex-wrap: wrap;
       }
     }

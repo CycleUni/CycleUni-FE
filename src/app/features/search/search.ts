@@ -15,22 +15,30 @@ import { MetadataService } from '../../core/services/metadata.service';
 import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiBookTile } from '../../shared/ui/book-tile.component';
+import { UiFacetList, FacetOption } from '../../shared/ui/facet-list.component';
 import { combineLatest, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiDropdown, UiPagination, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiDropdown, UiPagination, UiBookTile, UiFacetList, TPipe],
   template: `
       <div class="search-header">
         <div class="header-inner">
-          <ui-input
-            [placeholder]="'common.searchPlaceholder' | t"
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="onSearch()"
-            class="search-page-input"
-          ></ui-input>
-          <ui-button (onClick)="onSearch()" class="search-button">{{ 'common.search' | t }}</ui-button>
+          <div class="search-page-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5"/>
+              <line x1="20" y1="20" x2="15.4" y2="15.4"/>
+            </svg>
+            <ui-input
+              [placeholder]="'common.searchPlaceholder' | t"
+              [(ngModel)]="searchQuery"
+              (keyup.enter)="onSearch()"
+              class="search-page-input"
+            ></ui-input>
+          </div>
+          <ui-button (onClick)="onSearch()" class="search-button"><span class="submit-label sr-only-mobile">{{ 'common.search' | t }}</span><svg class="submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.4" y2="15.4"/></svg></ui-button>
         </div>
       </div>
 
@@ -48,29 +56,25 @@ import { combineLatest, Subscription } from 'rxjs';
         </button>
         <aside class="sidebar" [class.mobile-collapsed]="!filtersOpen">
           <div class="filter-group">
-            <h4 class="filter-title">{{ 'search.conditionTitle' | t }}</h4>
-            <label class="filter-label"><input type="checkbox" [(ngModel)]="conditionFilters.new"> {{ 'cond.new' | t }}</label>
-            <label class="filter-label"><input type="checkbox" [(ngModel)]="conditionFilters.like_new"> {{ 'cond.like_new' | t }}</label>
-            <label class="filter-label"><input type="checkbox" [(ngModel)]="conditionFilters.noted"> {{ 'cond.noted' | t }}</label>
-            <label class="filter-label"><input type="checkbox" [(ngModel)]="conditionFilters.damaged"> {{ 'cond.damaged' | t }}</label>
+            <ui-facet-list
+              [title]="'search.conditionTitle' | t"
+              [options]="conditionFacetOptions"
+              (optionToggle)="toggleCondition($event)"
+            ></ui-facet-list>
           </div>
           <div class="filter-group">
-            <h4 class="filter-title">{{ 'search.categoryTitle' | t }}</h4>
-            <ui-dropdown
-              [(ngModel)]="category"
-              (ngModelChange)="onCategoryChange($event)"
-              [options]="categoryOptions"
-              style="width: 100%; display: block;"
-            ></ui-dropdown>
+            <ui-facet-list
+              [title]="'search.categoryTitle' | t"
+              [options]="categoryFacetOptions"
+              (optionToggle)="onCategoryChange($event)"
+            ></ui-facet-list>
           </div>
           <div class="filter-group">
-            <h4 class="filter-title">{{ 'search.courseTitle' | t }}</h4>
-            <ui-dropdown
-              [(ngModel)]="course"
-              (ngModelChange)="onCourseChange($event)"
-              [options]="courseOptions"
-              style="width: 100%; display: block;"
-            ></ui-dropdown>
+            <ui-facet-list
+              [title]="'search.courseTitle' | t"
+              [options]="courseFacetOptions"
+              (optionToggle)="onCourseChange($event)"
+            ></ui-facet-list>
           </div>
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.stockTitle' | t }}</h4>
@@ -79,10 +83,10 @@ import { combineLatest, Subscription } from 'rxjs';
           </div>
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.priceTitle' | t }}</h4>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <ui-input [placeholder]="'search.priceMinPlaceholder' | t" [(ngModel)]="priceMin" style="width: 80px;"></ui-input>
+            <div class="price-range">
+              <ui-input [placeholder]="'search.priceMinPlaceholder' | t" [(ngModel)]="priceMin" class="price-input"></ui-input>
               <span>-</span>
-              <ui-input [placeholder]="'search.priceMaxPlaceholder' | t" [(ngModel)]="priceMax" style="width: 80px;"></ui-input>
+              <ui-input [placeholder]="'search.priceMaxPlaceholder' | t" [(ngModel)]="priceMax" class="price-input"></ui-input>
             </div>
           </div>
           <div class="filter-group">
@@ -99,8 +103,12 @@ import { combineLatest, Subscription } from 'rxjs';
         </aside>
 
         <main class="results">
-          <h2 class="results-title" *ngIf="activeQuery">{{ 'search.resultsFor' | t:{q: activeQuery} }}</h2>
-          <h2 class="results-title" *ngIf="!activeQuery && category">{{ 'search.categoryResults' | t }}</h2>
+          <h2 class="section-heading" *ngIf="activeQuery">{{ 'search.resultsFor' | t:{q: activeQuery} }}</h2>
+          <h2 class="section-heading" *ngIf="!activeQuery && category">{{ 'search.categoryResults' | t }}</h2>
+          <p class="scoped-count" *ngIf="(activeQuery || category) && !loading && !fetchError && filteredResults.length > 0">
+            <ng-container *ngIf="currentSchool">{{ 'search.foundCountScoped' | t:{school: currentSchoolLabel, n: filteredResults.length} }}</ng-container>
+            <ng-container *ngIf="!currentSchool">{{ 'search.foundCountAll' | t:{n: filteredResults.length} }}</ng-container>
+          </p>
 
           <!-- No active query/category → recent listings -->
           <ng-container *ngIf="!activeQuery && !category">
@@ -114,31 +122,24 @@ import { combineLatest, Subscription } from 'rxjs';
 
           <!-- Results loaded successfully -->
           <ng-container *ngIf="!loading && !fetchError">
-            <div *ngIf="filteredResults.length > 0" class="list">
-              <div class="result-card" *ngFor="let item of filteredResults" (click)="goToBook(item)">
-                <div class="book-cover">
-                  <img *ngIf="item.coverUrl" [src]="item.coverUrl" alt="Book cover" loading="lazy" />
-                </div>
-                <div class="book-info">
-                  <h3 class="book-title">{{ item.title }}</h3>
-                  <p class="book-meta">
-                    <span class="meta-author">{{ 'search.authorLine' | t:{author: item.author} }}</span>
-                    <span class="meta-isbn">{{ 'search.isbnLine' | t:{isbn: item.isbn} }}</span>
-                  </p>
-
-                  <div class="stock-status" *ngIf="item.activeListings > 0">
-                    {{ 'search.stockBefore' | t:{n: item.activeListings} }}<span class="price">\${{ item.minPrice }}</span>{{ 'search.stockAfter' | t }}
-                  </div>
-                  <div class="stock-status" [class.empty]="item.waitlistCount > 0" *ngIf="item.activeListings === 0">
-                    <ng-container *ngIf="item.waitlistCount > 0">
-                      {{ 'search.noStockLine' | t:{n: item.waitlistCount} }}
-                    </ng-container>
-                    <ng-container *ngIf="item.waitlistCount === 0">
-                      {{ 'search.noStockNoWaitlist' | t }}
-                    </ng-container>
-                  </div>
-                </div>
-                <div class="book-action">
+            <div *ngIf="filteredResults.length > 0" class="discover-grid">
+              <ui-book-tile
+                *ngFor="let item of filteredResults; let i = index"
+                [class.feature-tile]="i === 0"
+                [coverUrl]="item.coverUrl"
+                [title]="item.title"
+                [author]="item.author"
+                [isbn]="item.isbn"
+                [feature]="i === 0"
+                [mode]="item.activeListings > 0 ? 'sellers' : 'waitlist'"
+                [minPrice]="item.minPrice"
+                [sellerCount]="item.activeListings"
+                [waitingCount]="item.waitlistCount"
+                [link]="['/book']"
+                [linkParams]="bookLinkParams(item)"
+                (tileClick)="goToBook(item)"
+              >
+                <div tile-actions class="tile-actions-inner">
                   <ng-container *ngIf="item.activeListings === 0">
                     <ui-button *ngIf="!item.is_subscribed" variant="ghost" (onClick)="$event.stopPropagation(); subscribeBook(item)">{{ 'search.notifyMe' | t }}</ui-button>
                     <ui-button *ngIf="item.is_subscribed" variant="ghost" style="color: var(--muted); border-color: var(--muted);" (onClick)="$event.stopPropagation(); unsubscribeBook(item)">{{ 'search.cancelNotify' | t }}</ui-button>
@@ -150,7 +151,7 @@ import { combineLatest, Subscription } from 'rxjs';
                     </span>
                   </ng-container>
                 </div>
-              </div>
+              </ui-book-tile>
             </div>
 
             <ui-pagination *ngIf="totalCount > 20" [total]="totalCount" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
@@ -178,46 +179,81 @@ import { combineLatest, Subscription } from 'rxjs';
   styles: [`
     .search-header { background-color: var(--paper-warm); border-bottom: 1px solid var(--line); padding: 24px 16px; margin-bottom: 32px; }
     .header-inner { max-width: 1120px; margin: 0 auto; display: flex; gap: 8px; }
-    .search-page-input { display: inline-block !important; width: 400px; max-width: 100%; }
-    ::ng-deep .search-page-input .input-wrapper { margin-bottom: 0; }
+    .search-page-input-wrap { position: relative; width: 400px; max-width: 100%; }
+    .search-page-input-wrap .search-icon { position: absolute; left: 2px; bottom: 10px; color: var(--muted); pointer-events: none; }
+    .search-page-input { display: inline-block !important; width: 100%; }
+    .search-page-input ::ng-deep .input-wrapper { margin-bottom: 0; }
+    .search-page-input ::ng-deep input {
+      border: none;
+      border-bottom: 1.5px solid var(--ink);
+      border-radius: 0;
+      background: none;
+      padding-left: 24px;
+      font-size: 16px;
+    }
+    .search-page-input ::ng-deep input:focus {
+      border-bottom-color: var(--accent);
+      box-shadow: none;
+    }
     .search-button { flex-shrink: 0; }
+    .search-button .submit-icon { display: none; }
     .container { max-width: 1120px; margin: 0 auto; padding: 0 16px; display: flex; gap: 48px; }
     .filter-toggle { display: none; }
     .sidebar { width: 240px; flex-shrink: 0; }
     .filter-group { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
     .filter-group:last-of-type { border-bottom: none; }
-    .filter-title { font-size: 16px; margin-top: 0; margin-bottom: 16px; }
+    .filter-title { font-size: 14px; font-weight: 500; margin-top: 0; margin-bottom: 12px; color: var(--ink); }
     .filter-label { display: block; margin-bottom: 12px; font-size: 14px; color: var(--ink); cursor: pointer; }
     .filter-label input { margin-right: 8px; }
     .engine-hint { margin: 8px 0 0; font-size: 12px; color: var(--flag); }
+    .price-range { display: flex; gap: 8px; align-items: center; }
+    /* Price stays a plain numeric range, not a facet list — strip ui-input's
+       boxed border for an underline look consistent with the lighter facet
+       treatment above it. */
+    .price-input { width: 80px; }
+    .price-input ::ng-deep .input-wrapper { margin-bottom: 0; }
+    .price-input ::ng-deep input { border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 4px 0; background: transparent; }
+    .price-input ::ng-deep input:focus { border-color: var(--accent); }
     .results { flex: 1; }
-    .results-title { font-size: 24px; margin-top: 0; margin-bottom: 24px; }
-    .result-card { display:flex; gap:24px; padding:24px; border:1px solid var(--line); border-radius:4px; margin-bottom:16px; cursor:pointer; transition:border-color .2s; }
-    .result-card:hover { border-color:var(--accent); }
-    .book-cover { width:100px; height:140px; background-color:var(--line); flex-shrink:0; }
-    .book-cover img { width:100%; height:100%; object-fit:cover; }
-    .book-info { flex:1; }
-    .book-title { font-size:20px; margin:0 0 8px; font-family:'Noto Serif TC', serif; font-weight:700; }
-    .book-meta { color:var(--muted); font-size:14px; margin:0 0 16px; }
-    .book-meta .meta-author::after { content:' • '; margin:0 4px; }
-    .stock-status { font-size:14px; font-weight:500; color:var(--ink); padding:8px 12px; background-color:var(--paper-warm); border-radius:4px; display:inline-block; }
-    .stock-status.empty { color:var(--flag); background-color:#fff0eb; }
-    .price { color:var(--accent); font-weight:700; font-size:16px; }
+    .scoped-count { margin: -16px 0 24px; font-size: 14px; color: var(--muted); }
+
+    .discover-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px 24px;
+    }
+    .discover-grid ui-book-tile {
+      display: block;
+    }
+    .discover-grid ui-book-tile.feature-tile {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    .tile-actions-inner { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px; }
     .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light, #fee2e2); border-radius:4px; }
-    .book-action { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
-    .book-action ui-button { align-self: flex-end; }
-    .empty-state { text-align:center; padding:64px 24px; border:1px solid var(--line); border-radius:4px; background-color:var(--paper-warm); }
-    .empty-state h3 { margin-top:0; margin-bottom:16px; }
-    .empty-state p { color:var(--muted); margin-bottom:24px; }
-    .error-box { padding: 32px 24px; text-align: center; border: 1px solid var(--flag); border-radius: 4px; background-color: #fff8f6; }
-    .error-box h3 { margin-top: 0; margin-bottom: 12px; }
+
+    .error-box { padding: 32px 24px; text-align: center; border: 1px solid var(--flag); border-radius: var(--radius-sm); background-color: var(--warn-bg); }
+    .error-box h3 { margin-top: 0; margin-bottom: 12px; color: var(--warn-ink); }
     .error-box p { color: var(--muted); margin-bottom: 24px; }
 
-    @media (max-width: 1024px) { .header-inner { flex-wrap:wrap; } .search-page-input { flex:1; width:auto; min-width:200px; } }
+    @media (max-width: 1024px) {
+      .header-inner { flex-wrap:wrap; } .search-page-input-wrap { flex:1; width:auto; min-width:200px; }
+      .discover-grid { grid-template-columns: repeat(3, 1fr); }
+    }
     @media (max-width: 768px) {
-      .header-inner { flex-direction:column; align-items:stretch; }
-      .search-page-input { flex:none; width:100%; max-width:100%; }
-      .search-button { width:100%; }
+      /* Stays a row. With flex-direction:column the main axis turns vertical,
+         so the button's flex-basis sized its height and align-items:stretch
+         pulled both children to full width — which is what made the button a
+         343px block instead of a 44px square. */
+      .header-inner { align-items: stretch; }
+      /* Same collapse as the home hero: a full-width filled button for an
+         action Enter already performs is the biggest thing on the screen. */
+      .search-page-input-wrap { flex:1; width:auto; min-width:0; max-width:100%; }
+      .search-page-input-wrap .search-icon { display: none; }
+      .search-page-input ::ng-deep input { padding-left: var(--space-3); }
+      .search-button { flex: 0 0 44px; }
+      .search-button ::ng-deep .ui-btn.md { padding-inline: 0; }
+      .search-button .submit-icon { display: block; }
       .container { flex-direction:column; gap:0; }
       .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; }
       .filter-toggle-caret { flex-shrink:0; color:var(--muted); transition:transform .2s; }
@@ -225,13 +261,11 @@ import { combineLatest, Subscription } from 'rxjs';
       .sidebar { width:100%; display:flex; flex-wrap:wrap; gap:0 24px; border-bottom:1px solid var(--line); margin-bottom:24px; }
       .sidebar.mobile-collapsed { display:none; }
       .filter-group { flex:1 1 40%; min-width:150px; margin-bottom:16px; padding-bottom:0; border-bottom:none; }
-      .result-card { flex-wrap:wrap; gap:16px; padding:16px; }
-      .book-cover { width:72px; height:100px; }
-      .book-info { min-width:0; }
-      .book-meta .meta-author::after { content:''; margin:0; }
-      .book-meta .meta-isbn { display:block; margin-top:4px; }
-      .book-action { width:100%; flex-direction:row-reverse; justify-content:flex-start; align-items:center; gap:12px; }
-      .book-action ui-button { align-self: auto; }
+      .discover-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
+      /* Same reasoning as recent-listings.component.ts: at 2 columns the
+         feature tile spanning both would fill the whole row width and
+         dominate the screen, so it falls back to a regular-sized tile. */
+      .discover-grid ui-book-tile.feature-tile { grid-column: span 1; grid-row: span 1; }
     }
   `]
 })
@@ -254,7 +288,7 @@ export class Search implements OnInit {
       ...this.categories.map(c => ({ label: c.title, value: c.slug }))
     ];
   }
-  
+
   get courseOptions() {
     return [
       { label: this.i18n.t('search.allCourses'), value: '' },
@@ -267,6 +301,30 @@ export class Search implements OnInit {
   stockFilter: 'all' | 'inStock' = 'all';
   priceMin = ''; priceMax = '';
 
+  get conditionFacetOptions(): FacetOption[] {
+    return [
+      { label: this.i18n.t('cond.new'), value: 'new', selected: this.conditionFilters.new },
+      { label: this.i18n.t('cond.like_new'), value: 'like_new', selected: this.conditionFilters.like_new },
+      { label: this.i18n.t('cond.noted'), value: 'noted', selected: this.conditionFilters.noted },
+      { label: this.i18n.t('cond.damaged'), value: 'damaged', selected: this.conditionFilters.damaged },
+    ];
+  }
+
+  toggleCondition(value: string) {
+    const key = value as keyof typeof this.conditionFilters;
+    if (key in this.conditionFilters) {
+      this.conditionFilters[key] = !this.conditionFilters[key];
+    }
+  }
+
+  get categoryFacetOptions(): FacetOption[] {
+    return this.categoryOptions.map(o => ({ label: o.label, value: o.value, selected: o.value === this.category }));
+  }
+
+  get courseFacetOptions(): FacetOption[] {
+    return this.courseOptions.map(o => ({ label: o.label, value: o.value, selected: o.value === this.course }));
+  }
+
   get filteredResults(): any[] {
     const allChecked = Object.values(this.conditionFilters).every(v => v);
     const min = parseInt(this.priceMin, 10);
@@ -277,8 +335,8 @@ export class Search implements OnInit {
       if (this.stockFilter === 'inStock' && !inStock) return false;
       if (filterPrice) {
         if (!inStock) return false;
-        if (!isNaN(min) && item.minPrice < min) return false;
-        if (!isNaN(max) && item.minPrice > max) return false;
+        if (!isNaN(min) && (item.minPrice === null || item.minPrice === undefined || item.minPrice < min)) return false;
+        if (!isNaN(max) && (item.minPrice === null || item.minPrice === undefined || item.minPrice > max)) return false;
       }
       if (!allChecked) {
         const checked = this.conditionFilters as Record<string, boolean>;
@@ -319,7 +377,7 @@ export class Search implements OnInit {
       this.course = params['course'] || '';
       this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : 'google';
       this.currentPage = parseInt(params['page'] || '1', 10);
-      
+
       this.bookService.getTopCourses(this.currentSchool, this.category).subscribe({
         next: data => { this.courses = data; this.cdr.markForCheck(); }
       });
@@ -337,11 +395,11 @@ export class Search implements OnInit {
     this.loading = true;
     this.fetchError = false;
     this.cdr.markForCheck();
-    
+
     if (this.searchSub) {
       this.searchSub.unsubscribe();
     }
-    
+
     this.searchSub = this.bookService.searchBooks(this.activeQuery, this.category, this.course, this.schoolStateService.currentSchool, this.currentPage, this.engine).subscribe({
       next: data => {
         this.results = data.results || data;
@@ -383,7 +441,7 @@ export class Search implements OnInit {
     if (this.engine !== 'google') params.engine = this.engine;
     this.router.navigate(['/search'], { queryParams: params });
   }
-  
+
   onCourseChange(course: string) {
     const params: any = {};
     if (this.activeQuery) params.q = this.activeQuery;
@@ -393,15 +451,20 @@ export class Search implements OnInit {
     this.router.navigate(['/search'], { queryParams: params });
   }
 
+  /** Route params for a result tile; the tile's own anchor does the navigating. */
+  bookLinkParams(item: any): Record<string, any> {
+    const params: Record<string, any> = { local_cache: 'true' };
+    if (item.isbn) params['isbn'] = item.isbn; else params['id'] = item.id;
+    return params;
+  }
+
+  /** Cache priming only — must not navigate, or the anchor fires twice. */
   goToBook(item: any) {
     const key = item.isbn || item.id; if (!key) return;
     if (typeof sessionStorage !== 'undefined') {
       try { sessionStorage.setItem(`cachedBook_${key}`, JSON.stringify(item)); }
       catch (e) { /* ok — cache is optional */ }
     }
-    const queryParams: any = { local_cache: 'true' };
-    if (item.isbn) queryParams.isbn = item.isbn; else queryParams.id = item.id;
-    this.router.navigate(['/book'], { queryParams });
   }
 
   subscribeBook(item: any) {

@@ -10,6 +10,7 @@ import { AccountService } from '../../core/services/account.service';
 import { OrderService } from '../../core/services/order.service';
 import { GoogleAuthService } from '../../core/services/google-auth.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 import { RouterModule } from '@angular/router';
 @Component({
@@ -78,6 +79,16 @@ export class Account {
   avatarUrl = '';
   showConfirmUnbindModal = false;
 
+  // Profile-card stats line — sourced from the same /auth/me/ payload
+  // loadProfile() already fetches, so these reflect real counts rather
+  // than invented placeholders. Listing counts are derived from the
+  // (paginated, first-page) `myListings.results` status field, so they
+  // may undercount for accounts with 20+ listings; subscription count
+  // comes from the unpaginated `mySubscriptions` list and is exact.
+  activeListingsCount = 0;
+  soldListingsCount = 0;
+  subscriptionsCount = 0;
+
   private accountService = inject(AccountService);
   private googleAuth = inject(GoogleAuthService);
   private orderService = inject(OrderService);
@@ -85,6 +96,7 @@ export class Account {
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private theme = inject(ThemeService);
   private langEffectRef: any = null;
   private profileLoaded = false;
   returnUrl: string | null = null;
@@ -96,6 +108,7 @@ export class Account {
     // (e.g. the school name) come back in the new language
     this.langEffectRef = effect(() => {
       this.i18n.lang();
+      this.theme.mode(); // Track theme changes to re-render Google button
       if (this.auth.isLoggedIn()) {
         this.loadProfile();
         this.profileLoaded = true;
@@ -142,8 +155,12 @@ export class Account {
         this.schoolName = data.school_name || '';
         this.verifiedAt = data.verified_at || null;
         this.avatarUrl = data.avatar_url || '';
+        const listingResults = data.myListings?.results || [];
+        this.activeListingsCount = listingResults.filter((l: any) => l.status === 'active').length;
+        this.soldListingsCount = listingResults.filter((l: any) => l.status === 'sold').length;
+        this.subscriptionsCount = (data.mySubscriptions || []).length;
         this.orderService.checkUnreadOrders(String(data.id), data.last_seen_bought_orders_at, data.last_seen_sold_orders_at);
-        this.cdr.markForCheck(); 
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to load profile', err);

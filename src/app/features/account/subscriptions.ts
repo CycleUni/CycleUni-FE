@@ -2,93 +2,77 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
 
 @Component({
   selector: 'app-account-subscriptions',
   standalone: true,
-  imports: [CommonModule, UiButton, TPipe],
+  imports: [CommonModule, UiButton, UiBookTile, TPipe],
   template: `
-    <div class="content-header">
-      <h2>{{ 'acct.tabSubs' | t }}</h2>
+    <div class="section-head-row">
+      <h2 class="section-heading">{{ 'acct.tabSubs' | t }}</h2>
       <ui-button variant="ghost" *ngIf="mySubscriptions.length > 0" (onClick)="cancelAllSubscriptions()">{{ 'acct.cancelAllSubs' | t }}</ui-button>
     </div>
-    
-    <div class="list-container">
-      <div class="subscription-item" *ngFor="let sub of mySubscriptions">
-        <div class="sub-info">
-          <h4>{{ sub.bookTitle }}</h4>
-          <p>ISBN: {{ sub.isbn }}</p>
-        </div>
-        <div class="sub-status" [class.available]="sub.newListingsCount > 0">
-          <span *ngIf="sub.newListingsCount === 0">{{ 'acct.noOneListed' | t }}</span>
-          <span *ngIf="sub.newListingsCount > 0">
-            <strong>{{ 'acct.newListings' | t:{n: sub.newListingsCount} }}</strong>
+
+    <div class="discover-grid" *ngIf="mySubscriptions.length > 0">
+      <ui-book-tile
+        *ngFor="let sub of mySubscriptions"
+        [title]="sub.bookTitle"
+        [isbn]="sub.isbn"
+        [coverUrl]="sub.bookCoverUrl"
+        mode="waitlist"
+        [waitingCount]="sub.newListingsCount"
+        [link]="sub.isbn ? ['/search'] : undefined"
+        [linkParams]="{ q: sub.isbn }"
+      >
+        <div tile-actions class="tile-actions-inner">
+          <span class="sub-status" [class.available]="sub.newListingsCount > 0">
+            <ng-container *ngIf="sub.newListingsCount === 0">{{ 'acct.noOneListed' | t }}</ng-container>
+            <ng-container *ngIf="sub.newListingsCount > 0">{{ 'acct.newListings' | t:{n: sub.newListingsCount} }}</ng-container>
           </span>
+          <ui-button *ngIf="sub.newListingsCount > 0" (onClick)="$event.stopPropagation(); viewBook(sub)">{{ 'acct.viewNow' | t }}</ui-button>
+          <ui-button variant="ghost" *ngIf="sub.newListingsCount === 0" (onClick)="$event.stopPropagation(); cancelSubscription(sub.id)">{{ 'acct.cancelNotify' | t }}</ui-button>
         </div>
-        <div class="sub-action">
-          <ui-button *ngIf="sub.newListingsCount > 0" (onClick)="viewBook(sub)">{{ 'acct.viewNow' | t }}</ui-button>
-          <ui-button variant="ghost" *ngIf="sub.newListingsCount === 0" (onClick)="cancelSubscription(sub.id)">{{ 'acct.cancelNotify' | t }}</ui-button>
-        </div>
-      </div>
-      
-      <div class="empty-state" *ngIf="mySubscriptions.length === 0">
-        <p>{{ 'acct.noSubs' | t }}</p>
-      </div>
+      </ui-book-tile>
+    </div>
+
+    <div class="empty-state" *ngIf="mySubscriptions.length === 0">
+      <p>{{ 'acct.noSubs' | t }}</p>
     </div>
   `,
   styles: [`
-    .content-header {
+    .section-head-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
     }
-    .content-header h2 { margin: 0; }
-    .subscription-item {
+    .section-head-row .section-heading { margin-bottom: 0; }
+    .discover-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 32px 24px;
+    }
+    .tile-actions-inner {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px;
-      border: 1px solid var(--line);
-      margin-bottom: 16px;
-      border-radius: 4px;
-    }
-    .sub-info h4 { margin: 0 0 8px; }
-    .sub-info p {
-      margin: 0;
-      font-size: 14px;
-      color: var(--muted);
-      font-family: monospace;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 8px;
     }
     .sub-status {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--muted);
     }
-    .sub-status.available { color: var(--flag); }
-    .empty-state {
-      padding: 48px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      background-color: var(--paper-warm);
-    }
-    @media (max-width: 768px) {
-      .subscription-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-      .sub-action { align-self: flex-end; }
-    }
+    .sub-status.available { color: var(--flag); font-weight: 500; }
   `]
 })
 export class SubscriptionsComponent implements OnInit {
   mySubscriptions: any[] = [];
-  
+
   private accountService = inject(AccountService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);

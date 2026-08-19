@@ -60,24 +60,31 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should not search when translation key returns itself (missing translation)', () => {
-    mockI18n.t = (key: string) => key; // Simulate missing translation
-    component.setSearchQueryFromKey('home.tagCalculus');
-    expect(router.navigate).not.toHaveBeenCalled();
+  // The metadata endpoint already slices to 7, but the page must not depend
+  // on that — this section is a demand signal for sellers, not a directory.
+  it('caps the waitlist at seven entries even when the API returns more', () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({ title: `Book ${i}`, count: 20 - i }));
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist: many }));
+
+    component.loadMetadata();
+
+    expect(component.waitlist.length).toBe(7);
+    expect(component.waitlist[0].title).toBe('Book 0');
   });
 
-  it('should search using translated string if available', () => {
-    mockI18n.t = (key: string) => '微積分';
-    component.setSearchQueryFromKey('home.tagCalculus');
-    expect(router.navigate).toHaveBeenCalledWith(['/search'], {
-      queryParams: { q: '微積分' },
-      replaceUrl: true
-    });
+  // Three is a physical limit: HomeHero only defines three fan positions, so a
+  // fourth cover would wrap onto the first one's coordinates and vanish.
+  it('caps the hero cover stack at three', () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({ title: `Book ${i}`, count: 20 - i }));
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist: many }));
+
+    component.loadMetadata();
+
+    expect(component.heroCovers.length).toBe(3);
   });
 
   it('should provide trackBy ids correctly', () => {
     expect(component.trackById(0, { id: 10 })).toBe(10);
-    expect(component.trackBySlug(0, { slug: 'test' })).toBe('test');
     expect(component.trackByTitle(0, { title: 'book' })).toBe('book');
   });
 });

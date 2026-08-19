@@ -34,30 +34,45 @@ import { CommonModule } from '@angular/common';
     .input-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      margin-bottom: 12px;
+      gap: var(--space-1);
+      margin-bottom: var(--space-3);
     }
     .input-wrapper.no-margin {
       margin-bottom: 0;
     }
     label {
-      font-size: 14px;
+      font-size: var(--text-sm);
       font-weight: 500;
       color: var(--ink);
     }
     input {
       width: 100%;
       box-sizing: border-box;
-      padding: 8px 12px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      font-size: 14px;
+      padding: var(--space-2) var(--space-3);
+      min-height: 40px;
+      /* --line is the decorative hairline (1.5:1 on paper); a field the user
+         is meant to click into is an interactive boundary and needs the 3:1
+         weight, or the input reads as floating text with no affordance. */
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      font-size: var(--text-base);
       font-family: inherit;
       color: var(--ink);
       background-color: var(--paper);
     }
-    input:focus {
-      outline: none;
+    /* Touch: full 44pt target, and >=16px text because iOS Safari auto-zooms
+       the viewport on focus for anything smaller and never zooms back out. */
+    @media (pointer: coarse) {
+      input {
+        min-height: var(--tap-min);
+        font-size: 16px;
+      }
+    }
+    /* No 'outline: none' here. Signalling focus only by swapping the border
+       from --ink to --accent is a 1.9:1 change on a 1px line, i.e. invisible;
+       the global :focus-visible ring in styles.css is what actually carries
+       it. The border color change stays as a secondary cue. */
+    input:focus-visible {
       border-color: var(--accent);
     }
     input:disabled {
@@ -65,8 +80,8 @@ import { CommonModule } from '@angular/common';
       cursor: not-allowed;
     }
     .error {
-      color: var(--flag);
-      font-size: 12px;
+      color: var(--danger);
+      font-size: var(--text-xs);
     }
   `]
 })

@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TPipe } from '../../core/i18n.service';
 
 @Component({
   selector: 'ui-search-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TPipe],
   template: `
     <div class="search-wrapper">
       <input 
@@ -15,7 +16,7 @@ import { CommonModule } from '@angular/common';
         (keyup.enter)="onSearchClick()"
         class="search-input"
       >
-      <button class="search-btn" (click)="onSearchClick()" title="Search">
+      <button class="search-btn" (click)="onSearchClick()" [attr.aria-label]="'common.search' | t">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -33,15 +34,14 @@ import { CommonModule } from '@angular/common';
     .search-input {
       width: 100%;
       padding: 12px 48px 12px 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
       font-size: 16px;
       background: var(--paper-warm);
       box-sizing: border-box;
       transition: border-color 0.2s;
     }
-    .search-input:focus {
-      outline: none;
+    .search-input:focus-visible {
       border-color: var(--accent);
     }
     .search-btn {
@@ -51,17 +51,24 @@ import { CommonModule } from '@angular/common';
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: var(--muted, #6c757d);
+      color: var(--muted);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px;
-      border-radius: 4px;
+      padding: var(--space-1);
+      border-radius: var(--radius-control);
+    }
+    /* Padding expands the hit area on touch without moving the glyph, which
+       stays optically centred on the field's right edge. */
+    @media (pointer: coarse) {
+      .search-btn { padding: var(--space-3); margin: calc(var(--space-3) * -1); }
     }
     .search-btn:hover {
       color: var(--accent);
-      background-color: rgba(0,0,0,0.05);
+      /* Not rgba(0,0,0,.05): a black wash over the dark palette's near-black
+         ground is invisible. */
+      background-color: var(--accent-soft);
     }
   `]
 })

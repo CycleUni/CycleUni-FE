@@ -28,7 +28,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
         <p class="note" *ngIf="noteInfo">{{ noteInfo }}</p>
       </div>
       <div class="actions">
-        <div class="price" *ngIf="price !== undefined && price !== null">{{ pricePrefix }}{{ price }}</div>
+        <div class="price" [class.aggregate]="variant === 'aggregate'" *ngIf="price !== undefined && price !== null">{{ pricePrefix }}{{ price }}</div>
         
         <!-- badges -->
         <ui-badge *ngIf="status === 'active'" type="waitlist">{{ 'row.active' | t }}</ui-badge>
@@ -62,7 +62,10 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       height: 124px;
       flex-shrink: 0;
       border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-card);
       background-color: var(--paper-warm);
+      overflow: hidden;
     }
     .cover img {
       width: 100%;
@@ -103,6 +106,11 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       font-weight: 700;
       color: var(--accent);
       font-variant-numeric: tabular-nums;
+    }
+    .price.aggregate {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
     }
     .condition-summary {
       font-size: 13px;
@@ -180,6 +188,7 @@ export class UiListingRow implements OnChanges {
   @Input() status?: string;
   @Input() waitlistCount?: number;
   @Input() isEditable = false;
+  @Input() variant: 'listing' | 'aggregate' = 'listing';
 
   @Output() action = new EventEmitter<{ type: string, id: number | string }>();
 

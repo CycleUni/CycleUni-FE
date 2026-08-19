@@ -8,7 +8,7 @@ import { I18nService } from '../i18n.service';
 // Search and book-detail responses carry no localized fields; skip the lang param.
 // Both book search and detail are public endpoints — skip auth token too.
 const PUBLIC_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true).set(SKIP_AUTH, true);
-const PUBLIC = new HttpContext().set(SKIP_AUTH, true);
+const OPTIONAL_AUTH_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
 
 @Injectable({
   providedIn: 'root'
@@ -30,22 +30,22 @@ export class BookService {
     if (engine) {
       url += `&engine=${encodeURIComponent(engine)}`;
     }
-    return this.http.get<any[]>(url, { context: PUBLIC_NO_LANG });
+    return this.http.get<any[]>(url, { context: OPTIONAL_AUTH_NO_LANG });
   }
 
-  getBook(idOrIsbn: string, page: number = 1): Observable<any> {
+  getBook(idOrIsbn: string, page: number = 1, school?: string): Observable<any> {
     const isIsbn = /^\d{10,13}$/.test(idOrIsbn);
-    const param = isIsbn ? `?isbn=${idOrIsbn}&page=${page}` : `?id=${idOrIsbn}&page=${page}`;
-    return this.http.get<any>(`/books/${param}`, { context: PUBLIC });
+    let param = isIsbn ? `?isbn=${idOrIsbn}&page=${page}` : `?id=${idOrIsbn}&page=${page}`;
+    if (school) {
+      param += `&school=${encodeURIComponent(school)}`;
+    }
+    return this.http.get<any>(`/books/${param}`);
   }
 
   createManualBook(bookData: any): Observable<any> {
     return this.http.post<any>('/books/manual/', bookData);
   }
 
-  getBookDetails(id: string): Observable<any> {
-    return this.http.get(`/catalog/books/${id}/`, { context: PUBLIC_NO_LANG });
-  }
 
   getTopCourses(school?: string, category?: string): Observable<string[]> {
     let url = `/search/courses/?`;

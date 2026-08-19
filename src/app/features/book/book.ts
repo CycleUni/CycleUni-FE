@@ -25,30 +25,33 @@ import { UiPagination } from '../../shared/ui/pagination.component';
         <div class="book-header">
           <div class="book-cover">
             <img *ngIf="book.cover_url" [src]="book.cover_url | bookCover: 2" alt="" style="width: 100%; height: 100%; object-fit: cover;" />
+            <span class="book-placeholder" *ngIf="!book.cover_url" aria-hidden="true">
+              <span class="bp-title">{{ book.title }}</span>
+              <span class="bp-author" *ngIf="book.authors">{{ book.authors }}</span>
+              <span class="bp-isbn" *ngIf="book.isbn13">{{ book.isbn13 }}</span>
+            </span>
           </div>
           <div class="book-info">
             <h2 class="book-title">{{ book.title }}</h2>
-            <table class="meta-table">
-              <tbody>
-                <tr>
-                  <th>{{ 'book.author' | t }}</th>
-                  <td>{{ book.authors }}</td>
-                </tr>
-                <tr>
-                  <th>{{ 'book.publisher' | t }}</th>
-                  <td>{{ book.publisher }}</td>
-                </tr>
-                <tr>
-                  <th>{{ 'book.year' | t }}</th>
-                  <td>{{ book.published_date }}</td>
-                </tr>
-                <tr>
-                  <th>ISBN</th>
-                  <td style="font-family: monospace;">{{ book.isbn13 }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="waitlist-banner" [class.hot]="book.waiting_count > 0" *ngIf="totalListings === 0">
+            <div class="meta-list">
+              <div class="meta-row">
+                <span class="meta-label">{{ 'book.author' | t }}</span>
+                <span class="meta-value">{{ book.authors }}</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">{{ 'book.publisher' | t }}</span>
+                <span class="meta-value">{{ book.publisher }}</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">{{ 'book.year' | t }}</span>
+                <span class="meta-value">{{ book.published_date }}</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">ISBN</span>
+                <span class="meta-value" style="font-family: monospace;">{{ book.isbn13 }}</span>
+              </div>
+            </div>
+            <div class="waitlist-banner" [class.hot]="book.waiting_count > 0" *ngIf="!isLoadingListings && totalListings === 0">
               <span class="waitlist-count" [class.hot]="book.waiting_count > 0">
                 {{ (book.waiting_count > 0 ? 'book.waitingBanner' : 'book.waitingBannerZero') | t:{n: book.waiting_count} }}
               </span>
@@ -59,13 +62,14 @@ import { UiPagination } from '../../shared/ui/pagination.component';
         </div>
 
         <div class="listings-section">
-          <h3>{{ 'book.currentListings' | t:{n: totalListings} }}</h3>
+          <h3 class="section-heading" *ngIf="!isLoadingListings">{{ 'book.currentListings' | t:{n: totalListings} }}</h3>
+          <h3 class="section-heading" *ngIf="isLoadingListings">{{ 'book.currentListings' | t:{n: '-'} }}</h3>
           
-          <div class="no-local-alert" *ngIf="listings.length > 0 && localListingsCount === 0 && currentSchool">
+          <div class="no-local-alert" *ngIf="!isLoadingListings && listings.length > 0 && localListingsCount === 0 && currentSchool">
             {{ 'search.noLocalListings' | t:{school: currentSchoolLabel} }}
           </div>
 
-          <div class="listings-grid" *ngIf="listings.length > 0">
+          <div class="listings-grid" *ngIf="!isLoadingListings && listings.length > 0">
             <ui-listing-card *ngFor="let item of listings" 
               [item]="item"
               (onClickCard)="openListing($event)"
@@ -74,9 +78,9 @@ import { UiPagination } from '../../shared/ui/pagination.component';
             ></ui-listing-card>
           </div>
           
-          <ui-pagination *ngIf="totalListings > 20" [total]="totalListings" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
+          <ui-pagination *ngIf="!isLoadingListings && totalListings > 20" [total]="totalListings" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
 
-          <div class="empty-state" *ngIf="listings.length === 0">
+          <div class="empty-state" *ngIf="!isLoadingListings && listings.length === 0">
             <p>{{ 'book.emptyState' | t }}</p>
           </div>
         </div>
@@ -100,6 +104,10 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       background-color: var(--line);
       flex-shrink: 0;
       border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      transform: rotate(-1.4deg);
     }
     .book-info {
       flex: 1;
@@ -114,22 +122,25 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       padding-bottom: 12px;
     }
     
-    .meta-table {
-      width: 100%;
-      border-collapse: collapse;
+    .meta-list {
       margin-bottom: 32px;
     }
-    .meta-table th, .meta-table td {
-      padding: 12px 16px;
-      border: 1px solid var(--line);
-      text-align: left;
+    .meta-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
       font-size: 15px;
     }
-    .meta-table th {
-      background-color: var(--paper-warm);
-      width: 120px;
-      font-weight: 500;
+    .meta-row:first-child {
+      border-top: none;
+    }
+    .meta-label {
       color: var(--muted);
+      font-weight: 500;
+    }
+    .meta-value {
+      color: var(--ink);
     }
 
     .waitlist-banner {
@@ -155,13 +166,6 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       font-weight: 700;
     }
 
-    .listings-section h3 {
-      font-size: 20px;
-      margin-bottom: 24px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--line);
-    }
-    
     .listings-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -199,17 +203,15 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       .book-cover {
         width: 140px;
         height: 196px;
-        margin: 0 auto;
+        margin: 8px auto;
       }
       .book-title {
         font-size: 22px;
       }
-      .meta-table th, .meta-table td {
-        padding: 8px 12px;
+      .meta-row {
+        grid-template-columns: 88px 1fr;
+        padding: 8px 0;
         font-size: 14px;
-      }
-      .meta-table th {
-        width: 88px;
       }
       .waitlist-banner {
         flex-direction: column;
@@ -231,6 +233,7 @@ export class Book implements OnInit {
   localListingsCount = -1;
   currentSchool = '';
   currentPage = 1;
+  isLoadingListings = true;
   private isLocalCache = false;
 
   get currentSchoolLabel(): string {
@@ -258,8 +261,13 @@ export class Book implements OnInit {
 
   ngOnInit() {
     this.schoolStateService.selectedSchool$.subscribe(school => {
+      const prev = this.currentSchool;
       this.currentSchool = school;
-      this.sortListings();
+      if (prev !== school && prev !== '' && this.bookId && !this.isLocalCache) {
+        this.fetchBook(true);
+      } else {
+        this.sortListings();
+      }
       this.cdr.markForCheck();
     });
 
@@ -295,12 +303,8 @@ export class Book implements OnInit {
                 this.isLocalCache = true;
                 this.cdr.markForCheck();
                 // The cached search result carries everything except the
-                // actual listings, so hit the backend only when there is
-                // something to fetch: the book exists locally and has
-                // active listings
-                if (cached.id && (cached.activeListings ?? 0) > 0) {
-                  this.fetchBook(true);
-                }
+                // actual listings, so hit the backend to get the real status
+                this.fetchBook(true);
               } catch (e) {
                 this.isLocalCache = false;
                 this.fetchBook();
@@ -312,6 +316,9 @@ export class Book implements OnInit {
           } else {
             // Not in a browser environment (sessionStorage unavailable) — skip fetch.
             this.isLocalCache = true;
+            // Nothing will resolve the loading state on this branch, so clear it
+            // here or the listings section stays blank forever.
+            this.isLoadingListings = false;
           }
         } else {
           this.isLocalCache = false;
@@ -335,7 +342,8 @@ export class Book implements OnInit {
   }
 
   private fetchBook(silent = false) {
-    this.bookService.getBook(this.bookId!, this.currentPage).subscribe({
+    this.isLoadingListings = true;
+    this.bookService.getBook(this.bookId!, this.currentPage, this.currentSchool).subscribe({
       next: (data) => {
         this.book = data;
         // handle both raw array (old API) or paginated object (new API)
@@ -346,10 +354,13 @@ export class Book implements OnInit {
           this.listings = data.listings || [];
           this.totalListings = this.listings.length;
         }
+        this.localListingsCount = data.local_listings_count ?? -1;
+        this.isLoadingListings = false;
         this.sortListings();
         this.cdr.markForCheck();
       },
       error: () => {
+        this.isLoadingListings = false;
         // A silent fetch only supplements an already-rendered preview;
         // keep showing the preview instead of alarming the user
         if (!silent) {
@@ -362,14 +373,12 @@ export class Book implements OnInit {
 
   sortListings() {
     if (this.currentSchool && this.listings.length > 0) {
+      const currentSchoolId = this.schoolStateService.getSchoolId(this.currentSchool);
       this.listings.sort((a, b) => {
-        const aLocal = a.school_name === this.currentSchool ? 1 : 0;
-        const bLocal = b.school_name === this.currentSchool ? 1 : 0;
+        const aLocal = a.seller_school_id === currentSchoolId ? 1 : 0;
+        const bLocal = b.seller_school_id === currentSchoolId ? 1 : 0;
         return bLocal - aLocal;
       });
-      this.localListingsCount = this.listings.filter(l => l.school_name === this.currentSchool).length;
-    } else {
-      this.localListingsCount = -1;
     }
   }
 

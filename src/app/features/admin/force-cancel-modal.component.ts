@@ -78,8 +78,9 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       background-color: var(--paper);
       resize: vertical;
     }
-    .textarea-wrapper textarea:focus {
-      outline: none;
+    /* No outline reset: the global :focus-visible ring is the indicator;
+       the border colour change is only a secondary cue. */
+    .textarea-wrapper textarea:focus-visible {
       border-color: var(--accent);
     }
   `]

@@ -23,3 +23,7 @@ npm-debug.log*
 
 # Cloudflare
 .wrangler/
+
+# --- 執行期伺服器 --- 
+*.pid
+*_server.log

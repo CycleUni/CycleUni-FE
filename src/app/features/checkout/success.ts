@@ -20,8 +20,8 @@ import { TPipe } from '../../core/i18n.service';
           <h2>{{ 'checkout.successTitle' | t }}</h2>
           <p>{{ 'checkout.successDesc' | t }}</p>
           <div class="actions">
-            <ui-button routerLink="/account/orders">{{ 'checkout.viewOrders' | t }}</ui-button>
-            <ui-button variant="ghost" routerLink="/">{{ 'checkout.backHome' | t }}</ui-button>
+            <ui-button [link]="['/account/orders']">{{ 'checkout.viewOrders' | t }}</ui-button>
+            <ui-button variant="ghost" [link]="['/']">{{ 'checkout.backHome' | t }}</ui-button>
           </div>
         </div>
       </main>

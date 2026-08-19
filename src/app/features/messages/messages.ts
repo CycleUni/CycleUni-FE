@@ -16,6 +16,7 @@ import { OrderService } from '../../core/services/order.service';
 import { ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { Subscription } from 'rxjs';
+import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKEN } from './message-formatting.util';
 
 @Component({
@@ -56,6 +57,7 @@ export class Messages implements OnInit, OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private http = inject(HttpClient);
+  private mobileLayout = inject(MobileLayoutService);
   private wsSubscription?: Subscription;
   private deletionSubscription?: Subscription;
   private ackSubscription?: Subscription;
@@ -202,6 +204,7 @@ export class Messages implements OnInit, OnDestroy {
     // The hub connection is owned by the app shell (ui-layout), not this
     // page, so it stays alive across navigation — only disconnectEdgeChat
     // (the per-room connection for whichever chat was open) belongs here.
+    this.mobileLayout.setHideBottomNav(false);
     this.messageService.disconnectEdgeChat();
     if (this.wsSubscription) {
       this.wsSubscription.unsubscribe();
@@ -275,11 +278,13 @@ export class Messages implements OnInit, OnDestroy {
 
   closeChat() {
     this.activeChat = null;
+    this.mobileLayout.setHideBottomNav(false);
   }
 
   selectChat(chat: any) {
     if (this.activeChat?.id === chat.id && this.messages.length > 0) return;
     this.activeChat = chat;
+    this.mobileLayout.setHideBottomNav(true);
     this.pendingTempIds = [];
     this.messages = [];
     this.rawEdgeMsgs = [];

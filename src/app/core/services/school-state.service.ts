@@ -26,6 +26,11 @@ export class SchoolStateService {
     return s.display_name || s.name;
   }
 
+  getSchoolId(schoolName: string): number | null {
+    const s = this.rawSchools.find(x => x.name === schoolName);
+    return s ? s.id : null;
+  }
+
   setSchool(school: string) {
     if (school !== this.selectedSchoolSubject.value) {
       this.selectedSchoolSubject.next(school);

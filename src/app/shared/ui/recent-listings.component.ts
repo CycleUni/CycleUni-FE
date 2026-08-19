@@ -1,84 +1,184 @@
-import { Component, Input, inject, ChangeDetectorRef, effect, DestroyRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, effect, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
-import { UiListingRow } from './listing-row.component';
+import { UiBookTile } from './book-tile.component';
 import { UiSkeleton } from './skeleton.component';
 import { UiPagination } from './pagination.component';
+import { UiErrorState } from './error-state.component';
 import { ListingService } from '../../core/services/listing.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
 @Component({
   selector: 'ui-recent-listings',
   standalone: true,
-  imports: [CommonModule, UiListingRow, UiSkeleton, TPipe, UiPagination],
+  imports: [CommonModule, RouterModule, UiBookTile, UiSkeleton, TPipe, UiPagination, UiErrorState],
   template: `
-    <h3 class="section-title">{{ (school ? 'home.recentTitle' : 'home.recentTitleAll') | t }}</h3>
+    <h2 class="section-heading" [id]="headingId">{{ (school ? 'home.recentTitle' : 'home.recentTitleAll') | t }}</h2>
     <ng-container *ngIf="loading">
-      <ui-skeleton [count]="3"></ui-skeleton>
+      <ui-skeleton variant="tile-grid" [count]="4"></ui-skeleton>
     </ng-container>
     <ng-container *ngIf="!loading">
-      <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
-      <ui-listing-row
-        *ngFor="let item of recentListings; trackBy: trackById"
-        [title]="item.title || ('home.unknownBook' | t)"
-        [price]="item.avg_price"
-        [pricePrefix]="isAveragePrice(item.conditions) ? ('home.avgPricePrefix' | t) : 'NT$ '"
-        [conditionSummary]="formatConditions(item.conditions)"
-        [authorLine]="authorLineFor(item)"
-        [isbnLine]="isbnLineFor(item)"
-        [coverUrl]="item.cover_url"
-        (click)="goToBook(item)"
-        (keydown.enter)="goToBook(item)"
-        tabindex="0"
-        style="cursor: pointer;"
-      ></ui-listing-row>
-      <p *ngIf="recentListings.length === 0 && !errorMessage" class="empty-text">{{ 'home.noListings' | t }}</p>
+      <ui-error-state
+        *ngIf="errorMessage"
+        [message]="errorMessage"
+        (retry)="reload()"
+      ></ui-error-state>
+      <div class="discover-grid" [class.has-feature]="showFeatureTile" *ngIf="!errorMessage && recentBooks.length">
+        <ui-book-tile
+          *ngFor="let item of recentBooks; let i = index; trackBy: trackById"
+          [feature]="showFeatureTile && i === 0"
+          [title]="item.title || ('home.unknownBook' | t)"
+          [author]="item.authors"
+          [isbn]="item.isbn"
+          [coverUrl]="item.cover_url"
+          [sellerCount]="sellerCountFor(item.conditions)"
+          [conditions]="item.conditions"
+          [minPrice]="item.avg_price"
+          [isAveragePrice]="isAveragePrice(item.conditions)"
+          [link]="['/book']"
+          [linkParams]="bookLinkParams(item)"
+          (tileClick)="cacheBook(item)"
+        ></ui-book-tile>
+
+        <!-- Cold start: a grid with two books in it reads as "nobody is here".
+             Filling the remaining columns with a supply-side invitation turns
+             the emptiest part of the page into the one CTA the marketplace
+             most needs, and keeps the grid from ending in ragged holes. -->
+        <a class="seed-tile" routerLink="/sell" *ngFor="let slot of seedSlots">
+          <span class="seed-mark" aria-hidden="true">+</span>
+          <span class="seed-text">{{ 'home.seedSlot' | t }}</span>
+        </a>
+      </div>
+      <p *ngIf="recentBooks.length === 0 && !errorMessage" class="empty-note">{{ 'home.noListings' | t }}</p>
       <ui-pagination *ngIf="totalCount > 20" [total]="totalCount" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
     </ng-container>
   `,
   styles: [`
-    .section-title {
-      font-size: 20px;
-      margin: 0 0 24px;
-      font-weight: 600;
+    /* A query container so the feature tile can react to the width of the
+       grid itself rather than the viewport — the same grid is 715px wide
+       beside the waitlist and 1120px wide once that column stacks. */
+    :host { display: block; container-type: inline-size; }
+    /* Auto-fill rather than a fixed 4 columns. At 1120px, 'repeat(4, 1fr)' in
+       the two-thirds-width home column produced 153px covers — too small to
+       read a spine title on a desktop screen — and any book count that isn't
+       a multiple of 4 left visible holes in the grid. Sizing by a 180px
+       minimum instead lets the column count follow the space available. */
+    .discover-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--space-6) var(--space-5);
+      align-items: start;
     }
-    .text-danger {
-      color: var(--flag);
+    /* The oversized first tile only reads as deliberate hierarchy when there
+       are enough siblings for it to tower over. Two conditions gate it: enough
+       books (see showFeatureTile) and enough columns. Spanning 2 of 3 columns
+       — which is what the 715px column beside the waitlist yields — is not
+       emphasis, it is one book eating two thirds of the row and pushing the
+       rest down. At 800px the grid holds four 180px tracks, so the feature
+       covers half the row and the others still sit beside it. */
+    @container (min-width: 800px) {
+      .discover-grid.has-feature ui-book-tile:first-child {
+        grid-column: span 2;
+        grid-row: span 2;
+      }
     }
-    .empty-text {
+    .seed-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      aspect-ratio: 5 / 7;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-xs);
+      text-decoration: none;
       color: var(--muted);
-      font-size: 15px;
+      background-color: var(--paper-warm);
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    }
+    .seed-tile:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background-color: var(--accent-soft);
+    }
+    .seed-mark {
+      font-family: 'Noto Serif TC', serif;
+      font-size: var(--text-3xl);
+      line-height: 1;
+    }
+    .seed-text {
+      font-size: var(--text-sm);
+      text-align: center;
+      padding-inline: var(--space-3);
+    }
+    @media (max-width: 640px) {
+      .discover-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--space-5) var(--space-3);
+      }
     }
   `]
 })
 export class UiRecentListings {
+  // Lets the home page reuse this component's already-fetched aggregate
+  // data (e.g. for the hero cover stack fallback) without issuing a second
+  // recent_books/ API call.
+  @Output() booksLoaded = new EventEmitter<any[]>();
+
   @Input() set school(val: string) {
     this._school = val;
-    this.fetchRecentListings();
+    this.fetchRecentBooks();
   }
   get school() { return this._school; }
   private _school = '';
 
   @Input() set limit(val: number) {
     this._limit = val;
-    this.fetchRecentListings();
+    this.fetchRecentBooks();
   }
   get limit() { return this._limit; }
   private _limit = 200;
 
-  recentListings: any[] = [];
+  recentBooks: any[] = [];
   loading = true;
   errorMessage: string = '';
   totalCount = 0;
   currentPage = 1;
 
+  /** Stable id so the parent <section> can point aria-labelledby at this heading. */
+  readonly headingId = 'recent-listings-heading';
+
+  /**
+   * The span-2 feature tile needs enough siblings around it to read as
+   * emphasis rather than as a broken cell. Below this count every tile is
+   * the same size.
+   */
+  private static readonly FEATURE_MIN_BOOKS = 5;
+
+  /** Target number of cells in the grid while the catalogue is still small.
+      Three keeps the desktop row full without spilling a lone filler cell
+      onto a second row. */
+  private static readonly COLD_START_SLOTS = 3;
+
+  get showFeatureTile(): boolean {
+    return this.recentBooks.length >= UiRecentListings.FEATURE_MIN_BOOKS;
+  }
+
+  /** Filler "list your book" cells, only while the catalogue is nearly empty. */
+  get seedSlots(): number[] {
+    if (this.loading || this.errorMessage) return [];
+    const missing = UiRecentListings.COLD_START_SLOTS - this.recentBooks.length;
+    return missing > 0 && this.recentBooks.length > 0
+      ? Array.from({ length: missing }, (_, i) => i)
+      : [];
+  }
+
   private listingService = inject(ListingService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
-  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
   // `school`/`limit` inputs can each fire their own fetch in quick succession
@@ -100,12 +200,13 @@ export class UiRecentListings {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((data) => {
       if (data === null) {
-        this.recentListings = [];
+        this.recentBooks = [];
         this.errorMessage = this.i18n.t('common.error') || 'Error loading listings';
       } else {
-        this.recentListings = data.results || data;
-        this.totalCount = data.count || this.recentListings.length;
+        this.recentBooks = data.results || data;
+        this.totalCount = data.count || this.recentBooks.length;
         this.errorMessage = '';
+        this.booksLoaded.emit(this.recentBooks);
       }
       this.loading = false;
       this.cdr.markForCheck();
@@ -114,57 +215,54 @@ export class UiRecentListings {
     effect(() => {
       // Re-fetch when language changes so localized error/titles update if needed
       this.i18n.lang();
-      this.fetchRecentListings();
+      this.fetchRecentBooks();
     });
   }
 
-  private fetchRecentListings() {
+  private fetchRecentBooks() {
     this.fetchTrigger$.next();
   }
 
   onPageChange(page: number) {
     this.currentPage = page;
-    this.fetchRecentListings();
+    this.fetchRecentBooks();
   }
 
   isAveragePrice(conditions: any): boolean {
     return conditions && Object.keys(conditions).length > 1;
   }
 
-  formatConditions(conditions: any): string {
-    if (!conditions) return '';
-    return Object.entries(conditions)
-      .map(([cond, count]) => `${this.i18n.t('cond.' + cond) || cond} x${count}`)
-      .join(', ');
-  }
-
-  authorLineFor(item: any): string {
-    return this.i18n.t('search.authorLine', { author: item.authors || '' }) || '';
-  }
-
-  isbnLineFor(item: any): string {
-    return this.i18n.t('search.isbnLine', { isbn: item.isbn || '' }) || '';
+  sellerCountFor(conditions: any): number {
+    if (!conditions) return 0;
+    return Object.values(conditions).reduce((sum: number, count: any) => sum + (Number(count) || 0), 0);
   }
 
   trackById(index: number, item: any): any {
     return item.id;
   }
 
-  goToBook(item: any) {
-    if (typeof sessionStorage !== 'undefined') {
-      const cached = {
-        id: item.id,
-        title: item.title,
-        author: item.authors,
-        isbn: item.isbn,
-        coverUrl: item.cover_url,
-        activeListings: 1
-      };
-      sessionStorage.setItem(`cachedBook_${item.isbn || item.id}`, JSON.stringify(cached));
-    }
-    const queryParams: any = { local_cache: 'true' };
-    if (item.isbn) queryParams.isbn = item.isbn;
-    else queryParams.id = item.id;
-    this.router.navigate(['/book'], { queryParams });
+  /** Anchors carry the navigation now; this only primes the detail-page cache. */
+  cacheBook(item: any) {
+    if (typeof sessionStorage === 'undefined') return;
+    const cached = {
+      id: item.id,
+      title: item.title,
+      author: item.authors,
+      isbn: item.isbn,
+      coverUrl: item.cover_url,
+      activeListings: 1
+    };
+    sessionStorage.setItem(`cachedBook_${item.isbn || item.id}`, JSON.stringify(cached));
+  }
+
+  bookLinkParams(item: any): Record<string, any> {
+    const params: Record<string, any> = { local_cache: 'true' };
+    if (item.isbn) params['isbn'] = item.isbn;
+    else params['id'] = item.id;
+    return params;
+  }
+
+  reload() {
+    this.fetchRecentBooks();
   }
 }

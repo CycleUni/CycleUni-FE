@@ -100,7 +100,7 @@ export interface DropdownOption {
       width: 100%;
       padding: 8px 12px;
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: var(--radius-control);
       background-color: var(--paper);
       color: var(--ink);
       font-size: 14px;
@@ -123,6 +123,12 @@ export interface DropdownOption {
       border: none;
       background: none;
       color: var(--muted);
+    }
+    @media (pointer: coarse) {
+      .dropdown-trigger.icon-only {
+        padding: 13px;
+        margin: -9px;
+      }
     }
     .dropdown-trigger.icon-only:hover,
     .dropdown-trigger.icon-only[aria-expanded="true"] {
@@ -147,8 +153,8 @@ export interface DropdownOption {
       padding: 4px;
       background-color: var(--paper);
       border: 1px solid var(--line);
-      border-radius: 4px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: var(--radius-control);
+      box-shadow: var(--shadow-card-lg);
       z-index: 200;
     }
     .dropdown-panel.append-to-body {
@@ -172,14 +178,15 @@ export interface DropdownOption {
       padding: 6px 8px;
       margin-bottom: 4px;
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: var(--radius-control);
       font-size: 14px;
       font-family: inherit;
       color: var(--ink);
       background-color: var(--paper);
     }
-    .dropdown-search:focus {
-      outline: none;
+    /* No outline reset. The global :focus-visible ring in styles.css is the
+       focus indicator; a border-colour swap alone is ~1.9:1 on a 1px line. */
+    .dropdown-search:focus-visible {
       border-color: var(--accent);
     }
     .dropdown-list {
@@ -198,7 +205,7 @@ export interface DropdownOption {
       font-size: 14px;
       color: var(--ink);
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: var(--radius-control);
     }
     .dropdown-list li:hover {
       background-color: var(--paper-warm);

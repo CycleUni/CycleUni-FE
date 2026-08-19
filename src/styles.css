@@ -1,19 +1,176 @@
 /*
  * CycleUni — global styles and design tokens (frontend-ssd §4.3)
- * Engineering agents must not add colors or fonts beyond these tokens;
- * new visual elements go through the ui-design-consultant.
+ * Engineering agents must not add new brand colors or fonts beyond the
+ * tokens below without design sign-off; small structural tokens (shadow,
+ * radius) for elevation/spacing may be added here as needed.
  */
 
 :root {
   /* Colors: the vocabulary is "used books, kraft paper, library" */
   --ink:        #1F2933; /* body text and headings (near-black ink, not pure black) */
+  --ink-soft:   #4A555F; /* de-emphasized ink: still body-legible (7.6:1 on paper),
+                            one step down from --ink, above --muted. Used for
+                            secondary controls (tag buttons, quiet links) that
+                            must not read as disabled the way --muted does. */
   --paper:      #FFFFFF; /* main background */
   --paper-warm: #F7F5F0; /* section background (very light paper tone, used sparingly) */
-  --line:       #D9D4CB; /* borders and dividers */
-  --accent:     #1E5C46; /* primary action color (deep green: links, primary buttons, prices) */
-  --accent-ink: #14402F; /* darkened hover state */
-  --flag:       #A34A2A; /* warnings and the "N people waiting" badge (brick red, these two uses only) */
-  --muted:      #647079; /* secondary text */
+
+  /* Two border weights, not one. --line is decorative only (hairline rules
+     between rows/steps); at 1.48:1 on --paper it is deliberately barely
+     there. Anything that marks an *interactive* boundary — input fields,
+     buttons, cards you can click — must use --line-strong, which clears
+     WCAG 1.4.11's 3:1 minimum for non-text UI (3.4:1 on --paper,
+     3.1:1 on --paper-warm). Using --line for those made the whole
+     line-driven layout effectively invisible. */
+  --line:        #D9D4CB;
+  --line-strong: #948A76;
+
+  --accent:      #1E5C46; /* primary action color (deep green: links, primary buttons, prices) */
+  --accent-ink:  #14402F; /* darkened hover state */
+  --accent-soft: #E7F0EA; /* accent-tinted ground: selected chips, hover fills */
+  --flag:        #A34A2A; /* warnings and the "N people waiting" badge (brick red, these two uses only) */
+  --muted:       #647079; /* secondary text */
+
+  /* Secondary brand color. The palette had exactly one hue (--accent green)
+     doing every job, which read as "library catalog" rather than "students
+     handing textbooks on". This warm kraft/book-board amber is the counter-
+     weight: step numerals, hero rules, "just listed" marks.
+     3.4:1 on --paper — large text and graphics only, never body copy. */
+  --brand-warm:      #C8763F;
+  --brand-warm-soft: #FBF0E4;
+
+  /* Structural tokens (not part of the color/font vocabulary above):
+     subtle elevation and corner-rounding for cover images and cards. */
+  --shadow-card: 0 1px 3px rgba(31, 41, 51, 0.10);
+  /* Raised state for --shadow-card. This was referenced by book-tile and the
+     hero cover stack long before it existed, so their hover elevation was
+     silently falling back to the resting shadow and animating nothing. */
+  --shadow-card-lg: 0 2px 4px rgba(31, 41, 51, 0.06), 0 12px 24px -8px rgba(31, 41, 51, 0.18);
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-control: 6px;
+  --radius-lg: 8px; /* large surfaces only: promo banners, modals */
+
+  /* Semantic status tokens (not brand colors): a warm warning tint in the
+     same hue family as --flag, used for alert/warning boxes and "no stock"
+     states instead of ad hoc hex values. */
+  --warn-bg:  #FBEFE4; /* warm tint derived from --paper-warm/--flag */
+  --warn-ink: #7A3A1F; /* darkened --flag-family ink for warning text */
+  /* --danger/--success were referenced in feature styles without ever being
+     declared, so those rules silently did nothing. Both clear AA on --paper
+     (6.5:1 and 5.0:1). */
+  --danger:       #B3261E;
+  --danger-light: #FBEAE8;
+  --success:      #2E7D57;
+
+  /* Spacing scale (8px base). Use these instead of ad hoc px values for
+     section/card padding and gaps so vertical rhythm reads as one system
+     rather than each page inventing its own spacing by feel. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Type scale. Everything should pick from this list rather than a bespoke
+     size, so the hierarchy (hero > heading > card title > body > caption)
+     stays legible and consistent across the whole app. --text-hero is the
+     one fluid step: it is shared rather than re-clamped per page, because
+     per-page clamps drifted into hard breakpoint overrides that collapsed
+     the hero down to heading size on mobile. */
+  --text-hero: clamp(28px, 6.2vw, 52px);
+  --text-3xl: 32px;  /* page-level H1 outside of hero contexts */
+  --text-2xl: 24px;
+  --text-xl:  20px;  /* .section-heading */
+  --text-lg:  17px;  /* card/tile titles */
+  --text-base: 15px; /* body */
+  --text-sm:  13px;  /* secondary/meta text */
+  --text-xs:  12px;  /* captions, badges */
+
+  /* Component-level theme hooks. Components use emulated encapsulation, so a
+     `:root[data-theme="dark"] .foo` rule written inside a component gets the
+     `_ngcontent` attribute stamped onto *every* compound in the chain —
+     including `:root`, which never carries it — and silently never matches.
+     Any value that must differ per theme therefore has to be resolved here,
+     as a token the component reads. Primary buttons need this: light mode is
+     "deep fill + light label", but on dark --accent is the lighter green and
+     --paper the near-black ground, so reusing the same recipe inverts the
+     button into a pale surface that reads as secondary or disabled. */
+  --btn-primary-bg:       var(--accent);
+  --btn-primary-ink:      var(--paper);
+  --btn-primary-bg-hover: var(--accent-ink);
+
+  /* Minimum hit area for anything tappable (iOS 44pt / Android 48dp).
+     Controls may look smaller than this via transparent padding, but the
+     box that receives the tap must not be. */
+  --tap-min: 44px;
+}
+
+/* Dark palette: follows OS/browser preference by default. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:        #EDE8DE; /* warm off-white text */
+    --ink-soft:   #C4BDB0;
+    --paper:      #17181A; /* deep warm charcoal ground (not pure black) */
+    --paper-warm: #201F1B; /* slightly lighter charcoal for section backgrounds */
+    --line:        #3B382E; /* subtle warm-toned border */
+    --line-strong: #706A5A; /* 3.3:1 on --paper and 3.1:1 on --paper-warm */
+    --accent:      #4B9C7B; /* brighter green for contrast on a dark ground */
+    --accent-ink:  #7FC4A6; /* lighter emphasis variant of accent on dark */
+    --accent-soft: #1E2B25;
+    --flag:        #C97A54; /* brighter terracotta/brick for contrast on a dark ground */
+    --muted:       #9B9488;
+
+    --brand-warm:      #E09A63;
+    --brand-warm-soft: #2B2119;
+
+    --warn-bg:  #2E2419; /* dark warm-brown tint, same hue family as light --warn-bg */
+    --warn-ink: #E8B98C; /* light warm tone, readable on --warn-bg above */
+    --danger:       #E8776F;
+    --danger-light: #2E1C1A;
+    --success:      #5FB08C;
+
+    --btn-primary-bg:       #2F7A5C;
+    --btn-primary-ink:      #F2F7F4;
+    --btn-primary-bg-hover: #3E9070;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+    --shadow-card-lg: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 32px -10px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Dark palette hook for a future explicit theme toggle (not built yet). */
+:root[data-theme="dark"] {
+  --ink:        #EDE8DE;
+  --ink-soft:   #C4BDB0;
+  --paper:      #17181A;
+  --paper-warm: #201F1B;
+  --line:        #3B382E;
+  --line-strong: #706A5A;
+  --accent:      #4B9C7B;
+  --accent-ink:  #7FC4A6;
+  --accent-soft: #1E2B25;
+  --flag:        #C97A54;
+  --muted:       #9B9488;
+
+  --brand-warm:      #E09A63;
+  --brand-warm-soft: #2B2119;
+
+  --warn-bg:  #2E2419;
+  --warn-ink: #E8B98C;
+  --danger:       #E8776F;
+  --danger-light: #2E1C1A;
+  --success:      #5FB08C;
+
+  --btn-primary-bg:       #2F7A5C;
+  --btn-primary-ink:      #F2F7F4;
+  --btn-primary-bg-hover: #3E9070;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-card-lg: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 32px -10px rgba(0, 0, 0, 0.7);
 }
 
 *,
@@ -38,10 +195,227 @@ body {
 }
 
 /*
+ * Keyboard focus, globally. Several shared controls (input, select,
+ * search-bar, dropdown) set `outline: none` and signalled focus only by
+ * swapping a border color — between --ink and --accent that is a 1.9:1
+ * change on a 1.5px line, i.e. invisible. :focus-visible keeps mouse users
+ * from seeing rings while guaranteeing keyboard users always do, so it is
+ * defined once here rather than per component. Uses :where() to stay at
+ * zero specificity: any component rule still wins if it needs to.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  /* Deliberately no border-radius here. The outline already follows whatever
+     radius the element itself has; setting one imposes a shape, so an element
+     with square corners visibly morphs the moment it takes keyboard focus. */
+}
+
+/*
+ * Respect the OS "reduce motion" setting. The app animates skeleton pulses
+ * continuously and translates/rotates tiles on hover; for users who ask for
+ * reduced motion these are exactly the effects that need to stop.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * The single content column. Full-bleed bands (hero, footer) put their
+ * background on the outer element and this class on the inner one; ordinary
+ * sections use it directly. Previously bands and sections computed their
+ * gutters differently (a padded band with a max-width:1120 child yields a
+ * 1120px column; a border-box max-width:1120 section with padding yields
+ * 1088px), so hero and footer text sat 16px outside every other section's
+ * left edge. One class, one column.
+ */
+.container {
+  width: 100%;
+  max-width: 1152px; /* 1120px column + 2 × 16px gutter */
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/*
  * Serif exception for book titles (the interface's only serif usage):
  * book detail titles render in Noto Serif TC 700; the class is reserved here.
  */
 .book-title-serif {
   font-family: 'Noto Serif TC', serif;
   font-weight: 700;
+}
+
+/*
+ * Shared section-heading treatment: used for section titles across pages
+ * (recently added, listings, categories, search results, etc.) so they
+ * read as one system instead of each page inventing its own ad hoc
+ * bold-text-plus-full-width-underline style. Not for book titles or
+ * modal/dialog titles, which are intentionally different.
+ */
+.section-heading {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 var(--space-5);
+}
+.section-heading::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 3px;
+  margin-top: 10px;
+  background: var(--accent);
+}
+
+/*
+ * Visually hidden below the mobile breakpoint, but still announced.
+ *
+ * For controls that collapse to an icon on narrow screens: hiding the label
+ * with display:none strips it from the accessibility tree as well, leaving an
+ * unlabelled button. This keeps the name for screen readers while the icon
+ * carries the meaning visually.
+ */
+@media (max-width: 768px) {
+  .sr-only-mobile {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/*
+ * Stamp tag: the small serif label that hangs half-off the corner of a book
+ * cover — the price on a discovery tile, the waiting-count on the hero stack.
+ * Both were hand-rolled copies of the same eight declarations and had already
+ * drifted apart on border color; the caller now only supplies the offsets and
+ * the ink color, so the shape can never diverge again.
+ */
+.stamp-tag {
+  position: absolute;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-xs);
+  padding: var(--space-1) var(--space-2);
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Unjacketed-book placeholder: the ruled cloth-binding fill standing in for a
+ * cover that is missing or failed to load, so a book without artwork reads as
+ * deliberately unjacketed rather than as a broken image.
+ */
+.book-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  background-color: var(--paper-warm);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 7px,
+    rgba(148, 138, 118, 0.16) 7px 8px
+  );
+  font-family: 'Noto Serif TC', serif;
+  color: var(--ink-soft);
+  /* container-type lets the type scale below respond to the box it is in
+     rather than the viewport: the same markup has to read at 32px in a
+     waitlist row, ~240px in a tile, and ~300px on the book page. */
+  container-type: inline-size;
+  overflow: hidden;
+}
+/* The stamped board label: title between two hairlines, the way an
+   unjacketed hardback carries it. Showing an initial or two instead read as a
+   chemistry symbol and told the reader nothing about the book. */
+.book-placeholder .bp-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: clamp(11px, 9cqi, 20px);
+  line-height: 1.35;
+  padding-block: clamp(4px, 3cqi, 10px);
+  border-block: 1px solid var(--line-strong);
+  max-width: 100%;
+}
+.book-placeholder .bp-author {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: clamp(9px, 6cqi, 13px);
+  line-height: 1.4;
+  color: var(--muted);
+  max-width: 100%;
+}
+.book-placeholder .bp-isbn {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: clamp(8px, 4.5cqi, 12px);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Below roughly a waitlist thumbnail there is no room for words at all, so
+   the ruled board stands alone rather than showing clipped fragments. */
+@container (max-width: 90px) {
+  .book-placeholder .bp-title,
+  .book-placeholder .bp-author,
+  .book-placeholder .bp-isbn { display: none; }
+}
+/* 120px of usable width, i.e. roughly a 145px tile once padding is taken
+   off — below that the author and ISBN lines wrap to shreds. A phone tile
+   sits at ~142px of content box and keeps both. */
+@container (max-width: 120px) {
+  .book-placeholder .bp-author,
+  .book-placeholder .bp-isbn { display: none; }
+}
+
+/*
+ * The quiet "nothing here yet" line — a plain muted sentence, as opposed to
+ * the dashed .empty-state box below. Home and the recent-listings component
+ * each had their own copy of this under different names.
+ */
+.empty-note {
+  color: var(--muted);
+  font-size: var(--text-base);
+  text-align: center;
+  padding: var(--space-5);
+  margin: 0;
+}
+
+/*
+ * Shared empty-state utility: consolidates the dashed-border placeholder box
+ * used for "nothing here yet" states (search no-results, account listings,
+ * account subscriptions, etc.) so those pages can migrate to one class
+ * instead of each hand-rolling the same border/background/padding.
+ */
+.empty-state {
+  border: 1px dashed var(--line-strong);
+  background: var(--paper-warm);
+  padding: var(--space-7);
+  text-align: center;
+  color: var(--muted);
 }

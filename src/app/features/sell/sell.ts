@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiConditionPicker } from '../../shared/ui/condition-picker.component';
 import { AccountService } from '../../core/services/account.service';
 import { BookService } from '../../core/services/book.service';
 import { ListingService } from '../../core/services/listing.service';
@@ -16,7 +17,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 @Component({
   selector: 'app-sell',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiDropdown, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiDropdown, UiConditionPicker, TPipe],
   templateUrl: './sell.html',
   styleUrls: ['./sell.css']
 })

@@ -30,21 +30,31 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
         [class.role-seller]="chat.other_party_role === 'seller'"
         (click)="select.emit(chat)"
       >
-        <div class="chat-meta">
-          <span class="chat-partner">{{ chat.other_party }}</span>
-          <div class="chat-meta-right">
-            <ui-role-badge [role]="chat.other_party_role"></ui-role-badge>
-            <span class="unread-dot" *ngIf="chat._hubUnread"></span>
-            <button class="chat-delete-btn" type="button" [title]="'msg.deleteConversation' | t"
-                    (click)="$event.stopPropagation(); remove.emit(chat)">×</button>
+        <img *ngIf="chat.listing_photo" [src]="chat.listing_photo" [attr.alt]="chat.listing_title || ('common.bookCover' | t)" class="chat-thumb">
+        <div class="chat-thumb placeholder-thumb" *ngIf="!chat.listing_photo"></div>
+        <div class="chat-body">
+          <div class="chat-meta">
+            <span class="chat-partner">{{ chat.other_party }}</span>
+            <div class="chat-meta-right">
+              <ui-role-badge [role]="chat.other_party_role"></ui-role-badge>
+              <span class="unread-dot" *ngIf="chat._hubUnread"></span>
+              <button class="chat-delete-btn" type="button" [title]="'msg.deleteConversation' | t"
+                      (click)="$event.stopPropagation(); remove.emit(chat)">×</button>
+            </div>
           </div>
+          <div class="chat-subject">{{ 'msg.bookPrefix' | t:{title: chat.listing_title} }}</div>
+          <div class="chat-preview">{{ formatPreview(chat.latest_message) }}</div>
         </div>
-        <div class="chat-subject">{{ 'msg.bookPrefix' | t:{title: chat.listing_title} }}</div>
-        <div class="chat-preview">{{ formatPreview(chat.latest_message) }}</div>
       </div>
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
     .sidebar-header {
       padding: 16px;
       border-bottom: 1px solid var(--line);
@@ -58,8 +68,12 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
       overflow-y: auto;
     }
     .chat-item {
-      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--line);
+      border-left: 3px solid transparent;
       cursor: pointer;
     }
     .chat-item:hover {
@@ -67,13 +81,25 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
     }
     .chat-item.active {
       background-color: var(--paper);
-      border-left: 3px solid var(--accent);
+      border-left-color: var(--accent);
     }
     .chat-item.active.role-buyer {
       border-left-color: var(--flag);
     }
     .chat-item.active.role-seller {
       border-left-color: var(--accent);
+    }
+    .chat-thumb {
+      width: 40px;
+      height: 52px;
+      flex-shrink: 0;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      background-color: var(--line);
+    }
+    .chat-body {
+      flex: 1;
+      min-width: 0;
     }
     .chat-meta {
       display: flex;

@@ -1,11 +1,13 @@
-import { Component, OnInit, OnDestroy, inject, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { UiInput } from '../../shared/ui/input.component';
+import { RouterModule } from '@angular/router';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiSkeleton } from '../../shared/ui/skeleton.component';
-import { FormsModule } from '@angular/forms';
+import { UiErrorState } from '../../shared/ui/error-state.component';
+import { UiPromoBanner } from '../../shared/ui/promo-banner.component';
+import { HomeHero, HeroCover } from './home-hero.component';
+import { UiCategoryRail } from '../../shared/ui/category-rail.component';
 import { ListingService } from '../../core/services/listing.service';
 import { Subject } from 'rxjs';
 import { takeUntil, distinctUntilChanged } from 'rxjs/operators';
@@ -17,194 +19,270 @@ import { SchoolStateService } from '../../core/services/school-state.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiRecentListings, UiSkeleton, TPipe],
+  imports: [CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, UiPromoBanner, TPipe],
   template: `
-      <section class="hero-search">
-        <h2 class="search-title">{{ 'home.heroTitle' | t }}</h2>
-        <div class="search-bar">
-          <ui-input
-            [placeholder]="'common.searchPlaceholder' | t"
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="onSearch()"
-            class="hero-input"
-          ></ui-input>
-          <ui-button (onClick)="onSearch()">{{ 'common.search' | t }}</ui-button>
-        </div>
-        <div class="popular-tags">
-          <span class="tag-label">{{ 'home.popularSearches' | t }}</span>
-          <button type="button" class="tag-btn" (click)="setSearchQueryFromKey('home.tagCalculus')">{{ 'home.tagCalculus' | t }}</button>
-          <button type="button" class="tag-btn" (click)="setSearchQueryFromKey('home.tagEconomics')">{{ 'home.tagEconomics' | t }}</button>
-          <button type="button" class="tag-btn" (click)="setSearchQueryFromKey('home.tagAnatomy')">{{ 'home.tagAnatomy' | t }}</button>
-        </div>
-      </section>
-
-      <!-- Active Ads Banner (CSS classes renamed to 'promotions' to avoid adblocker CSS hiding) -->
-      <section class="section promotions-section" *ngIf="activeAds?.length">
-        <div class="promotions-carousel">
-          <a *ngFor="let ad of activeAds" (click)="onAdClick($event, ad)" class="promo-banner" [style.cursor]="'pointer'">
-            <img [src]="ad.image_url" [alt]="ad.title" (error)="onImgError($event)">
-          </a>
-        </div>
-      </section>
+      <app-home-hero [covers]="heroCovers"></app-home-hero>
 
       <!-- Categories: show skeleton during load, then the real content, never blank -->
-      <section class="section">
-        <h3 class="section-title">{{ 'home.categoriesTitle' | t }}</h3>
-        <ng-container *ngIf="categoriesLoading || categoriesError; else categoriesLoaded">
-          <ui-skeleton *ngIf="categoriesLoading && !categoriesError" [count]="2"></ui-skeleton>
-          <div class="error-box" *ngIf="categoriesError">
-            <p>{{ 'home.categoriesError' | t }}</p>
-            <ui-button variant="ghost" (onClick)="loadMetadata()">{{ 'common.retry' | t }}</ui-button>
-          </div>
-        </ng-container>
-        <ng-template #categoriesLoaded>
-          <div class="categories-wrapper" *ngIf="categories?.length" [class.has-left]="canScrollLeft" [class.has-right]="canScrollRight">
-            <button class="scroll-btn left" *ngIf="canScrollLeft" (click)="scrollCategories(-1)">&#8249;</button>
-            <div class="categories-grid" #categoriesGrid (scroll)="checkScroll()">
-              <a [routerLink]="['/search']" [queryParams]="{ category: cat.slug }" class="category-card" *ngFor="let cat of categories; trackBy: trackBySlug">
-                <h4>{{ cat.title }}</h4>
-                <p>{{ cat.desc }}</p>
-              </a>
-            </div>
-            <button class="scroll-btn right" *ngIf="canScrollRight" (click)="scrollCategories(1)">&#8250;</button>
-          </div>
-          <p class="muted-text" *ngIf="categories?.length === 0">{{ 'home.noCategories' | t }}</p>
-        </ng-template>
-      </section>
-
-      <div class="two-cols">
-        <section class="section flex-2">
-          <ui-recent-listings [school]="currentSchool"></ui-recent-listings>
+      <div class="two-cols container" [class.hero-has-covers]="heroCovers.length > 0">
+        <section class="col-main" aria-labelledby="recent-listings-heading">
+          <ui-recent-listings [school]="currentSchool" (booksLoaded)="onRecentBooksLoaded($event)"></ui-recent-listings>
         </section>
 
-        <section class="section flex-1">
-          <h3 class="section-title">{{ 'home.waitlistTitle' | t }}</h3>
-          <ng-container *ngIf="metadataLoading || metadataError; else waitlistLoaded">
-            <ui-skeleton *ngIf="metadataLoading && !metadataError" [count]="2"></ui-skeleton>
-          </ng-container>
-          <ng-template #waitlistLoaded>
+        <section class="col-side" aria-labelledby="waitlist-heading">
+          <h2 class="section-heading" id="waitlist-heading">{{ 'home.waitlistTitle' | t }}</h2>
+          <ui-skeleton *ngIf="metadataLoading && !metadataError" variant="row" [count]="4"></ui-skeleton>
+          <!-- This branch used to contain only a spinner guarded by
+               '!metadataError', so a failed load rendered the heading above
+               and then nothing whatsoever. -->
+          <ui-error-state
+            *ngIf="metadataError"
+            [message]="'home.waitlistError' | t"
+            (retry)="loadMetadata()"
+          ></ui-error-state>
+          <ng-container *ngIf="!metadataLoading && !metadataError">
             <div class="waitlist-card" *ngIf="waitlist?.length">
-              <div class="waitlist-item" *ngFor="let wait of waitlist; trackBy: trackByTitle">
-                <div class="title">{{ wait.title }}</div>
-                <div class="count">{{ 'home.waitingCount' | t:{n: wait.count} }}</div>
-              </div>
-              <ui-button variant="ghost" routerLink="/sell" style="width: 100%; margin-top: 16px;">{{ 'home.sellCta' | t }}</ui-button>
+              <a
+                class="waitlist-row"
+                *ngFor="let wait of waitlist; trackBy: trackByTitle"
+                [routerLink]="['/book']"
+                [queryParams]="waitlistParams(wait)"
+              >
+                <span class="wcover" aria-hidden="true">
+                  <img *ngIf="wait.cover_url" [src]="wait.cover_url" alt="" />
+                  <span class="wcover-mark" *ngIf="!wait.cover_url">{{ (wait.title || '').slice(0, 1) }}</span>
+                </span>
+                <span class="wtitle">{{ wait.title }}</span>
+                <span class="wcount">{{ 'home.waitingCount' | t:{n: wait.count} }}</span>
+              </a>
+              <ui-button variant="ghost" [link]="['/sell']" class="waitlist-cta">{{ 'home.sellCta' | t }}</ui-button>
             </div>
-            <p class="muted-text" *ngIf="waitlist?.length === 0">{{ 'home.waitlistEmpty' | t }}</p>
-          </ng-template>
+            <p class="empty-note" *ngIf="waitlist?.length === 0">{{ 'home.waitlistEmpty' | t }}</p>
+          </ng-container>
         </section>
       </div>
 
-      <section class="section how-it-works">
-        <h3 class="section-title">{{ 'home.howTitle' | t }}</h3>
+      <section class="section container" aria-labelledby="categories-heading">
+        <h2 class="section-heading" id="categories-heading">{{ 'home.categoriesTitle' | t }}</h2>
+        <ui-skeleton *ngIf="categoriesLoading && !categoriesError" variant="card-row" [count]="4"></ui-skeleton>
+        <ui-error-state
+          *ngIf="categoriesError"
+          [message]="'home.categoriesError' | t"
+          (retry)="loadMetadata()"
+        ></ui-error-state>
+        <ng-container *ngIf="!categoriesLoading && !categoriesError">
+          <ui-category-rail [categories]="categories"></ui-category-rail>
+          <p class="empty-note" *ngIf="categories?.length === 0">{{ 'home.noCategories' | t }}</p>
+        </ng-container>
+      </section>
+
+      <!-- Promotions sit below the catalogue, not above it. At the top of the
+           page this banner was the single largest element on the first screen
+           and pushed every real listing past the fold. -->
+      <section class="section container" *ngIf="activeAds?.length" [attr.aria-label]="'home.promoLabel' | t">
+        <ui-promo-banner [ads]="activeAds" (adClick)="onAdClick($event)"></ui-promo-banner>
+      </section>
+
+      <!-- The three "how it works" steps below are entirely buyer-side
+           (search, message, meet up), so a seller reading this page never
+           learns what listing costs them. This answers that, next to it. -->
+      <section class="section container sell-band">
+        <p>{{ 'home.sellHowPrompt' | t }}</p>
+        <ui-button size="lg" [link]="['/sell']">{{ 'home.sellCtaHero' | t }}</ui-button>
+      </section>
+
+      <section class="section container how-it-works" aria-labelledby="how-heading">
+        <h2 class="section-heading" id="how-heading">{{ 'home.howTitle' | t }}</h2>
         <div class="steps-grid">
           <div class="step-card">
-            <div class="step-num">1</div>
-            <h4>{{ 'home.step1Title' | t }}</h4>
+            <div class="step-num" aria-hidden="true">1</div>
+            <h3>{{ 'home.step1Title' | t }}</h3>
             <p>{{ 'home.step1Desc' | t }}</p>
           </div>
           <div class="step-card">
-            <div class="step-num">2</div>
-            <h4>{{ 'home.step2Title' | t }}</h4>
+            <div class="step-num" aria-hidden="true">2</div>
+            <h3>{{ 'home.step2Title' | t }}</h3>
             <p>{{ 'home.step2Desc' | t }}</p>
           </div>
           <div class="step-card">
-            <div class="step-num">3</div>
-            <h4>{{ 'home.step3Title' | t }}</h4>
+            <div class="step-num" aria-hidden="true">3</div>
+            <h3>{{ 'home.step3Title' | t }}</h3>
             <p>{{ 'home.step3Desc' | t }}</p>
           </div>
         </div>
       </section>
   `,
   styles: [`
-    .hero-search { padding: 64px 16px; text-align: center; background-color: var(--paper-warm); border-bottom: 1px solid var(--line); margin-bottom: 48px; }
-    .promotions-section { margin-bottom: 48px; }
-    .promotions-carousel { display: flex; overflow-x: auto; gap: 16px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
-    .promotions-carousel::-webkit-scrollbar { height: 0; display: none; }
-    .promo-banner { flex: 0 0 100%; scroll-snap-align: start; display: block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: var(--paper-warm); position: relative; padding-top: 25%; /* 4:1 aspect ratio roughly */ }
-    .promo-banner img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-    .search-title { font-size: 28px; margin-top: 0; margin-bottom: 32px; }
-    .search-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
-    .hero-input { display: inline-block; width: 100%; max-width: 500px; }
-    .popular-tags { font-size: 14px; color: var(--muted); }
-    .tag-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; margin-left: 8px; padding: 0; font-family: inherit; }
-    .tag-btn:hover, .tag-btn:active { text-decoration: underline; }
-    .section { max-width: 1120px; margin: 0 auto 48px; padding: 0 16px; }
-    .section-title { font-size: 20px; margin-top: 0; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
-    .categories-wrapper { position: relative; }
-    .categories-wrapper::before, .categories-wrapper::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 8px;
-      width: 56px;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .categories-wrapper::before { left: 0; background: linear-gradient(to right, var(--paper) 0%, transparent 100%); }
-    .categories-wrapper::after { right: 0; background: linear-gradient(to left, var(--paper) 0%, transparent 100%); }
-    .categories-wrapper.has-left::before { opacity: 1; }
-    .categories-wrapper.has-right::after { opacity: 1; }
-    .scroll-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background-color: var(--paper); border: 1px solid var(--line); border-radius: 50%; font-size: 24px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.2s; }
-    .scroll-btn:hover { background-color: var(--paper-warm); color: var(--accent); border-color: var(--accent); }
-    .scroll-btn.left { left: 8px; }
-    .scroll-btn.right { right: 8px; }
-    .categories-grid { display: flex; overflow-x: auto; gap: 16px; padding-bottom: 8px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
-    .categories-grid::-webkit-scrollbar { height: 6px; }
-    .categories-grid::-webkit-scrollbar-track { background: transparent; }
-    .categories-grid::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
-    .category-card { border: 1px solid var(--line); padding: 24px; text-decoration: none; color: var(--ink); border-radius: 4px; transition: border-color 0.2s; flex: 0 0 240px; }
-    .category-card:hover { border-color: var(--accent); }
-    .category-card h4 { margin: 0 0 8px; font-size: 16px; }
-    .category-card p { margin: 0; color: var(--muted); font-size: 14px; }
-    .two-cols { max-width: 1120px; margin: 0 auto; display: flex; gap: 48px; }
-    .flex-2 { flex: 2; }
-    .flex-1 { flex: 1; }
-    .waitlist-card { border: 1px solid var(--line); padding: 16px; border-radius: 4px; }
-    .waitlist-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed var(--line); }
-    .waitlist-item:last-of-type { border-bottom: none; }
-    .waitlist-item .title { font-weight: 500; }
-    .waitlist-item .count { color: var(--flag); font-size: 12px; font-weight: 500; }
-    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .step-card { border: 1px solid var(--line); padding: 32px 24px; text-align: center; border-radius: 4px; }
-    .step-num { width: 40px; height: 40px; border: 1px solid var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 700; font-size: 18px; }
-    .step-card h4 { margin: 0 0 12px; font-size: 18px; }
-    .step-card p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 14px; }
-    .error-box { padding: 24px; text-align: center; border: 1px solid var(--line); border-radius: 4px; background-color: var(--paper-warm); }
-    .error-box p { margin: 0 0 12px; font-size: 14px; color: var(--muted); }
-    .muted-text { color: var(--muted); font-size: 14px; text-align: center; padding: 24px; }
+    /* ---- sections ---------------------------------------------------- */
+    /* column arithmetic comes from the global .container */
+    .section { margin-bottom: var(--space-7); }
 
+    
+    .step-card h3 { font-size: var(--text-lg); }
+
+    /* ---- two-column band ---------------------------------------------- */
+    /* align-items: start, not the flex default of stretch. The waitlist card
+       is ~100px tall next to a 535px listing grid; stretching it produced
+       400px of dead column. */
+    .two-cols {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-7);
+      margin-bottom: var(--space-7);
+    }
+    /* The waitlist panel is explicitly for mobile, as the hero stack takes over
+       its job on desktop. It was previously popping up an empty box on desktop
+       if the hero had no data. */
+    @media (min-width: 769px) {
+      .col-side { display: none; }
+    }
+    .col-main, .col-side { min-width: 0; }
+
+    /* The waitlist is the one artifact on this page that proves demand
+       exists — "someone is already waiting for this book" is the single most
+       persuasive thing a seller can see. Sitting unbounded in the narrow
+       column it read as whatever was left over beside the grid, so it gets a
+       surface of its own. */
+    .col-side {
+      background: var(--paper-warm);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-xs);
+      padding: var(--space-5);
+    }
+    .col-side .section-heading { margin-bottom: var(--space-4); }
+    .waitlist-card { display: flex; flex-direction: column; }
+    .waitlist-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px dashed var(--line);
+      text-decoration: none;
+      color: inherit;
+    }
+    .waitlist-row:last-of-type { border-bottom: none; }
+    .waitlist-row:hover .wtitle { color: var(--accent); }
+    .wcover {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-xs);
+      background: var(--paper-warm);
+      font-family: 'Noto Serif TC', serif;
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+    /* .cover-card img used to be merged into this selector. That coupled the
+       waitlist thumbnail to the hero cover stack, and when the hero moved to
+       its own component the rule stayed behind here — where view encapsulation
+       scopes it to this component's elements, so the hero image lost its
+       sizing entirely and rendered at its intrinsic 128x178. The hero owns its
+       own copy now; this one covers only the waitlist thumbnail. */
+    .wcover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Noto Serif TC ships no italic face, so 'font-style: italic' here was
+       being synthesised as a geometric slant across full-width Han glyphs —
+       which is simply not how emphasis works in Chinese typography, and it
+       looked like a rendering fault. Weight carries the emphasis instead. */
+    .waitlist-row .wtitle {
+      flex: 1;
+      min-width: 0;
+      font-family: 'Noto Serif TC', serif;
+      font-weight: 700;
+      font-size: var(--text-base);
+      line-height: 1.4;
+      transition: color 0.2s;
+    }
+    .waitlist-row .wcount {
+      color: var(--flag);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .waitlist-cta { margin-top: var(--space-4); display: block; }
+
+    .sell-band {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding-block: var(--space-5);
+      border-block: 1px solid var(--line);
+    }
+    .sell-band p {
+      margin: 0;
+      font-family: 'Noto Serif TC', serif;
+      font-size: var(--text-xl);
+      line-height: 1.4;
+    }
+
+    /* ---- how it works -------------------------------------------------- */
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+    /* Left-aligned, not centred. Centred text under a centred ring numeral is
+       the default shape of every landing-page template; the editorial voice
+       this palette is reaching for comes from a hard left axis. */
+    .step-card { border: none; border-left: 1px solid var(--line); padding: var(--space-6) var(--space-5); text-align: left; }
+    .step-card:first-child { border-left: none; padding-left: 0; }
+    /* The numeral is the ornament — oversized display serif in the secondary
+       brand hue — instead of a 40px hairline circle. */
+    .step-num {
+      font-family: 'Noto Serif TC', serif;
+      font-weight: 700;
+      font-size: 48px;
+      line-height: 1;
+      color: var(--brand-warm);
+      margin-bottom: var(--space-3);
+    }
+    .step-card h3 { margin: 0 0 var(--space-3); }
+    .step-card p { margin: 0; color: var(--ink-soft); line-height: 1.7; font-size: var(--text-base); }
+
+
+    /* ---- narrow screens ------------------------------------------------ */
+    @media (max-width: 900px) {
+      .two-cols { gap: var(--space-6); }
+    }
     @media (max-width: 768px) {
-      .hero-search { padding: 40px 16px; margin-bottom: 32px; }
-      .search-title { font-size: 22px; line-height: 1.35; margin-bottom: 24px; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; hyphens: auto; }
-      .search-bar { flex-direction: column; align-items: stretch; }
-      .hero-input { width: 100%; max-width: none; }
-      .hero-input ui-input { width: 100%; display: block; }
-      .hero-input ui-input, .search-bar > ui-button, .search-bar > ui-input { align-self: stretch; }
-      .popular-tags { display: flex; flex-wrap: wrap; row-gap: 8px; column-gap: 12px; align-items: center; justify-content: center; }
-      .tag-label { flex: 0 0 100%; margin-bottom: 4px; }
-      .tag-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; margin-left: 0; padding: 0; font-family: inherit; display: inline-flex; }
-      .two-cols { flex-direction: column; gap: 0; }
-      .two-cols .section { width: 100%; margin: 0 0 24px; }
-      .steps-grid { grid-template-columns: 1fr; }
-      @media(max-width: 420px) {
-        .category-card { flex: 0 0 calc(100vw - 64px); }
-      }
+      .steps-grid { grid-template-columns: 1fr; gap: 0; }
+      .step-card { border-left: none; border-top: 1px solid var(--line); padding: var(--space-5) 0; }
+      .step-card:first-child { border-top: none; padding-top: 0; }
+      
     }
   `]
 })
 export class Home implements OnInit, OnDestroy {
-  @ViewChild('categoriesGrid') categoriesGrid?: ElementRef<HTMLDivElement>;
-  canScrollLeft = false;
-  canScrollRight = false;
+  
+  
 
-  searchQuery = '';
   categories: any[] = [];
   waitlist: any[] = [];
   activeAds: PublicAd[] = [];
   currentSchool: string = '';
+  heroCovers: HeroCover[] = [];
+  private recentBooksFallback: any[] = [];
+
+  /**
+   * Ceiling for the "most wanted" list, mirroring the `[:7]` the metadata
+   * endpoint already applies to its subscription aggregate. The server
+   * capping it is not a reason for the page not to: this section is a demand
+   * *signal* for sellers, not a directory, and a change on the server should
+   * not be able to grow the home page into one.
+   */
+  private static readonly WAITLIST_MAX = 7;
+
+  /**
+   * The hero stack is capped lower, and for a physical rather than an
+   * editorial reason: three cards fanned at scale(0.75) already span 408px of
+   * the 420px stack, and HomeHero's rotation/offset tables define exactly
+   * three positions — a fourth would wrap through `i % 3`, land on the first
+   * card's coordinates, and be invisible with no error to show for it.
+   */
+  private static readonly HERO_COVERS_MAX = 3;
 
   categoriesLoading = false;
   metadataLoading = false;
@@ -217,7 +295,7 @@ export class Home implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private i18n = inject(I18nService);
 
-  constructor(private router: Router) {
+  constructor() {
     effect(() => {
       this.i18n.lang();
       this.loadMetadata();
@@ -233,10 +311,11 @@ export class Home implements OnInit, OnDestroy {
       next: (data) => {
         if (data.categories) {
           this.categories = data.categories;
-          setTimeout(() => this.checkScroll(), 0);
+          
         }
         if (data.waitlist !== undefined) {
-          this.waitlist = data.waitlist;
+          this.waitlist = (data.waitlist || []).slice(0, Home.WAITLIST_MAX);
+          this.updateHeroCovers();
         }
         this.categoriesLoading = false;
         this.metadataLoading = false;
@@ -299,60 +378,55 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  onAdClick(event: Event, ad: PublicAd) {
-    event.preventDefault();
-    if (ad.target_url) {
-      window.open(ad.target_url, '_blank');
-      this.metadataService.recordAdClick(ad.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({ error: () => {} });
+  /**
+   * Tracking only. The banner is a real anchor with a real href now, so this
+   * must not preventDefault or window.open: doing both is what stripped the
+   * link of middle-click, "open in new tab" and keyboard access, and put a
+   * popup-blocker-triggering window.open in the click path.
+   */
+  onAdClick(ad: PublicAd) {
+    this.metadataService.recordAdClick(ad.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ error: () => {} });
+  }
+
+  // Reuses ui-recent-listings' already-fetched aggregate data as the hero
+  // cover-stack fallback when there's no waitlist yet — avoids a second
+  // recent_books/ API call just for the hero.
+  onRecentBooksLoaded(books: any[]) {
+    this.recentBooksFallback = books || [];
+    this.updateHeroCovers();
+  }
+
+  private updateHeroCovers() {
+    if (this.waitlist.length > 0) {
+      this.heroCovers = this.waitlist.slice(0, Home.HERO_COVERS_MAX).map(w => ({
+        id: w.book_id,
+        title: w.title,
+        coverUrl: w.cover_url,
+        count: w.count
+      }));
+    } else if (this.recentBooksFallback.length > 0) {
+      this.heroCovers = this.recentBooksFallback.slice(0, Home.HERO_COVERS_MAX).map(b => ({
+        id: b.id,
+        isbn: b.isbn,
+        title: b.title,
+        coverUrl: b.cover_url
+      }));
+    } else {
+      this.heroCovers = [];
     }
+    this.cdr.markForCheck();
   }
 
-  onImgError(event: Event) {
-    const anchor = (event.target as HTMLElement).closest('.promo-banner') as HTMLElement;
-    if (anchor) {
-      anchor.style.display = 'none';
-    }
-  }
-
-  @HostListener('window:resize')
-  onResize() { this.checkScroll(); }
-
-  checkScroll() {
-    if (!this.categoriesGrid) return;
-    const el = this.categoriesGrid.nativeElement;
-    this.canScrollLeft = el.scrollLeft > 0;
-    this.canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
-    this.cdr.detectChanges();
-  }
-
-  scrollCategories(direction: number) {
-    if (!this.categoriesGrid) return;
-    const el = this.categoriesGrid.nativeElement;
-    el.scrollBy({ left: el.clientWidth * 0.8 * direction, behavior: 'smooth' });
-  }
-
-  onSearch() {
-    if (this.searchQuery.trim()) {
-      this.router.navigate(['/search'], {
-        queryParams: { q: this.searchQuery.trim() },
-        replaceUrl: true
-      });
-    }
-  }
-
-  setSearchQuery(tag: string) { this.searchQuery = tag; this.onSearch(); }
-
-  setSearchQueryFromKey(key: string) {
-    const translated = this.i18n.t(key);
-    if (translated && translated !== key) {
-      this.setSearchQuery(translated);
-    }
+  waitlistParams(wait: any): Record<string, any> {
+    const params: Record<string, any> = { local_cache: 'true' };
+    if (wait?.isbn) params['isbn'] = wait.isbn;
+    else params['id'] = wait?.book_id;
+    return params;
   }
 
   trackById(idx: number, item: any): any { return item.id || idx; }
-  trackBySlug(idx: number, cat: any): string { return cat.slug; }
   trackByTitle(idx: number, wait: any): string { return wait.title; }
 
   ngOnDestroy() {

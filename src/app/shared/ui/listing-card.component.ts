@@ -40,7 +40,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     }
     .listing-card {
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: var(--radius-xs);
       padding: 16px;
       background-color: var(--paper);
       cursor: pointer;
@@ -61,7 +61,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       width: 100%;
       height: 180px;
       background-color: var(--paper-warm);
-      border: 1px solid var(--line);
       margin-bottom: 16px;
       display: flex;
       align-items: center;
@@ -82,16 +81,27 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       margin-bottom: 16px;
     }
     .price {
-      font-size: 24px;
+      font-family: 'Noto Serif TC', serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 25px;
       font-weight: 700;
       color: var(--accent);
     }
     .condition-badge {
+      display: inline-flex;
+      align-items: center;
       font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 2px;
-      background-color: var(--paper-warm);
-      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .condition-badge::before {
+      content: '●';
+      color: var(--accent);
+      font-size: 8px;
+      margin-right: 5px;
+    }
+    .condition-badge.noted::before,
+    .condition-badge.damaged::before {
+      color: var(--flag);
     }
     .seller-info {
       font-size: 15px;

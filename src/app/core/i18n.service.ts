@@ -1,4 +1,4 @@
-import { Injectable, Pipe, PipeTransform, inject, signal } from '@angular/core';
+import { Injectable, Pipe, PipeTransform, inject, signal, effect } from '@angular/core';
 import { Lang, TRANSLATIONS } from './i18n';
 
 const STORAGE_KEY = 'lang';
@@ -8,6 +8,23 @@ const STORAGE_KEY = 'lang';
 })
 export class I18nService {
   readonly lang = signal<Lang>(this.initialLang());
+
+  constructor() {
+    // index.html ships a hardcoded lang="en". initialLang() may resolve to
+    // zh-TW from storage or navigator on the very first paint, and until now
+    // only setLang() synced the attribute — so a reader arriving with a
+    // Chinese browser got Traditional Chinese text inside a document still
+    // declaring English. That mis-declares the language to screen readers,
+    // and lets the browser pick Han glyph variants for the wrong locale
+    // (several codepoints render differently for zh-TW, zh-CN and ja).
+    effect(() => this.syncDocumentLang(this.lang()));
+  }
+
+  private syncDocumentLang(lang: Lang) {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
+  }
 
   private initialLang(): Lang {
     if (typeof localStorage !== 'undefined') {
@@ -23,12 +40,10 @@ export class I18nService {
   }
 
   setLang(lang: Lang) {
+    // The effect in the constructor propagates the change to <html lang>.
     this.lang.set(lang);
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, lang);
-    }
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = lang;
     }
   }
 

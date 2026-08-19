@@ -17,9 +17,7 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
   standalone: true,
   imports: [CommonModule, RouterModule, TPipe, UiButton, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, UiSearchBarComponent],
   template: `
-    <div class="content-header">
-      <h2>{{ 'acct.myOrders' | t }}</h2>
-    </div>
+    <h2 class="section-heading">{{ 'acct.myOrders' | t }}</h2>
 
       <div class="tabs">
         <button class="tab" [class.active]="activeTab === 'buying'" (click)="setTab('buying')">{{ 'acct.buying' | t }}</button>
@@ -104,15 +102,6 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
       <app-meetup-modal *ngIf="showMeetupModal" [bookTitle]="meetupModalOrder?.listing_title || ''" (onConfirmed)="onMeetupConfirmed($event)" (onClosed)="onMeetupModalClosed()"></app-meetup-modal>
   `,
   styles: [`
-    .content-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
-    }
-    .content-header h2 { margin: 0; }
     .tabs {
       display: flex;
       gap: 16px;
@@ -132,13 +121,6 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
       color: var(--accent);
       border-bottom-color: var(--accent);
       font-weight: 700;
-    }
-    .empty-state {
-      padding: 48px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      background-color: var(--paper-warm);
     }
     .order-card {
       padding: 24px 0;

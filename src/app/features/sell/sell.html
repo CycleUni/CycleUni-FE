@@ -47,7 +47,7 @@
           <!-- Search Results List -->
           <div *ngIf="searchResults.length > 0 && !bookPreview" class="results-container">
             <h4 class="select-hint">{{ 'sell.selectBook' | t }}</h4>
-            <div class="preview selectable" *ngFor="let result of searchResults" (click)="selectBook(result)">
+            <div class="book-match selectable" *ngFor="let result of searchResults" (click)="selectBook(result)">
               <div class="cover">
                 <img *ngIf="result.coverUrl" [src]="result.coverUrl" [attr.alt]="result.title || ('common.bookCover' | t)" />
                 <div class="placeholder" *ngIf="!result.coverUrl"></div>
@@ -64,7 +64,7 @@
           </div>
 
           <!-- Selected Book Preview -->
-          <div class="preview" *ngIf="bookPreview">
+          <div class="book-match" *ngIf="bookPreview">
             <div class="cover">
               <img *ngIf="bookPreview.coverUrl" [src]="bookPreview.coverUrl" [attr.alt]="bookPreview.title || ('common.bookCover' | t)" />
               <div class="placeholder" *ngIf="!bookPreview.coverUrl"></div>
@@ -98,7 +98,7 @@
 
         <!-- Step 2 -->
         <div *ngIf="step === 2" class="step-content">
-          <ui-dropdown [label]="'acct.conditionLabel' | t" [(ngModel)]="condition" [options]="conditionOptions" [searchable]="false"></ui-dropdown>
+          <ui-condition-picker [label]="'acct.conditionLabel' | t" [(value)]="condition" [options]="conditionOptions"></ui-condition-picker>
           <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="category" [options]="categoryOptions"></ui-dropdown>
           <ui-input [label]="'sell.courseLabel' | t" [placeholder]="'sell.coursePlaceholder' | t" [(ngModel)]="course"></ui-input>
           <ui-input [label]="'sell.privateNoteLabel' | t" [placeholder]="'sell.privateNotePlaceholder' | t" [(ngModel)]="privateNote"></ui-input>
@@ -111,12 +111,17 @@
                 <img [src]="url" alt="Uploaded photo">
                 <button class="remove-btn" (click)="removePhoto(i)">×</button>
               </div>
-              <div class="upload-box" *ngIf="uploadedPhotos.length < 3"
+              <div class="dropzone" *ngIf="uploadedPhotos.length < 3"
                    (click)="fileInput.click()"
                    (dragover)="onDragOver($event)"
                    (dragleave)="onDragLeave($event)"
                    (drop)="onDrop($event)"
                    [class.drag-over]="isDragOver">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                  <circle cx="8.5" cy="10" r="1.5"></circle>
+                  <path d="M21 16l-5.5-5.5-4 4L8 11l-5 5"></path>
+                </svg>
                 <span *ngIf="!isUploading">{{ 'sell.uploadBox' | t }}</span>
                 <span *ngIf="isUploading">{{ 'sell.uploading' | t }}</span>
                 <input #fileInput type="file" accept="image/*" style="display: none" (change)="onFileSelected($event)" [disabled]="isUploading">
@@ -135,7 +140,11 @@
 
         <!-- Step 3 -->
         <div *ngIf="step === 3" class="step-content">
-          <ui-input type="number" [label]="'acct.priceLabel' | t" [(ngModel)]="price"></ui-input>
+          <label class="price-field-label">{{ 'acct.priceLabel' | t }}</label>
+          <div class="price-field">
+            <span class="price-currency">NT$</span>
+            <input class="price-input" type="number" min="0" [(ngModel)]="price" name="price" />
+          </div>
 
           <div class="free-btn">
             <ui-button variant="ghost" (onClick)="setFree()">{{ 'sell.free' | t }}</ui-button>

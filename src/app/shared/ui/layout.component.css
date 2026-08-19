@@ -3,6 +3,11 @@
       flex-direction: column;
       min-height: 100vh;
     }
+    .layout-wrapper.is-full-bleed {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
     .app-header {
       border-bottom: 1px solid var(--line);
       background-color: var(--paper);
@@ -10,10 +15,16 @@
       top: 0;
       z-index: 100;
     }
+    /* Same column arithmetic as the global .container: a border-box
+       max-width:1120 with 16px padding yields an 1088px column, which is
+       16px narrower than the full-bleed bands (hero, footer) produce — that
+       mismatch is why the logo used to sit 16px inside every section's left
+       edge. */
     .header-content {
-      max-width: 1120px;
+      width: 100%;
+      max-width: 1152px;
       margin: 0 auto;
-      padding: 16px;
+      padding: var(--space-4);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -24,14 +35,13 @@
       gap: 24px;
     }
     .school-selector {
-      width: 180px;
-      margin-top: 12px; /* offsets ui-select's default margin-bottom */
+      width: auto;
+      max-width: 200px;
     }
     .school-trigger {
       display: flex;
       align-items: center;
       gap: 6px;
-      flex: 1;
       min-width: 0; /* let the label ellipsis instead of forcing the button to grow */
     }
     .school-icon {
@@ -42,12 +52,31 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 13px;
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 1px;
+    }
+    .school-selector ::ng-deep .dropdown-trigger.icon-only:hover .school-trigger-label,
+    .school-selector ::ng-deep .dropdown-trigger.icon-only[aria-expanded="true"] .school-trigger-label {
+      border-bottom-color: var(--ink);
     }
     .logo a {
       text-decoration: none;
       color: var(--ink);
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .logo-name {
+      font-family: 'Noto Serif TC', serif;
       font-weight: 700;
-      font-size: 20px;
+      font-size: 21px;
+      letter-spacing: -0.01em;
+    }
+    .logo-cn {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
     }
     .header-right {
       display: flex;
@@ -56,31 +85,37 @@
     }
     .nav-links {
       display: flex;
-      gap: 8px;
+      gap: 28px;
     }
     .nav-links a {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 8px 10px;
+      padding: 8px 0;
       box-sizing: border-box;
       min-height: 44px;
-      min-width: 44px;
-      color: var(--ink);
+      color: var(--ink-soft, var(--muted));
       text-decoration: none;
-      font-weight: 500;
-      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid transparent;
     }
     .nav-links a:hover {
-      color: var(--accent);
+      color: var(--ink);
+      border-bottom-color: var(--accent);
     }
     .nav-links a.active-link {
-      color: var(--accent);
-      font-weight: 700;
+      color: var(--ink);
+      border-bottom-color: var(--accent);
     }
+    /* Icons carried the affordance in the original chip-style nav; the
+       text-first editorial treatment drops them but keeps the DOM/markup
+       intact (icons are reused as-is by the mobile bottom-tab-bar below). */
     .nav-links svg {
-      flex-shrink: 0;
+      display: none;
     }
     .nav-link-with-badge {
       display: inline-flex;
@@ -95,13 +130,17 @@
       height: 18px;
       padding: 0 5px;
       border-radius: 9px;
-      background-color: var(--accent);
-      color: white;
+      /* Not literal white: on the dark palette --accent is the lighter green,
+         and #fff on it is 3.3:1 — under AA for 11px text. The primary-button
+         token pair is theme-resolved and clears 4.5:1 in both. */
+      background-color: var(--btn-primary-bg);
+      color: var(--btn-primary-ink);
       font-size: 11px;
       font-weight: 700;
       line-height: 1;
     }
-    .lang-icon-wrap {
+    .lang-icon-wrap,
+    .theme-icon-wrap {
       display: inline-flex;
     }
     .main-content {
@@ -110,18 +149,28 @@
       overflow-x: hidden; /* Prevent horizontal overflow from content */
       box-sizing: border-box;
     }
+    /* A route that owns the viewport: min-height:0 is what actually lets a
+       flex child shrink below its content size, so the page itself stops
+       scrolling and the route scrolls its own panes instead. */
+    .main-content.full-bleed {
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
     .bottom-tab-bar {
       display: none;
     }
     .app-footer {
-      border-top: 1px solid var(--line);
+      border-top: 1px solid var(--line-strong);
       background-color: var(--paper-warm);
-      padding: 16px 16px;
-      margin-top: 64px;
+      padding-block: var(--space-5);
+      margin-top: var(--space-8);
     }
     .footer-content {
-      max-width: 1120px;
+      width: 100%;
+      max-width: 1152px;
       margin: 0 auto;
+      padding-inline: var(--space-4);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -132,40 +181,46 @@
       gap: 16px;
     }
     .footer-brand {
-      font-weight: 600;
-      color: var(--muted);
-      font-size: 14px;
+      font-family: 'Noto Serif TC', serif;
+      font-weight: 700;
+      color: var(--ink);
+      font-size: var(--text-base);
+      letter-spacing: -0.01em;
     }
+    /* The one line on the page that says what this actually is; it was set
+       in the same 14px grey as the legal links beside it. */
     .footer-tagline {
-      color: var(--muted);
-      font-size: 14px;
+      font-family: 'Noto Serif TC', serif;
+      color: var(--ink-soft);
+      font-size: var(--text-base);
     }
     .footer-links {
       display: flex;
-      gap: 24px;
+      gap: var(--space-5);
     }
     .footer-links a {
-      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      color: var(--ink-soft);
       text-decoration: none;
-      font-size: 14px;
+      font-size: var(--text-sm);
+    }
+    @media (pointer: coarse) {
+      .footer-links a { min-height: var(--tap-min); }
     }
     .footer-links a:hover {
       color: var(--accent);
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       .header-content {
         padding: 12px 16px;
-      }
-      .brand-area {
-        justify-content: space-between;
-        gap: 12px;
       }
       .school-selector {
         /* Shrinks to its content (icon + caret) instead of a fixed field width,
            so it can never wrap onto a second row with the language switcher. */
         width: auto;
-        margin-top: 0;
       }
       .school-icon {
         display: inline-flex;
@@ -192,6 +247,9 @@
       .main-content {
         /* Reserve space so page content doesn't end up under the fixed tab bar */
         padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+      }
+      .main-content.hide-bottom-nav {
+        padding-bottom: 0;
       }
       .bottom-tab-bar {
         display: flex;
@@ -238,8 +296,8 @@
         height: 16px;
         padding: 0 4px;
         border-radius: 8px;
-        background-color: var(--accent);
-        color: white;
+        background-color: var(--btn-primary-bg);
+        color: var(--btn-primary-ink);
         font-size: 10px;
         font-weight: 700;
         line-height: 1;
@@ -264,11 +322,7 @@
       .header-content {
         padding: 10px 12px;
       }
-      .brand-area {
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .logo a {
+      .logo-name {
         font-size: 18px;
       }
       .header-right {

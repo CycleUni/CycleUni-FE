@@ -38,14 +38,15 @@ import { CommonModule } from '@angular/common';
     select {
       padding: 8px 12px;
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: var(--radius-control);
       font-size: 14px;
       font-family: inherit;
       color: var(--ink);
       background-color: var(--paper);
     }
-    select:focus {
-      outline: none;
+    /* No outline reset. The global :focus-visible ring in styles.css is the
+       focus indicator; a border-colour swap alone is ~1.9:1 on a 1px line. */
+    select:focus-visible {
       border-color: var(--accent);
     }
     select:disabled {

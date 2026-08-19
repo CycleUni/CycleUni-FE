@@ -1,17 +1,40 @@
+/* The routed component's host sits between .main-content and the panes, and
+   defaults to display:block — so the flex chain broke there and the surface
+   collapsed to its content size. Same trap the hero hit when it was extracted:
+   a host is not a flex item unless it is told to be. */
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
     .messages-container {
-      max-width: 1120px;
-      margin: 0 auto;
+      /* Fills the shell rather than sitting in it. This used to be a 1120px
+         box with its own border and a calc(100vh - 200px) height, floating in
+         a scrolling page with the site footer beneath — a small page inside
+         the page. The height was also a guess: any change to the header or
+         footer left it short or overflowing. The layout now hands it the
+         remaining space and the panes scroll internally. */
+      flex: 1;
+      min-height: 0;
       display: flex;
-      height: calc(100vh - 200px);
-      border: 1px solid var(--line);
-      margin-top: 32px;
+      width: 100%;
       background-color: var(--paper);
     }
     .empty-state.full-page {
-      max-width: 1120px;
-      height: calc(100vh - 200px);
-      border: 1px solid var(--line);
-      margin: 32px auto 0;
+      /* The shared .empty-state look (dashed border, warm fill) reads as a
+         placeholder card; at viewport size it just draws a box around the
+         whole screen. */
+      border: none;
+      background: none;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     .sidebar {
       width: 320px;
@@ -19,12 +42,15 @@
       display: flex;
       flex-direction: column;
       background-color: var(--paper-warm);
+      min-height: 0;
     }
 
     .chat-area {
       flex: 1;
       display: flex;
       flex-direction: column;
+      min-height: 0;
+      min-width: 0;
     }
     .empty-state {
       flex: 1;
@@ -104,28 +130,28 @@
       gap: 8px;
       flex-shrink: 0;
     }
-    .listing-thumb {
+    .listing-thumb, .placeholder-thumb {
       width: 48px;
       height: 64px;
+      border-radius: var(--radius-sm);
+    }
+    .listing-thumb {
       object-fit: cover;
-      border-radius: 4px;
       border: 1px solid var(--line);
     }
     .placeholder-thumb {
-      width: 48px;
-      height: 64px;
       background: var(--line);
-      border-radius: 4px;
     }
     .listing-details {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      gap: 4px;
     }
     .listing-title {
+      font-family: 'Noto Serif TC', serif;
       font-weight: 500;
       font-size: 14px;
-      margin-bottom: 4px;
     }
     .listing-meta {
       display: flex;
@@ -134,13 +160,17 @@
       font-size: 12px;
     }
     .price {
-      color: var(--accent);
+      font-family: 'Noto Serif TC', serif;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      font-size: 18px;
+      color: var(--accent);
     }
     .badge {
       padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--paper);
+      border: 1px solid var(--line);
       color: var(--ink);
       font-size: 11px;
     }
@@ -215,10 +245,21 @@
       position: relative;
       padding: 12px 16px;
       background-color: var(--paper-warm);
+      color: var(--ink);
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       font-size: 15px;
       line-height: 1.5;
+    }
+    
+    /* Dark mode override for opponent's bubble to ensure contrast */
+    :host-context([data-theme="dark"]) .msg-bubble:not(.self) .msg-content {
+      background-color: var(--line);
+    }
+    @media (prefers-color-scheme: dark) {
+      :host-context(:not([data-theme="light"])) .msg-bubble:not(.self) .msg-content {
+        background-color: var(--line);
+      }
     }
     .msg-delete-btn {
       position: absolute;
@@ -245,12 +286,14 @@
       border-color: var(--muted);
     }
     .msg-bubble.self .msg-content {
-      background-color: #f0f7f4;
-      border-color: #d1e8de;
+      background-color: var(--btn-primary-bg);
+      color: var(--btn-primary-ink);
+      border-color: var(--btn-primary-bg);
     }
     .msg-bubble.failed .msg-content {
-      background-color: #fdf1f1;
-      border-color: #f0c9c9;
+      background-color: var(--warn-bg);
+      border: 1px solid var(--flag);
+      color: var(--warn-ink);
     }
     .msg-bubble.meetup-card {
       max-width: 340px;
@@ -311,11 +354,6 @@
     }
 
     @media (max-width: 768px) {
-      .messages-container,
-      .empty-state.full-page {
-        margin: 16px;
-        height: calc(100vh - 160px);
-      }
       /* Single-pane pattern: show the inbox list, or the active chat with a back button */
       .sidebar {
         width: 100%;
@@ -355,9 +393,6 @@
       cursor: zoom-in;
       object-fit: contain;
       background: var(--paper-warm);
-    }
-    .msg-bubble.self .chat-image {
-      background: #f0f7f4;
     }
 
     /* Input wrapper for attach button + input */

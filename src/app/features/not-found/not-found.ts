@@ -14,7 +14,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
         <h1 class="error-code">404</h1>
         <h2 class="error-title">{{ 'notfound.title' | t }}</h2>
         <p class="error-desc">{{ 'notfound.desc' | t }}</p>
-        <ui-button routerLink="/">{{ 'notfound.backHome' | t }}</ui-button>
+        <ui-button [link]="['/']">{{ 'notfound.backHome' | t }}</ui-button>
       </div>
     </div>
   `,

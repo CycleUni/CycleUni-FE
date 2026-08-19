@@ -19,8 +19,8 @@ import { AccountService } from '../../core/services/account.service';
   standalone: true,
   imports: [CommonModule, FormsModule, UiButton, UiInput, UiListingRow, UiDropdown, UiPagination, UiSearchBarComponent, TPipe],
   template: `
-    <div class="content-header">
-      <h2>{{ 'acct.tabListings' | t }}</h2>
+    <div class="section-head-row">
+      <h2 class="section-heading">{{ 'acct.tabListings' | t }}</h2>
       <ui-button (onClick)="goToSell()">+ {{ 'acct.addListing' | t }}</ui-button>
     </div>
 
@@ -94,22 +94,14 @@ import { AccountService } from '../../core/services/account.service';
     </div>
   `,
   styles: [`
-    .content-header {
+    .section-head-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
     }
-    .content-header h2 { margin: 0; }
-    .empty-state {
-      padding: 48px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      background-color: var(--paper-warm);
-    }
+    .section-head-row .section-heading { margin-bottom: 0; }
     .edit-modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -155,7 +147,7 @@ import { AccountService } from '../../core/services/account.service';
     }
     .delete-photo-btn:hover { opacity: 0.9; }
     @media (max-width: 768px) {
-      .content-header { flex-wrap: wrap; gap: 12px; }
+      .section-head-row { flex-wrap: wrap; gap: 12px; }
       .edit-modal { padding: 16px; }
     }
 
