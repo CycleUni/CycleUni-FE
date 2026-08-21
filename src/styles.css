@@ -29,6 +29,8 @@
   --accent-ink:  #14402F; /* darkened hover state */
   --accent-soft: #E7F0EA; /* accent-tinted ground: selected chips, hover fills */
   --flag:        #A34A2A; /* warnings and the "N people waiting" badge (brick red, these two uses only) */
+  --flag-light:  #FFF0EB;
+  --flag-border: #FFD6CC;
   --sponsor:     #8C6B3F; /* gold/kraft tone for sponsor tags */
   --muted:       #647079; /* secondary text */
 
@@ -123,6 +125,8 @@
     --accent-ink:  #7FC4A6; /* lighter emphasis variant of accent on dark */
     --accent-soft: #1E2B25;
     --flag:        #C97A54; /* brighter terracotta/brick for contrast on a dark ground */
+    --flag-light:  #2E211A;
+    --flag-border: #4A3226;
     --sponsor:     #C49A6C; /* lighter gold/kraft tone for sponsor tags */
     --muted:       #9B9488;
 
@@ -156,6 +160,8 @@
   --accent-ink:  #7FC4A6;
   --accent-soft: #1E2B25;
   --flag:        #C97A54;
+  --flag-light:  #2E211A;
+  --flag-border: #4A3226;
   --sponsor:     #C49A6C;
   --muted:       #9B9488;
 

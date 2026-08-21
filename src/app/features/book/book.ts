@@ -153,8 +153,8 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       border-radius: 4px;
     }
     .waitlist-banner.hot {
-      background-color: #fff0eb;
-      border: 1px solid #ffd6cc;
+      background-color: var(--flag-light);
+      border: 1px solid var(--flag-border);
     }
     .waitlist-count {
       color: var(--muted);
