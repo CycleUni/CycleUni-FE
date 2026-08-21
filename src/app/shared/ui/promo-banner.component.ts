@@ -28,13 +28,13 @@ import { TPipe } from '../../core/i18n.service';
       rel="noopener sponsored"
       (click)="adClick.emit(ad)"
     >
-      <div class="ad-image-container hover-card-cover">
+      <div class="promo-cover hover-card-cover">
         <img [src]="ad.image_url" [alt]="ad.headline || ad.title" (error)="onImgError($event)">
         <span class="stamp-tag sponsor-tag">{{ 'home.sponsored' | t }}</span>
       </div>
-      <div class="ad-content">
-        <h3 class="ad-headline book-title-serif">{{ ad.headline || ad.title }}</h3>
-        <p class="ad-subheadline" *ngIf="ad.subheadline">{{ ad.subheadline }}</p>
+      <div class="promo-body">
+        <h3 class="promo-title book-title-serif">{{ ad.headline || ad.title }}</h3>
+        <p class="promo-subtitle" *ngIf="ad.subheadline">{{ ad.subheadline }}</p>
         <p class="tile-sellers card-subtext" *ngIf="ad.advertiser_name">{{ ad.advertiser_name }}</p>
         <span class="tile-conditions" *ngIf="ad.labels?.length">
           <span class="cond-chip" *ngFor="let label of ad.labels">{{ label }}</span>
@@ -66,7 +66,7 @@ import { TPipe } from '../../core/i18n.service';
       color: var(--sponsor);
       z-index: 2;
     }
-    .ad-image-container {
+    .promo-cover {
       width: 100%;
       aspect-ratio: 5 / 7;
       background-color: var(--line);
@@ -74,7 +74,7 @@ import { TPipe } from '../../core/i18n.service';
       margin-bottom: var(--space-3);
       border-radius: var(--radius-xs);
     }
-    .ad-image-container img {
+    .promo-cover img {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -82,20 +82,20 @@ import { TPipe } from '../../core/i18n.service';
       object-fit: cover;
       border-radius: inherit;
     }
-    .ad-content {
+    .promo-body {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: var(--space-1);
     }
-    .ad-headline {
+    .promo-title {
       display: block;
       margin: 0 0 var(--space-1);
       font-weight: 700;
       font-size: var(--text-base);
       line-height: 1.3;
     }
-    .ad-subheadline {
+    .promo-subtitle {
       margin: 0 0 var(--space-1);
       font-size: var(--text-sm);
       color: var(--muted);
@@ -106,7 +106,7 @@ import { TPipe } from '../../core/i18n.service';
       overflow: hidden;
     }
 
-    .promo-banner-card.feature .ad-headline {
+    .promo-banner-card.feature .promo-title {
       font-size: var(--text-lg);
     }
   `]
