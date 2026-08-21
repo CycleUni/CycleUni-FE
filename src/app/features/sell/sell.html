@@ -24,7 +24,7 @@
         <div class="step" [class.active]="step === 3">{{ 'sell.step3' | t }}</div>
       </div>
 
-      <div class="form-container">
+      <div class="form-container surface-card">
         <!-- Step 1 -->
         <div *ngIf="step === 1" class="step-content">
           <p class="desc">{{ 'sell.isbnDesc' | t }}</p>
@@ -101,6 +101,7 @@
           <ui-condition-picker [label]="'acct.conditionLabel' | t" [(value)]="condition" [options]="conditionOptions"></ui-condition-picker>
           <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="category" [options]="categoryOptions"></ui-dropdown>
           <ui-input [label]="'sell.courseLabel' | t" [placeholder]="'sell.coursePlaceholder' | t" [(ngModel)]="course"></ui-input>
+          <ui-input [label]="'sell.professorLabel' | t" [placeholder]="'sell.professorPlaceholder' | t" [(ngModel)]="professor"></ui-input>
           <ui-input [label]="'sell.privateNoteLabel' | t" [placeholder]="'sell.privateNotePlaceholder' | t" [(ngModel)]="privateNote"></ui-input>
           <ui-input [label]="'sell.descriptionLabel' | t" [placeholder]="'sell.descriptionPlaceholder' | t" [(ngModel)]="description"></ui-input>
 
@@ -143,7 +144,7 @@
           <label class="price-field-label">{{ 'acct.priceLabel' | t }}</label>
           <div class="price-field">
             <span class="price-currency">NT$</span>
-            <input class="price-input" type="number" min="0" [(ngModel)]="price" name="price" />
+            <input class="price-input focus-no-ring" type="number" min="0" [(ngModel)]="price" name="price" />
           </div>
 
           <div class="free-btn">

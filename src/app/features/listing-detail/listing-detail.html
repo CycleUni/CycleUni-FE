@@ -72,6 +72,10 @@
               <span class="info-label">{{ 'sell.course' | t }}</span>
               <span class="info-value">{{ listing.course_name }}</span>
             </div>
+            <div class="info-row" *ngIf="listing.professor_name">
+              <span class="info-label">{{ 'sell.professor' | t }}</span>
+              <span class="info-value">{{ listing.professor_name }}</span>
+            </div>
             <div class="info-row" *ngIf="listing.description">
               <span class="info-label">{{ 'sell.note' | t }}</span>
               <span class="info-value note-box">{{ listing.description }}</span>

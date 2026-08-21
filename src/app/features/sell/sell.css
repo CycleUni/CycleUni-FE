@@ -39,10 +39,7 @@
       font-weight: 700;
     }
     .form-container {
-      background-color: var(--paper);
       padding: 32px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
     }
     .desc {
       color: var(--muted);
@@ -184,9 +181,8 @@
       width: 100%;
       border: none;
       background: none;
-      /* No outline reset. This one sat in the base rule rather than on
-         :focus, so the field never drew a ring at all — the wrapper\'s
-         underline colour was the entire keyboard-focus signal. */
+      /* Focus is signalled by .price-field:focus-within's underline; the
+         .focus-no-ring class in styles.css suppresses the global ring. */
       font-family: 'Noto Serif TC', serif;
       font-variant-numeric: tabular-nums;
       font-weight: 700;

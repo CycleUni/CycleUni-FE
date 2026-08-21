@@ -40,8 +40,14 @@ export interface TranslationField {
 export class TranslationEditorComponent {
   @Input() fields: TranslationField[] = [];
   
+  /** The exact object reference we last emitted. The parent assigns it straight
+      back into the [translations] binding, and rebuilding from that echo would
+      discard the row the user is still filling in. */
+  private lastEmitted: any = null;
+
   _translations: any = {};
   @Input() set translations(val: any) {
+    if (val !== null && val === this.lastEmitted) return;
     this._translations = val || {};
     this.translationsList = Object.keys(this._translations).map(lang => ({
       lang,
@@ -77,6 +83,7 @@ export class TranslationEditorComponent {
         }
       }
     }
+    this.lastEmitted = newTrans;
     this.translationsChange.emit(newTrans);
   }
 }

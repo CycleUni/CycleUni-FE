@@ -41,7 +41,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           <td>{{ user.school_name }}</td>
           <td>
             <span class="admin-status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span>
-            <span class="admin-status-badge superuser-badge" *ngIf="user.is_superuser">Superuser</span>
+            <span class="admin-status-badge superuser-badge" *ngIf="user.is_superuser">{{ 'admin.superuser' | t }}</span>
           </td>
           <td>
             <button 

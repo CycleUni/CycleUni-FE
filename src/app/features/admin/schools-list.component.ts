@@ -4,7 +4,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminSchool, Paginated } from '../../core/services/admin.service';
-import { TPipe } from '../../core/i18n.service';
+import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
 
@@ -42,6 +42,11 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
             <td>{{ school.email_domain }}</td>
             <td>
               <a class="admin-btn admin-btn-sm admin-btn-outline" [routerLink]="[school.id]">{{ 'common.edit' | t }}</a>
+              <button class="admin-btn admin-btn-sm admin-btn-danger"
+                      style="margin-left: 8px;"
+                      [class.is-blocked]="!!school.user_count"
+                      [attr.aria-disabled]="school.user_count ? 'true' : null"
+                      (click)="deleteSchool(school)">{{ 'common.delete' | t }}</button>
             </td>
           </tr>
         </tbody>
@@ -90,11 +95,19 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
     .translation-row { display: flex; align-items: center; gap: 8px; }
     .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; }
+    /* Blocked, not disabled: the button must stay clickable so pressing it can
+       explain why the school cannot be deleted. Dimming is the only signal;
+       \`disabled\` or \`pointer-events: none\` would swallow the click. */
+    .admin-btn-danger.is-blocked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
   `]
 })
 export class AdminSchoolsListComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
+  private i18n = inject(I18nService);
 
   schoolsData?: Paginated<AdminSchool>;
   currentPage = 1;
@@ -128,6 +141,24 @@ export class AdminSchoolsListComponent implements OnInit {
   onSearch(q: string) {
     this.q = q;
     this.loadPage(1);
+  }
+
+  deleteSchool(school: AdminSchool) {
+    if (school.user_count) {
+      alert(this.i18n.t('admin.deleteSchoolBlocked', { n: school.user_count }));
+      return;
+    }
+    if (!confirm(this.i18n.t('admin.deleteSchoolConfirm'))) return;
+    this.adminService.deleteSchool(school.id).subscribe({
+      next: () => {
+        this.loadPage(this.currentPage);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        alert(err?.error?.detail || this.i18n.t('admin.errDeleteFailed'));
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   openCreateModal() {

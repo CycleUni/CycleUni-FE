@@ -98,6 +98,11 @@ export interface DropdownOption {
       align-items: center;
       gap: 6px;
       width: 100%;
+      /* A <button> sizes to max-content and will not shrink below it, so a long
+         label escapes the wrapper's width and overlaps whatever sits next to it
+         in the header. Capping it here lets the existing min-width:0 on the
+         inner trigger do its job and the label's ellipsis finally engages. */
+      max-width: 100%;
       padding: 8px 12px;
       border: 1px solid var(--line);
       border-radius: var(--radius-control);
@@ -250,6 +255,10 @@ export class UiDropdown implements ControlValueAccessor, AfterViewInit, OnDestro
   // and positioned via getBoundingClientRect() to avoid clipping.
   @Input() appendToBody: boolean = false;
 
+  /** Move the currently selected option to the top of the list so it is easy
+      to find in a long list. Opt-in: short lists read better in a fixed order. */
+  @Input() pinSelected: boolean = false;
+
   @ViewChild('trigger') triggerRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('panelTemplate', { read: TemplateRef }) panelTemplateRef!: TemplateRef<any>;
 
@@ -277,9 +286,13 @@ export class UiDropdown implements ControlValueAccessor, AfterViewInit, OnDestro
   }
 
   get filteredOptions(): DropdownOption[] {
-    if (!this.searchable || !this.searchQuery.trim()) return this.options;
-    const q = this.searchQuery.trim().toLowerCase();
-    return this.options.filter(o => o.label.toLowerCase().includes(q));
+    const base = (!this.searchable || !this.searchQuery.trim())
+      ? this.options
+      : this.options.filter(o => o.label.toLowerCase().includes(this.searchQuery.trim().toLowerCase()));
+    if (!this.pinSelected || !this.value) return base;
+    const idx = base.findIndex(o => o.value === this.value);
+    if (idx <= 0) return base;
+    return [base[idx], ...base.slice(0, idx), ...base.slice(idx + 1)];
   }
 
   ngAfterViewInit() {

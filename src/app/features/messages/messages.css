@@ -352,8 +352,10 @@
       color: var(--flag);
       border-color: var(--flag);
     }
-
-    @media (max-width: 768px) {
+    /* Must match the 900px breakpoint in layout.component.css: below it the
+       bottom tab bar takes over and this view must switch to single-pane so
+       the back button exists. */
+    @media (max-width: 900px) {
       /* Single-pane pattern: show the inbox list, or the active chat with a back button */
       .sidebar {
         width: 100%;

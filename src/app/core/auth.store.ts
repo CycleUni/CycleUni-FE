@@ -93,6 +93,10 @@ export class AuthStore {
       catchError(err => {
         if (err.status === 401) {
           this.clearAuth();
+        } else {
+          // A 5xx here leaves the user logged in with an empty profile and no
+          // visible symptom, which is very hard to diagnose from the UI alone.
+          console.error('Failed to load user profile from /auth/me/', err?.status, err);
         }
         // Clear dedup flag so a later login/sign-in can retry
         this.fetchedForToken = null;

@@ -66,6 +66,7 @@ export class Sell implements OnInit, OnDestroy {
     }));
   }
   course = '';
+  professor = '';
   privateNote = '';
   description = '';
   price: number | null = null;
@@ -312,6 +313,7 @@ export class Sell implements OnInit, OnDestroy {
         condition: this.condition,
         category: this.category || null,
         course_name: this.course,
+        professor_name: this.professor,
         private_note: this.privateNote,
         description: this.description,
         price: this.price,

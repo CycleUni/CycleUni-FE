@@ -4,7 +4,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCategory, Paginated } from '../../core/services/admin.service';
-import { TPipe } from '../../core/i18n.service';
+import { TPipe, I18nService } from '../../core/i18n.service';
 import { TranslationEditorComponent, TranslationField } from './translation-editor.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
 
@@ -136,6 +136,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
 export class AdminCategoriesListComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
+  private i18n = inject(I18nService);
 
   categoriesData?: Paginated<AdminCategory>;
   currentPage = 1;
@@ -210,7 +211,7 @@ export class AdminCategoriesListComponent implements OnInit {
 
   
   deleteCategory(id: number) {
-    if (confirm('Are you sure you want to delete this category?')) {
+    if (confirm(this.i18n.t('admin.deleteCategoryConfirm'))) {
       this.adminService.deleteCategory(id).subscribe(() => {
         this.loadPage(this.currentPage);
         this.cdr.markForCheck();

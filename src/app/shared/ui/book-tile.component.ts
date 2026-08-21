@@ -218,6 +218,7 @@ export class UiBookTile {
   @Input() linkParams?: Record<string, any>;
 
   // mode: 'sellers'
+  /** Number of active listings for this book, not distinct sellers. */
   @Input() sellerCount?: number;
   /** Map of condition slug -> number of listings, as returned by recent_books/. */
   @Input() conditions?: Record<string, number> | null;

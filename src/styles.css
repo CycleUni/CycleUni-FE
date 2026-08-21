@@ -223,6 +223,24 @@ body {
      with square corners visibly morphs the moment it takes keyboard focus. */
 }
 
+/* Opt-out for fields that signal focus with their own border/underline instead
+   of a ring. NOT `outline: none` — the transparent outline is what forced-colors
+   mode recolours, so removing it would leave High Contrast users with no focus
+   indicator at all. */
+.focus-no-ring:focus-visible {
+  outline: 2px solid transparent;
+}
+
+/* Raised surface shared by the auth box and the sell form. In dark mode --paper
+   sits close to the page ground, so the shadow is what separates the card from
+   the background. Component rules keep their own padding / max-width. */
+.surface-card {
+  background-color: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow-card-lg);
+}
+
 /*
  * Respect the OS "reduce motion" setting. The app animates skeleton pulses
  * continuously and translates/rotates tiles on hover; for users who ask for

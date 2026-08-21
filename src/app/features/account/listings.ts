@@ -73,6 +73,7 @@ import { AccountService } from '../../core/services/account.service';
           <ui-dropdown [label]="'acct.conditionLabel' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
           <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions" style="margin-bottom: 16px;"></ui-dropdown>
           <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name" style="margin-bottom: 16px;"></ui-input>
+          <ui-input [label]="'sell.professorLabel' | t" [(ngModel)]="editForm.professor_name" style="margin-bottom: 16px;"></ui-input>
           <ui-input [label]="'sell.privateNoteLabel' | t" [(ngModel)]="editForm.private_note" style="margin-bottom: 16px;"></ui-input>
           <ui-input [label]="'sell.descriptionLabel' | t" [(ngModel)]="editForm.description" style="margin-bottom: 16px;"></ui-input>
           
@@ -232,6 +233,7 @@ export class ListingsComponent implements OnInit {
           condition: listing.condition,
           category: listing.category || '',
           course_name: listing.course_name || '',
+          professor_name: listing.professor_name || '',
           private_note: listing.private_note,
           description: listing.description,
           photos: listing.photo_url ? [listing.photo_url] : [],
@@ -304,6 +306,7 @@ export class ListingsComponent implements OnInit {
       condition: this.editForm.condition,
       category: this.editForm.category || null,
       course_name: this.editForm.course_name || '',
+      professor_name: this.editForm.professor_name || '',
       private_note: this.editForm.private_note,
       description: this.editForm.description,
       photos: this.editForm.photos

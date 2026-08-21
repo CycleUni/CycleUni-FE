@@ -98,6 +98,8 @@ export interface AdminSchool {
   name: string;
   email_domain: string;
   translations: any;
+  /** Number of accounts attached to this school; a school with any cannot be deleted. */
+  user_count?: number;
 }
 
 export interface AdminCategory {
