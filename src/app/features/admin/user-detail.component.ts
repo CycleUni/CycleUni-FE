@@ -15,7 +15,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
-    <div *ngIf="loading" class="empty-state">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
     <div class="detail-card" *ngIf="!loading && user">
       <h2>{{ user.display_name || user.email }}</h2>
@@ -24,7 +24,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
         <div class="field"><label>{{ 'admin.colEmail' | t }}</label><span>{{ user.email }}</span></div>
         <div class="field"><label>{{ 'admin.colEduEmail' | t }}</label><span>{{ user.edu_email || '—' }}</span></div>
         <div class="field"><label>{{ 'admin.colName' | t }}</label><span>{{ user.first_name }} {{ user.last_name }}</span></div>
-        <div class="field"><label>{{ 'admin.staffBadge' | t }}</label><span class="status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span></div>
+        <div class="field"><label>{{ 'admin.staffBadge' | t }}</label><span class="admin-status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span></div>
       </div>
 
       <ui-dropdown [label]="'admin.colSchool' | t" [options]="schoolOptions" [(ngModel)]="schoolId"></ui-dropdown>
@@ -47,6 +47,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
     </div>
   `,
   styles: [`
+    .admin-status-badge { width: fit-content; }
     .back-link {
       display: inline-block;
       margin-bottom: 16px;
@@ -61,6 +62,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
       border-radius: 8px;
       padding: 24px;
       max-width: 520px;
+      box-shadow: var(--shadow-card-lg);
     }
     .detail-card h2 { margin-top: 0; }
     .field-grid {
@@ -84,30 +86,12 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
       font-size: 14px;
       cursor: pointer;
     }
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      background: rgba(0,0,0,0.06);
-      color: var(--muted);
-      width: fit-content;
-    }
-    .status-badge.ok {
-      background: rgba(22,163,74,0.12);
-      color: #16a34a;
-    }
     .inline-msg {
       margin: 12px 0;
       font-size: 14px;
     }
     .inline-msg.error { color: #dc2626; }
     .inline-msg.ok { color: #16a34a; }
-    .empty-state {
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
-    }
   `]
 })
 export class AdminUserDetailComponent implements OnInit {

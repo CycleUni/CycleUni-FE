@@ -18,9 +18,9 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       <ui-select [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="statusFilter" (ngModelChange)="reload()"></ui-select>
     </div>
 
-    <div *ngIf="loading" class="empty-state">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
-    <table class="admin-table" *ngIf="!loading">
+    <table class="admin-table admin-table-clickable" *ngIf="!loading">
       <thead>
         <tr>
           <th>{{ 'admin.colReporter' | t }}</th>
@@ -38,7 +38,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
             <td>{{ report.reported_party_email }}</td>
             <td>{{ report.listing_title }} <span class="conv-id">({{ report.conversation_id }})</span></td>
             <td>{{ reasonLabel(report.reason) | t }}</td>
-            <td><span class="status-badge" [class.warn]="report.status === 'open'">{{ ('admin.chatReportStatus.' + report.status) | t }}</span></td>
+            <td><span class="admin-status-badge" [class.warn]="report.status === 'open'">{{ ('admin.chatReportStatus.' + report.status) | t }}</span></td>
             <td *ngIf="report.status === 'open'" class="actions-cell">
               <ui-button (onClick)="action(report, 'actioned')" [disabled]="actingId === report.id">{{ 'admin.reportActionFlag' | t }}</ui-button>
               <ui-button variant="ghost" (onClick)="action(report, 'dismissed')" [disabled]="actingId === report.id">{{ 'admin.reportActionDismiss' | t }}</ui-button>
@@ -63,7 +63,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           </tr>
         </ng-container>
         <tr *ngIf="reports.length === 0">
-          <td colspan="6" class="empty-state">{{ 'common.noMatches' | t }}</td>
+          <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>
       </tbody>
     </table>
@@ -72,16 +72,10 @@ import { UiPagination } from '../../shared/ui/pagination.component';
   `,
   styles: [`
     .filters { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-    .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .admin-table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--line); color: var(--muted); font-weight: 600; }
-    .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
     .actions-cell { display: flex; gap: 8px; }
-    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: rgba(0,0,0,0.06); color: var(--muted); }
-    .status-badge.warn { background: rgba(220,38,38,0.12); color: #dc2626; }
-    .empty-state { padding: 24px; text-align: center; color: var(--muted); }
     .conv-id { font-size: 12px; color: var(--muted); }
     .report-row { cursor: pointer; }
-    .report-row:hover { background: rgba(0,0,0,0.03); }
+    .report-row:hover { background: var(--paper-warm); }
     .detail-content { padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
     .report-detail { font-size: 14px; color: var(--muted); }
     .messages-preview { max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }

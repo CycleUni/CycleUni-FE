@@ -11,63 +11,65 @@ import { UiInput } from '../../shared/ui/input.component';
   imports: [CommonModule, FormsModule, TPipe, UiButton, UiInput],
   template: `
     <div class="modal-overlay" (click)="close()"></div>
-    <div class="modal-content">
-      <h3>{{ 'order.meetupModalTitle' | t }}</h3>
+    <div class="modal-content app-modal">
+      <h3 class="app-modal-title">{{ 'order.meetupModalTitle' | t }}</h3>
 
-      <p *ngIf="bookTitle" class="book-info">{{ bookTitle }}</p>
+      <div class="modal-body app-modal-body">
+        <p *ngIf="bookTitle" class="book-info">{{ bookTitle }}</p>
 
-      <div class="field-group">
-        <label>{{ 'order.meetupDateLabel' | t }}</label>
+        <div class="field-group">
+          <label>{{ 'order.meetupDateLabel' | t }}</label>
 
-        <!-- Desktop calendar -->
-        <div class="desktop-calendar">
-          <div class="calendar-nav">
-            <button class="nav-btn" (click)="prevMonth()" [disabled]="isCurrentMonth()">&lsaquo;</button>
-            <span class="month-label">{{ monthLabel() }}</span>
-            <button class="nav-btn" (click)="nextMonth()">&rsaquo;</button>
+          <!-- Desktop calendar -->
+          <div class="desktop-calendar">
+            <div class="calendar-nav">
+              <button class="nav-btn" (click)="prevMonth()" [disabled]="isCurrentMonth()">&lsaquo;</button>
+              <span class="month-label">{{ monthLabel() }}</span>
+              <button class="nav-btn" (click)="nextMonth()">&rsaquo;</button>
+            </div>
+            <div class="calendar-grid">
+              <div class="day-header" *ngFor="let d of weekDays">{{ d }}</div>
+              <ng-container *ngFor="let week of calendarWeeks()">
+                <div
+                  *ngFor="let day of week"
+                  class="day-cell"
+                  [class.empty]="day === null"
+                  [class.today]="day !== null && isToday(day)"
+                  [class.selected]="day !== null && isSelectedDay(day)"
+                  (click)="day !== null && selectDay(day)">
+                  {{ day !== null ? day : '' }}
+                </div>
+              </ng-container>
+            </div>
           </div>
-          <div class="calendar-grid">
-            <div class="day-header" *ngFor="let d of weekDays">{{ d }}</div>
-            <ng-container *ngFor="let week of calendarWeeks()">
-              <div
-                *ngFor="let day of week"
-                class="day-cell"
-                [class.empty]="day === null"
-                [class.today]="day !== null && isToday(day)"
-                [class.selected]="day !== null && isSelectedDay(day)"
-                (click)="day !== null && selectDay(day)">
-                {{ day !== null ? day : '' }}
-              </div>
-            </ng-container>
+
+          <!-- Mobile date input -->
+          <div class="mobile-date">
+            <input type="date" [(ngModel)]="selectedDate" (change)="onNativeDateChange()"
+                   [min]="todayStr()" class="native-date-input" />
           </div>
         </div>
 
-        <!-- Mobile date input -->
-        <div class="mobile-date">
-          <input type="date" [(ngModel)]="selectedDate" (change)="onNativeDateChange()"
-                 [min]="todayStr()" class="native-date-input" />
+        <div class="form-group">
+          <ui-input [label]="'order.meetupTimeLabel' | t"
+                     type="time"
+                     [(ngModel)]="meetupTime"
+                     (ngModelChange)="onTimeChange()">
+          </ui-input>
+          <div class="error-msg" *ngIf="timeError">{{ 'order.meetupTimeError' | t }}</div>
         </div>
+
+        <div class="form-group">
+          <ui-input [label]="'order.meetupLocationLabel' | t"
+                     [(ngModel)]="location"
+                     [placeholder]="'order.meetupLocationPlaceholder' | t">
+          </ui-input>
+        </div>
+
+        <div *ngIf="errorMsg" class="error-msg submit-error">{{ errorMsg }}</div>
       </div>
 
-      <div class="form-group">
-        <ui-input [label]="'order.meetupTimeLabel' | t"
-                   type="time"
-                   [(ngModel)]="meetupTime"
-                   (ngModelChange)="onTimeChange()">
-        </ui-input>
-        <div class="error-msg" *ngIf="timeError">{{ 'order.meetupTimeError' | t }}</div>
-      </div>
-
-      <div class="form-group">
-        <ui-input [label]="'order.meetupLocationLabel' | t"
-                   [(ngModel)]="location"
-                   [placeholder]="'order.meetupLocationPlaceholder' | t">
-        </ui-input>
-      </div>
-
-      <div *ngIf="errorMsg" class="error-msg submit-error">{{ errorMsg }}</div>
-
-      <div class="actions">
+      <div class="actions app-modal-actions">
         <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">
           {{ 'common.cancel' | t }}
         </ui-button>
@@ -93,18 +95,11 @@ import { UiInput } from '../../shared/ui/input.component';
     }
     .modal-content {
       position: relative;
-      background: var(--paper);
-      padding: 24px;
-      border-radius: 8px;
       width: 100%;
       max-width: 420px;
       z-index: 1001;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      max-height: 95vh;
-      overflow-y: auto;
     }
     h3 {
-      margin-top: 0;
       margin-bottom: 12px;
     }
     .book-info {
@@ -236,12 +231,7 @@ import { UiInput } from '../../shared/ui/input.component';
       margin-bottom: 16px;
       font-size: 13px;
     }
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 24px;
-    }
+
   `]
 })
 export class MeetupModalComponent implements OnInit {

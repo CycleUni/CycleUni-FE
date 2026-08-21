@@ -249,6 +249,7 @@ export class Book implements OnInit {
   private schoolStateService = inject(SchoolStateService);
 
   isVerified = false;
+  private isFirstSchoolEmission = true;
 
   constructor(private route: ActivatedRoute, private router: Router) {
     effect(() => {
@@ -263,7 +264,11 @@ export class Book implements OnInit {
     this.schoolStateService.selectedSchool$.subscribe(school => {
       const prev = this.currentSchool;
       this.currentSchool = school;
-      if (prev !== school && prev !== '' && this.bookId && !this.isLocalCache) {
+      
+      const wasFirstEmission = this.isFirstSchoolEmission;
+      this.isFirstSchoolEmission = false;
+      
+      if (!wasFirstEmission && prev !== school && this.bookId && !this.isLocalCache) {
         this.fetchBook(true);
       } else {
         this.sortListings();
@@ -356,11 +361,13 @@ export class Book implements OnInit {
         }
         this.localListingsCount = data.local_listings_count ?? -1;
         this.isLoadingListings = false;
+        this.isLocalCache = false;
         this.sortListings();
         this.cdr.markForCheck();
       },
       error: () => {
         this.isLoadingListings = false;
+        this.isLocalCache = false;
         // A silent fetch only supplements an already-rendered preview;
         // keep showing the preview instead of alarming the user
         if (!silent) {

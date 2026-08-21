@@ -14,14 +14,17 @@ import { UiPagination } from '../../shared/ui/pagination.component';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiSelect, UiPagination],
   template: `
-    <div class="filters">
+    <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchManagers' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
       <ui-select [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()"></ui-select>
     </div>
 
-    <div *ngIf="loading" class="empty-state">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
-    <table class="admin-table" *ngIf="!loading">
+    <div class="table-container">
+
+
+      <table class="admin-table" *ngIf="!loading">
       <thead>
         <tr>
           <th>{{ 'admin.colEmail' | t }}</th>
@@ -37,8 +40,8 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           <td>{{ user.display_name || (user.first_name + ' ' + user.last_name) }}</td>
           <td>{{ user.school_name }}</td>
           <td>
-            <span class="status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span>
-            <span class="status-badge superuser-badge" *ngIf="user.is_superuser">Superuser</span>
+            <span class="admin-status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span>
+            <span class="admin-status-badge superuser-badge" *ngIf="user.is_superuser">Superuser</span>
           </td>
           <td>
             <button 
@@ -52,66 +55,20 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           </td>
         </tr>
         <tr *ngIf="users.length === 0">
-          <td colspan="5" class="empty-state">{{ 'common.noMatches' | t }}</td>
+          <td colspan="5" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>
       </tbody>
     </table>
 
+
+    </div>
+
     <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="page" (pageChange)="onPageChange($event)"></ui-pagination>
   `,
   styles: [`
-    .filters {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    .filters ui-search-bar {
-      flex: 1;
-      min-width: 240px;
-    }
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    .admin-table th {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 2px solid var(--line);
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .admin-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: middle;
-    }
-    .admin-table tbody tr:hover {
-      background: var(--paper-warm);
-    }
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      background: rgba(0,0,0,0.06);
-      color: var(--muted);
-      margin-right: 4px;
-    }
-    .status-badge.ok {
-      background: rgba(22,163,74,0.12);
-      color: #16a34a;
-    }
     .superuser-badge {
       background: rgba(139,92,246,0.12);
       color: #8b5cf6;
-    }
-    .empty-state {
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
     }
     .btn-toggle {
       padding: 4px 10px;

@@ -70,6 +70,9 @@ export interface AdminAd {
   image_url: string;
   target_url: string;
   position: string;
+  headline?: string;
+  subheadline?: string;
+  slot_index: number;
   start_date: string;
   end_date: string;
   is_active: boolean;
@@ -77,6 +80,7 @@ export interface AdminAd {
   clicks_count: number;
   views_count: number;
   created_at: string;
+  labels?: string[];
 }
 
 export interface AdminReport {

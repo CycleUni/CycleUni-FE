@@ -2,7 +2,6 @@ import { Component, effect, inject, ChangeDetectorRef, OnDestroy } from '@angula
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SwUpdate } from '@angular/service-worker';
 import { UiDropdown } from './dropdown.component';
 import { MetadataService } from '../../core/services/metadata.service';
 import { AuthStore } from '../../core/auth.store';
@@ -48,7 +47,6 @@ export class UiLayout implements OnDestroy {
   private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
 
-  private swUpdate = inject(SwUpdate);
   readonly i18n = inject(I18nService);
   private router = inject(Router);
 
@@ -65,7 +63,6 @@ export class UiLayout implements OnDestroy {
 
   private unreadCountSubscription: Subscription;
   private routerSubscription?: Subscription;
-  private swUpdateSubscription?: Subscription;
   private hubConnectedForUserId: string | null = null;
 
   get selectedSchoolLabel(): string {
@@ -127,21 +124,6 @@ export class UiLayout implements OnDestroy {
       this.unreadCount = count;
       this.cdr.markForCheck();
     });
-
-    // Without this, a tab left open across a deploy keeps running the old
-    // build indefinitely — and since each build's JS/CSS chunk filenames are
-    // content-hashed, the stale service worker's asset manifest ends up
-    // referencing files the CDN no longer serves, surfacing as fetch
-    // failures (e.g. net::ERR_CACHE_MISS / net::ERR_FAILED) instead of just
-    // an outdated UI. Reload as soon as a new version has finished
-    // installing so the app is always running what was actually deployed.
-    if (this.swUpdate.isEnabled) {
-      this.swUpdateSubscription = this.swUpdate.versionUpdates.subscribe(event => {
-        if (event.type === 'VERSION_READY') {
-          this.swUpdate.activateUpdate().then(() => document.location.reload());
-        }
-      });
-    }
     
     // Automatically set the school to the user's verified school once the profile loads
     // (if they haven't manually chosen a school yet).
@@ -166,7 +148,6 @@ export class UiLayout implements OnDestroy {
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
     this.unreadCountSubscription.unsubscribe();
-    this.swUpdateSubscription?.unsubscribe();
   }
 
   private connectHub() {

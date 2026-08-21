@@ -68,12 +68,20 @@ import { CommonModule } from '@angular/common';
         font-size: 16px;
       }
     }
-    /* No 'outline: none' here. Signalling focus only by swapping the border
-       from --ink to --accent is a 1.9:1 change on a 1px line, i.e. invisible;
-       the global :focus-visible ring in styles.css is what actually carries
-       it. The border color change stays as a secondary cue. */
+    /* Focus recolours the underline to --accent and adds no thickness. The
+       green line clears 3:1 against the field background on its own (7.85:1
+       light, 5.36:1 dark), which is what WCAG 1.4.11 (AA) asks of a state
+       indicator. The luminance delta between --ink and --accent is only
+       1.88:1, so this deliberately stops short of 2.4.13 Focus Appearance
+       (AAA) — a product decision, not an oversight; the two states are told
+       apart by hue rather than brightness.
+       Do not replace the transparent outline with 'outline: none'. It draws
+       nothing in normal rendering, but forced-colors mode swaps it for the
+       user's own focus colour — something a recoloured border cannot do, so
+       deleting it would leave High Contrast users with no focus indicator. */
     input:focus-visible {
-      border-color: var(--accent);
+      border-bottom-color: var(--accent);
+      outline: 2px solid transparent;
     }
     input:disabled {
       background-color: var(--paper-warm);

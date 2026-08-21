@@ -8,6 +8,11 @@ export interface PublicAd {
   title: string;
   image_url: string;
   target_url: string;
+  headline?: string;
+  subheadline?: string;
+  advertiser_name?: string;
+  slot_index: number;
+  labels?: string[];
 }
 
 @Injectable({

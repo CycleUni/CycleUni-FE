@@ -95,7 +95,7 @@ export interface HeroCover {
               [style.z-index]="covers.length - i"
               [style.--r]="heroCoverRotations(i)"
               [style.--x]="heroCoverOffsets(i)"
-              [style.--hx]="heroCoverHoverOffsets(i)"
+              [style.--hover-dir]="heroCoverHoverDir(i)"
               [routerLink]="['/book']"
               [queryParams]="heroBookParams(cover)"
               (click)="cacheHeroBook(cover)"
@@ -118,7 +118,7 @@ export interface HeroCover {
 
     /* ---- hero ------------------------------------------------------- */
     .hero-search {
-      padding-block: var(--space-8);
+      padding-block: var(--space-5);
       background-color: var(--paper-warm);
       border-bottom: 1px solid var(--line);
       /* One step tighter than the --space-7 that separates ordinary sections:
@@ -126,7 +126,7 @@ export interface HeroCover {
          so the full section gap on top of it read as a gap in the page. Not
          zero, though — at zero the next section's heading sits directly on
          the band's border with no breathing room at all. */
-      margin-bottom: var(--space-6);
+      margin-bottom: var(--space-4);
     }
     /* Grid, not space-between. With the copy capped at ~480px and the cover
        stack only 220px wide, 'justify-content: space-between' pushed the two
@@ -136,7 +136,7 @@ export interface HeroCover {
       display: grid;
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
       align-items: center;
-      gap: var(--space-7);
+      gap: var(--space-5);
     }
     .hero-copy { text-align: left; min-width: 0; width: 100%; }
     .search-title {
@@ -149,14 +149,14 @@ export interface HeroCover {
          just crushes the glyphs together; Han type needs its natural advance
          width, and the Latin brand name gets its own rule in the header. */
       letter-spacing: normal;
-      margin: 0 0 var(--space-4);
+      margin: 0 0 var(--space-2);
       max-width: 16em;
       text-wrap: balance;
     }
     .hero-subtitle {
-      margin: 0 0 var(--space-6);
+      margin: 0 0 var(--space-4);
       font-size: var(--text-lg);
-      line-height: 1.6;
+      line-height: 1.5;
       color: var(--ink-soft);
       max-width: 32em;
     }
@@ -164,7 +164,7 @@ export interface HeroCover {
       display: flex;
       align-items: stretch;
       gap: var(--space-3);
-      margin-bottom: var(--space-4);
+      margin-bottom: var(--space-3);
       max-width: 560px;
     }
     .hero-input-wrap { position: relative; flex: 1; min-width: 0; }
@@ -185,16 +185,17 @@ export interface HeroCover {
        padding makes room for .search-icon sitting inside the field. */
     .hero-input ::ng-deep .input-wrapper, .hero-input ::ng-deep input { height: 100%; }
     .hero-input ::ng-deep input {
-      min-height: 48px;
+      min-height: 44px;
       border: none;
       border-bottom: 2px solid var(--ink);
       border-radius: 0;
       background: none;
       padding: var(--space-2) var(--space-1) var(--space-2) var(--space-6);
-      font-size: var(--text-lg);
+      font-size: var(--text-base);
     }
     .hero-input ::ng-deep input:focus-visible {
       border-bottom-color: var(--accent);
+      outline: 2px solid transparent;
     }
 
     .popular-tags {
@@ -204,7 +205,7 @@ export interface HeroCover {
       gap: var(--space-2);
       font-size: var(--text-sm);
       color: var(--muted);
-      margin-bottom: var(--space-5);
+      margin-bottom: var(--space-3);
     }
     /* Real chips with a real hit area. These were 42x20px text links with a
        hairline underline — under half the minimum touch target, and visually
@@ -212,8 +213,8 @@ export interface HeroCover {
     .tag-btn {
       display: inline-flex;
       align-items: center;
-      min-height: 34px;
-      padding: var(--space-1) var(--space-3);
+      min-height: 28px;
+      padding: var(--space-1) var(--space-2);
       background: var(--paper);
       border: 1px solid var(--line-strong);
       border-radius: 999px;
@@ -224,7 +225,7 @@ export interface HeroCover {
       transition: background-color 0.2s, color 0.2s, border-color 0.2s;
     }
     @media (pointer: coarse) {
-      .tag-btn { min-height: var(--tap-min); padding-inline: var(--space-4); }
+      .tag-btn { min-height: var(--tap-min); padding-inline: var(--space-3); }
     }
     .tag-btn:hover {
       background: var(--accent-soft);
@@ -234,11 +235,11 @@ export interface HeroCover {
       display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4);
       font-size: var(--text-base); color: var(--ink-soft);
     }
-    .hero-sell { gap: var(--space-2); margin: 0 0 var(--space-4); }
+    .hero-sell { gap: var(--space-2); margin: 0 0 var(--space-3); }
     .hero-sell-link {
       display: inline-flex;
       align-items: center;
-      min-height: 34px;
+      min-height: 28px;
       color: var(--accent);
       font-weight: 700;
       text-decoration: none;
@@ -253,7 +254,7 @@ export interface HeroCover {
        this over a Facebook group, and they were buried in step 3's body copy
        at 14px. One line, in the hero, above the fold. */
     .hero-trust {
-      margin: var(--space-4) 0 0; padding: 0; list-style: none;
+      margin: 0; padding: 0; list-style: none;
       font-weight: 500;
     }
     .hero-trust li { display: flex; align-items: center; gap: 6px; }
@@ -262,18 +263,21 @@ export interface HeroCover {
     .hero-stack {
       position: relative;
       width: 100%;
-      max-width: 420px;
+      max-width: 368px;
       aspect-ratio: 1 / 1;
       justify-self: end;
       margin-inline: auto;
+      container-type: inline-size;
+      --card-scale: clamp(0.85, calc(0.11 + 0.242cqi / 1px), 1);
+      --card-shift: clamp(50px, max(50cqi - 98px, 11.875vw - 66px), 130px);
     }
     .cover-card {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 240px;
-      height: 336px;
-      margin: -168px 0 0 -120px;
+      width: 210px;
+      height: 294px;
+      margin: -147px 0 0 -105px;
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow-card-lg);
       background-color: var(--paper);
@@ -304,7 +308,7 @@ export interface HeroCover {
     /* Hover/Focus expanded state */
     .hero-stack:hover .cover-card,
     .hero-stack:focus-within .cover-card {
-      transform: translateX(var(--hx)) scale(0.75);
+      transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale));
     }
     .hero-stack:hover .cover-card:not(:first-child) .demand-tag,
     .hero-stack:focus-within .cover-card:not(:first-child) .demand-tag {
@@ -315,29 +319,29 @@ export interface HeroCover {
     .hero-stack:hover .cover-card:hover,
     .hero-stack:focus-within .cover-card:hover,
     .hero-stack:focus-within .cover-card:focus-visible {
-      transform: translateX(var(--hx)) scale(0.75) translateY(-6px) !important;
+      transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale)) translateY(-6px) !important;
     }
 
     @media (hover: none) {
       .cover-card {
-        transform: translateX(var(--hx)) scale(0.75);
+        transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale));
       }
       .cover-card:not(:first-child) .demand-tag {
         opacity: 1;
         pointer-events: auto;
       }
       .cover-card:hover {
-        transform: translateX(var(--hx)) scale(0.75) !important;
+        transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale)) !important;
       }
     }
 
     @media (max-width: 768px) {
-      .hero-search { padding-block: var(--space-5); margin-bottom: var(--space-5); }
+      .hero-search { padding-block: var(--space-4); margin-bottom: var(--space-4); }
       /* align-items must not be 'center' here: in a column flow that makes
          .hero-copy shrink-to-fit, which is why the search field ended up
          240px wide on a 375px screen while every other control on the page
          was 343px. */
-      .hero-inner { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: var(--space-4); }
+      .hero-inner { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: var(--space-3); }
       /* Hide cover stack on mobile to save vertical space. The first screen
          needs to show real content below the fold. */
       .hero-stack { display: none; }
@@ -345,24 +349,24 @@ export interface HeroCover {
          and produced a 34px -> 22px cliff across a single pixel of viewport
          width, landing the hero title 2px away from .section-heading. The
          clamp's own lower bound handles small screens. */
-      .search-title { line-height: 1.3; max-width: 100%; overflow-wrap: anywhere; }
-      .hero-subtitle { font-size: var(--text-base); margin-bottom: var(--space-5); }
+      .search-title { line-height: 1.2; max-width: 100%; overflow-wrap: anywhere; }
+      .hero-subtitle { font-size: var(--text-sm); margin-bottom: var(--space-3); }
       /* Stays a row. Stacking put a 343x48 filled button under the field —
          the largest control on the screen for an action the field's own
          Enter key already performs. It collapses to a square icon instead,
          which is the shape ui-search-bar already uses elsewhere. */
-      .search-bar { max-width: none; }
+      .search-bar { max-width: none; margin-bottom: var(--space-2); }
       .hero-input-wrap { flex: 1; min-width: 0; }
       /* Two magnifiers side by side would be the alternative, so the
          decorative one inside the field steps aside for the real control. */
       .hero-input-wrap .search-icon { display: none; }
-      .hero-input ::ng-deep input { padding-left: var(--space-3); }
+      .hero-input ::ng-deep input { padding-left: var(--space-2); min-height: 40px; }
       /* Width goes on the host: .ui-btn is width:100%, so it inherits whatever
          the host is. The padding override has to out-specify .ui-btn.lg —
          matching its specificity only ties, and the tie goes to whichever
          component stylesheet the bundler emits last. */
-      .search-submit { flex: 0 0 48px; align-self: stretch; }
-      .search-submit ::ng-deep .ui-btn.lg { padding-inline: 0; }
+      .search-submit { flex: 0 0 40px; align-self: stretch; }
+      .search-submit ::ng-deep .ui-btn.lg { padding-inline: 0; min-height: 40px; height: 100%; }
       .search-submit .submit-icon { display: block; }
 
       /* The three blocks below the search field cost 230px here — 38% of the
@@ -381,7 +385,7 @@ export interface HeroCover {
          Preferred over making the row scroll horizontally: that would hide
          part of the set behind a gesture to save the same 52px. */
       .tag-label { display: none; }
-      .popular-tags { margin-bottom: var(--space-4); }
+      .popular-tags { margin-bottom: var(--space-2); }
 
       /* Kept at --text-base with the accent icons intact. What the earlier
          review objected to was the *hierarchy* — 13px --muted text sitting
@@ -389,7 +393,7 @@ export interface HeroCover {
          number of rows. Tightening the gaps lets the Chinese strings settle
          on one line (they are far shorter than the English); English still
          wraps, to two rows rather than three. */
-      .hero-trust { gap: var(--space-1) var(--space-3); margin-top: var(--space-3); }
+      .hero-trust { gap: var(--space-1) var(--space-2); margin-top: 0; font-size: var(--text-sm); }
       .hero-trust li { gap: var(--space-1); }
     }
   `]
@@ -427,13 +431,13 @@ export class HomeHero {
   }
 
   heroCoverOffsets(i: number): string {
-    const offsets = [0, 32, -24];
+    const offsets = [0, 42, -32];
     return `${offsets[i % offsets.length]}px`;
   }
 
-  heroCoverHoverOffsets(i: number): string {
-    const hoverOffsets = [114, 0, -114];
-    return `${hoverOffsets[i % hoverOffsets.length]}px`;
+  heroCoverHoverDir(i: number): number {
+    const dirs = [1, 0, -1];
+    return dirs[i % dirs.length];
   }
 
   /** Route params for a hero cover; the anchor's href does the navigating. */

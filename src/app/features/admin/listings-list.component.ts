@@ -13,14 +13,17 @@ import { UiPagination } from '../../shared/ui/pagination.component';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiSelect, UiPagination],
   template: `
-    <div class="filters">
+    <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchListings' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
       <ui-select [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="statusFilter" (ngModelChange)="reload()"></ui-select>
     </div>
 
-    <div *ngIf="loading" class="empty-state">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
-    <table class="admin-table" *ngIf="!loading">
+    <div class="table-container">
+
+
+      <table class="admin-table admin-table-clickable" *ngIf="!loading">
       <thead>
         <tr>
           <th>{{ 'admin.colBook' | t }}</th>
@@ -36,26 +39,20 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           <td>{{ listing.seller?.email }}</td>
           <td>{{ listing.school?.name }}</td>
           <td>NT$ {{ listing.price }}</td>
-          <td><span class="status-badge">{{ ('admin.listingStatus.' + listing.status) | t }}</span></td>
+          <td><span class="admin-status-badge">{{ ('admin.listingStatus.' + listing.status) | t }}</span></td>
         </tr>
         <tr *ngIf="listings.length === 0">
-          <td colspan="5" class="empty-state">{{ 'common.noMatches' | t }}</td>
+          <td colspan="5" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>
       </tbody>
     </table>
 
+
+    </div>
+
     <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="page" (pageChange)="onPageChange($event)"></ui-pagination>
   `,
   styles: [`
-    .filters { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-    .filters ui-search-bar { flex: 1; min-width: 240px; }
-    .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .admin-table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--line); color: var(--muted); font-weight: 600; }
-    .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
-    .admin-table tbody tr { cursor: pointer; }
-    .admin-table tbody tr:hover { background: var(--paper-warm); }
-    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: rgba(0,0,0,0.06); color: var(--muted); }
-    .empty-state { padding: 24px; text-align: center; color: var(--muted); }
   `]
 })
 export class AdminListingsListComponent implements OnInit {

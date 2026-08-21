@@ -14,7 +14,7 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
     <div class="header-actions">
       <div>
         <h2>{{ 'common.edit' | t }}: {{ school?.name }}</h2>
-        <a routerLink=".." class="btn btn-sm btn-outline">‹ {{ 'admin.backToList' | t }}</a>
+        <a routerLink=".." class="admin-btn admin-btn-sm admin-btn-outline">‹ {{ 'admin.backToList' | t }}</a>
       </div>
     </div>
 
@@ -24,12 +24,12 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
         
         <div class="form-group">
           <label>{{ 'admin.schoolName' | t }}</label>
-          <input type="text" class="input" [(ngModel)]="editData.name">
+          <input type="text" class="admin-form-control" [(ngModel)]="editData.name">
         </div>
         
         <div class="form-group">
           <label>{{ 'admin.colDomain' | t }}</label>
-          <input type="text" class="input" [(ngModel)]="editData.email_domain">
+          <input type="text" class="admin-form-control" [(ngModel)]="editData.email_domain">
         </div>
 
         <div class="form-group">
@@ -41,7 +41,7 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
           </app-translation-editor>
         </div>
 
-        <button class="btn btn-primary" (click)="saveSchool()">{{ 'admin.save' | t }}</button>
+        <button class="admin-btn admin-btn-primary" (click)="saveSchool()">{{ 'admin.save' | t }}</button>
       </div>
     </div>
   `,
@@ -50,17 +50,10 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
     .header-actions h2 { margin-bottom: 8px; }
     .header-actions a { text-decoration: none; }
     .detail-grid { max-width: 600px; }
-    .panel { background: white; padding: 24px; border-radius: 8px; border: 1px solid var(--line); }
+    .panel { background: var(--paper); padding: 24px; border-radius: 8px; border: 1px solid var(--line); box-shadow: var(--shadow-card-lg); }
     .panel h3 { margin-top: 0; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-    .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
-    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-    .btn-danger { background: transparent; color: #dc2626; border: 1px solid #dc2626; }
-    .btn-sm { padding: 4px 8px; font-size: 12px; }
   `]
 })
 export class AdminSchoolDetailComponent implements OnInit {

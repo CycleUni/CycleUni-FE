@@ -12,37 +12,39 @@ import { OrderService } from '../../core/services/order.service';
   imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe],
   template: `
     <div class="modal-overlay" (click)="close()"></div>
-    <div class="modal-content">
-      <h3>{{ 'order.reviewTitle' | t }}</h3>
+    <div class="modal-content app-modal">
+      <h3 class="app-modal-title">{{ 'order.reviewTitle' | t }}</h3>
       
-      <p style="margin-bottom: 16px;" class="muted">
-        {{ 'order.reviewDesc' | t }}
-      </p>
+      <div class="modal-body app-modal-body">
+        <p style="margin-bottom: 16px;" class="muted">
+          {{ 'order.reviewDesc' | t }}
+        </p>
 
-      <div class="checkbox-group" style="margin-bottom: 24px;">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--flag); font-weight: 500;">
-          <input type="checkbox" [(ngModel)]="isNoShow" (change)="onNoShowChange()">
-          {{ 'order.noShowReport' | t }}
-        </label>
-      </div>
+        <div class="checkbox-group" style="margin-bottom: 24px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--flag); font-weight: 500;">
+            <input type="checkbox" [(ngModel)]="isNoShow" (change)="onNoShowChange()">
+            {{ 'order.noShowReport' | t }}
+          </label>
+        </div>
 
-      <div *ngIf="!isNoShow" style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 500;">{{ 'order.rating' | t }}</label>
-        <div class="stars">
-          <span *ngFor="let star of [1,2,3,4,5]" 
-                (click)="rating = star"
-                [class.active]="star <= rating"
-                class="star">★</span>
+        <div *ngIf="!isNoShow" style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">{{ 'order.rating' | t }}</label>
+          <div class="stars">
+            <span *ngFor="let star of [1,2,3,4,5]" 
+                  (click)="rating = star"
+                  [class.active]="star <= rating"
+                  class="star">★</span>
+          </div>
+        </div>
+
+        <ui-input [label]="'order.comment' | t" [(ngModel)]="comment" [placeholder]="'order.optional' | t"></ui-input>
+
+        <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
+          {{ errorMsg }}
         </div>
       </div>
 
-      <ui-input [label]="'order.comment' | t" [(ngModel)]="comment" [placeholder]="'order.optional' | t"></ui-input>
-
-      <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
-        {{ errorMsg }}
-      </div>
-
-      <div class="actions" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px;">
+      <div class="actions app-modal-actions">
         <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">{{ 'common.cancel' | t }}</ui-button>
         <ui-button (onClick)="submit()" [disabled]="isSubmitting || (!isNoShow && rating === 0)">
           {{ isSubmitting ? ('order.processing' | t) : ('order.submit' | t) }}
@@ -66,15 +68,11 @@ import { OrderService } from '../../core/services/order.service';
     }
     .modal-content {
       position: relative;
-      background: var(--paper);
-      padding: 24px;
-      border-radius: 8px;
       width: 100%;
       max-width: 400px;
       z-index: 1001;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    h3 { margin-top: 0; margin-bottom: 12px; }
+    h3 { margin-bottom: 12px; }
     .stars {
       display: flex;
       gap: 8px;

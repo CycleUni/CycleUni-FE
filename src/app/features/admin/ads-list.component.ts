@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiPagination } from '../../shared/ui/pagination.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminAd, AdminAdvertiser, Paginated } from '../../core/services/admin.service';
@@ -11,16 +12,16 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-admin-ads-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navAds' | t }}</h2>
       <div>
-        <button class="btn btn-primary" (click)="openCreateModal()">{{ 'admin.addAd' | t }}</button>
+        <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addAd' | t }}</button>
       </div>
     </div>
 
-    <div class="filters">
+    <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchAds' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
     </div>
 
@@ -49,7 +50,7 @@ import { firstValueFrom } from 'rxjs';
             <td>{{ ad.position }}</td>
             <td>{{ ad.clicks_count }} / {{ ad.views_count }}</td>
             <td>
-              <span class="badge" [class.badge-success]="ad.is_active" [class.badge-error]="!ad.is_active">
+              <span class="admin-badge" [class.admin-badge-success]="ad.is_active" [class.admin-badge-error]="!ad.is_active">
                 {{ ad.is_active ? ('admin.advertiserActive' | t) : ('admin.advertiserInactive' | t) }}
               </span>
             </td>
@@ -58,111 +59,110 @@ import { firstValueFrom } from 'rxjs';
               {{ ad.end_date | date:'yyyy/MM/dd HH:mm' }}
             </td>
             <td>
-              <button class="btn btn-sm btn-outline" (click)="openEditModal(ad)">{{ 'common.edit' | t }}</button>
-              <button class="btn btn-sm btn-outline" (click)="deleteAd(ad.id)" style="margin-left: 4px; color: var(--error); border-color: var(--error);">{{ 'common.delete' | t }}</button>
+              <button class="admin-btn admin-btn-sm admin-btn-outline" (click)="openEditModal(ad)">{{ 'common.edit' | t }}</button>
+              <button class="admin-btn admin-btn-sm admin-btn-outline" (click)="deleteAd(ad.id)" style="margin-left: 4px; color: var(--error); border-color: var(--error);">{{ 'common.delete' | t }}</button>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <div class="pagination" *ngIf="adsData.count > 0">
-        <button class="btn btn-sm btn-outline" [disabled]="!adsData.previous" (click)="loadPage(currentPage - 1)">‹</button>
-        <span>{{ currentPage }}</span>
-        <button class="btn btn-sm btn-outline" [disabled]="!adsData.next" (click)="loadPage(currentPage + 1)">›</button>
-      </div>
+      <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="currentPage" (pageChange)="loadPage($event)"></ui-pagination>
     </div>
 
-    <div class="empty-state" *ngIf="loading">
+    <div class="empty-note" *ngIf="loading">
       <p>{{ 'common.loading' | t }}</p>
     </div>
 
-    <div class="modal-overlay" *ngIf="showModal">
-      <div class="modal">
-        <h3>{{ editingId ? ('admin.editAd' | t) : ('admin.addAd' | t) }}</h3>
+    <div class="app-modal-overlay" *ngIf="showModal">
+      <div class="app-modal">
+        <h3 class="app-modal-title">{{ editingId ? ('admin.editAd' | t) : ('admin.addAd' | t) }}</h3>
         
-        <div class="form-group">
-          <label>{{ 'admin.adAdvertiser' | t }} *</label>
-          <select class="form-control" [(ngModel)]="formData.advertiser" [disabled]="!!editingId">
-            <option *ngFor="let adv of advertisers" [value]="adv.id">{{ adv.company_name }}</option>
-          </select>
-        </div>
+        <div class="app-modal-body">
+          <div class="form-group">
+            <label>{{ 'admin.adAdvertiser' | t }} *</label>
+            <select class="admin-form-control" [(ngModel)]="formData.advertiser" [disabled]="!!editingId">
+              <option *ngFor="let adv of advertisers" [value]="adv.id">{{ adv.company_name }}</option>
+            </select>
+          </div>
 
-        <div class="form-group">
-          <label>{{ 'admin.adTitle' | t }} *</label>
-          <input type="text" class="form-control" [(ngModel)]="formData.title">
-        </div>
-        
-        <div class="form-group">
-          <label>{{ 'admin.adImage' | t }} *</label>
-          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;" *ngIf="formData.image_url">
-            <img [src]="formData.image_url" style="height: 60px; object-fit: contain; border: 1px solid var(--line); border-radius: 4px;">
+          <div class="form-group">
+            <label>{{ 'admin.adTitle' | t }} *</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="formData.title">
           </div>
-          <div style="display: flex; gap: 8px;">
-            <input *ngIf="!formData.is_internal_image" type="text" class="form-control" [(ngModel)]="formData.image_url" placeholder="https://..." style="flex: 1;">
-            <div *ngIf="formData.is_internal_image" style="flex: 1; display: flex; align-items: center; font-size: 14px; color: var(--success); background: var(--paper-warm); padding: 0 12px; border-radius: 4px; border: 1px solid var(--line);">{{ 'admin.uploadedViaFile' | t }}</div>
-            <input type="file" accept="image/*" style="display: none" #fileInput (change)="onImageUpload($event)">
-            <button class="btn btn-outline" (click)="fileInput.click()" [disabled]="uploadingImage" [title]="'admin.uploadNewImageHint' | t">
-              {{ uploadingImage ? ('admin.uploading' | t) : (formData.is_internal_image ? ('admin.reselectFile' | t) : ('admin.selectFile' | t)) }}
-            </button>
-            <button *ngIf="formData.is_internal_image" class="btn btn-outline" (click)="useExternalUrl()" [title]="'admin.useExternalUrlHint' | t">
-              {{ 'admin.useExternalUrl' | t }}
-            </button>
+          
+          <div class="form-group">
+            <label>{{ 'admin.adImage' | t }} *</label>
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;" *ngIf="formData.image_url">
+              <img [src]="formData.image_url" style="height: 60px; object-fit: contain; border: 1px solid var(--line); border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input *ngIf="!formData.is_internal_image" type="text" class="admin-form-control" [(ngModel)]="formData.image_url" placeholder="https://..." style="flex: 1;">
+              <div *ngIf="formData.is_internal_image" style="flex: 1; display: flex; align-items: center; font-size: 14px; color: var(--success); background: var(--paper-warm); padding: 0 12px; border-radius: 4px; border: 1px solid var(--line);">{{ 'admin.uploadedViaFile' | t }}</div>
+              <input type="file" accept="image/*" style="display: none" #fileInput (change)="onImageUpload($event)">
+              <button class="admin-btn admin-btn-outline" (click)="fileInput.click()" [disabled]="uploadingImage" [title]="'admin.uploadNewImageHint' | t">
+                {{ uploadingImage ? ('admin.uploading' | t) : (formData.is_internal_image ? ('admin.reselectFile' | t) : ('admin.selectFile' | t)) }}
+              </button>
+              <button *ngIf="formData.is_internal_image" class="admin-btn admin-btn-outline" (click)="useExternalUrl()" [title]="'admin.useExternalUrlHint' | t">
+                {{ 'admin.useExternalUrl' | t }}
+              </button>
+            </div>
           </div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">{{ 'admin.adImageHint' | t }}</div>
+          
+          <p style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 12px;">{{ 'admin.adImageSpec' | t }}</p>
+
+          <div class="form-group">
+            <label>{{ 'admin.adTargetUrl' | t }} *</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="formData.target_url" placeholder="https://...">
+          </div>
+          
+          <div class="form-group">
+            <label>{{ 'admin.adHeadline' | t }}</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="formData.headline">
+          </div>
+          <div class="form-group">
+            <label>{{ 'admin.adSubheadline' | t }}</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="formData.subheadline">
+          </div>
+          <div class="form-group">
+            <label>{{ 'admin.adSlotIndex' | t }} *</label>
+            <input type="number" min="1" max="200" class="admin-form-control" [(ngModel)]="formData.slot_index">
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'admin.adStartDate' | t }} *</label>
+            <input type="datetime-local" class="admin-form-control" [(ngModel)]="formData.start_date">
+          </div>
+          
+          <div class="form-group">
+            <label>{{ 'admin.adEndDate' | t }} *</label>
+            <input type="datetime-local" class="admin-form-control" [(ngModel)]="formData.end_date">
+          </div>
+          
+          <div class="form-group">
+            <label>{{ 'admin.adLabels' | t }}</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="labelsInput" placeholder="New, Sale">
+          </div>
+          
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="adIsActive" [(ngModel)]="formData.is_active">
+            <label for="adIsActive" style="margin: 0; font-weight: normal;">{{ 'admin.advertiserActive' | t }}</label>
+          </div>
         </div>
         
-        <div class="form-group">
-          <label>{{ 'admin.adTargetUrl' | t }} *</label>
-          <input type="text" class="form-control" [(ngModel)]="formData.target_url" placeholder="https://...">
-        </div>
-        
-        <div class="form-group">
-          <label>{{ 'admin.adStartDate' | t }} *</label>
-          <input type="datetime-local" class="form-control" [(ngModel)]="formData.start_date">
-        </div>
-        
-        <div class="form-group">
-          <label>{{ 'admin.adEndDate' | t }} *</label>
-          <input type="datetime-local" class="form-control" [(ngModel)]="formData.end_date">
-        </div>
-        
-        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" id="adIsActive" [(ngModel)]="formData.is_active">
-          <label for="adIsActive" style="margin: 0; font-weight: normal;">{{ 'admin.advertiserActive' | t }}</label>
-        </div>
-        
-        <div class="modal-actions" style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
-          <button class="btn btn-outline" (click)="closeModal()">{{ 'common.cancel' | t }}</button>
-          <button class="btn btn-primary" (click)="save()">{{ 'common.save' | t }}</button>
+        <div class="app-modal-actions">
+          <button class="admin-btn admin-btn-outline" (click)="closeModal()">{{ 'common.cancel' | t }}</button>
+          <button class="admin-btn admin-btn-primary" (click)="save()">{{ 'common.save' | t }}</button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .filters { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; flex-wrap: wrap; }
-    .filters ui-search-bar { flex: 1; min-width: 240px; }
+    .app-modal { 
+      width: 400px; max-width: 90%; 
+    }
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .table-container { background: white; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
-    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .admin-table th, .admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); }
-    .admin-table th { background: var(--paper-warm); font-weight: 600; }
-    .admin-table tr:last-child td { border-bottom: none; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
-    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-    .btn-sm { padding: 4px 8px; font-size: 12px; }
-    .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-top: 1px solid var(--line); }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal { background: white; padding: 24px; border-radius: 8px; width: 400px; max-width: 90%; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-    .badge-success { background: rgba(22,163,74,0.12); color: #16a34a; }
-    .badge-error { background: rgba(220,38,38,0.12); color: #dc2626; }
-    .empty-state { padding: 48px; text-align: center; color: var(--muted); }
   `]
 })
 export class AdminAdsListComponent implements OnInit {
@@ -173,6 +173,8 @@ export class AdminAdsListComponent implements OnInit {
   
   adsData: Paginated<AdminAd> | null = null;
   currentPage = 1;
+  total = 0;
+  pageSize = 20;
   loading = true;
   saving = false;
   advertisers: AdminAdvertiser[] = [];
@@ -186,8 +188,12 @@ export class AdminAdsListComponent implements OnInit {
     image_url: '',
     target_url: '',
     position: 'home_banner',
+    headline: '',
+    subheadline: '',
+    slot_index: 1,
     is_active: true
   };
+  labelsInput = '';
 
   ngOnInit() {
     this.loadPage(1);
@@ -206,6 +212,7 @@ export class AdminAdsListComponent implements OnInit {
     this.adminService.getAds({ page, q: this.q }).subscribe({
       next: (data) => {
         this.adsData = data;
+        this.total = data.count;
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -235,11 +242,15 @@ export class AdminAdsListComponent implements OnInit {
 
   openCreateModal() {
     this.editingId = null;
+    this.labelsInput = '';
     this.formData = {
       title: '',
       image_url: '',
       target_url: '',
       position: 'home_banner',
+      headline: '',
+      subheadline: '',
+      slot_index: 1,
       is_active: true,
       start_date: this.formatDateForInput(new Date().toISOString()),
       end_date: this.formatDateForInput(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
@@ -253,6 +264,7 @@ export class AdminAdsListComponent implements OnInit {
   openEditModal(ad: AdminAd) {
     this.editingId = ad.id;
     this.formData = { ...ad };
+    this.labelsInput = ad.labels ? ad.labels.join(', ') : '';
     // Format dates for datetime-local input
     if (this.formData.start_date) {
       this.formData.start_date = this.formatDateForInput(this.formData.start_date);
@@ -290,7 +302,7 @@ export class AdminAdsListComponent implements OnInit {
   }
 
   save() {
-    if (!this.formData.advertiser || !this.formData.title || !this.formData.image_url || !this.formData.start_date || !this.formData.end_date) {
+    if (!this.formData.advertiser || !this.formData.title || !this.formData.image_url || !this.formData.start_date || !this.formData.end_date || !this.formData.slot_index) {
       alert(this.i18n.t('admin.errFillRequired'));
       return;
     }
@@ -301,6 +313,21 @@ export class AdminAdsListComponent implements OnInit {
     }
 
     const payload = { ...this.formData };
+    
+    // Parse labels
+    const parsedLabels = this.labelsInput.split(',').map(s => s.trim()).filter(s => s);
+    if (parsedLabels.length > 3) {
+      alert("最多只能有 3 個標籤");
+      return;
+    }
+    for (let l of parsedLabels) {
+      if (l.length > 15) {
+        alert("單一標籤長度不可超過 15 個字");
+        return;
+      }
+    }
+    payload.labels = parsedLabels;
+
     // Convert back to UTC ISO string for backend
     if (payload.start_date) payload.start_date = new Date(payload.start_date).toISOString();
     if (payload.end_date) payload.end_date = new Date(payload.end_date).toISOString();

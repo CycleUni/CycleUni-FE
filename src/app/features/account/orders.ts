@@ -25,6 +25,7 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
       </div>
 
       <ui-search-bar 
+        style="display: block; margin-bottom: 24px;"
         [placeholder]="'acct.searchOrders' | t" 
         [value]="searchQuery" 
         (search)="onSearchQuery($event)">

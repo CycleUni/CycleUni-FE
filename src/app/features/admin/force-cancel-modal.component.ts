@@ -11,7 +11,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   standalone: true,
   imports: [CommonModule, FormsModule, UiButton, TPipe],
   template: `
-    <div class="modal-overlay" (click)="close()"></div>
+    <div class="admin-modal-overlay" (click)="close()"></div>
     <div class="modal-content">
       <h3>{{ 'admin.forceCancelTitle' | t }}</h3>
 
@@ -40,11 +40,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .modal-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
     }
     .modal-content {
       position: relative;

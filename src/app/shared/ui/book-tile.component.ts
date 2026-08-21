@@ -36,7 +36,7 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
     <div class="book-tile" [class.feature]="feature">
       <a
         *ngIf="link"
-        class="tile-body"
+        class="tile-body hover-card"
         [routerLink]="link"
         [queryParams]="linkParams"
         (click)="tileClick.emit()"
@@ -44,12 +44,12 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
         <ng-container *ngTemplateOutlet="body"></ng-container>
       </a>
 
-      <button *ngIf="!link" type="button" class="tile-body" (click)="tileClick.emit()">
+      <button *ngIf="!link" type="button" class="tile-body hover-card" (click)="tileClick.emit()">
         <ng-container *ngTemplateOutlet="body"></ng-container>
       </button>
 
       <ng-template #body>
-        <span class="tile-cover">
+        <span class="tile-cover hover-card-cover">
           <!-- Google Books serves zoom=1 at ~128px; these tiles draw at ~242px,
                i.e. 3.8x in device pixels on a 2x screen. -->
           <img *ngIf="coverUrl && !imageBroken" [src]="coverUrl | bookCover: 3" [alt]="title" (error)="onImageError()" />
@@ -82,7 +82,7 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
           <span *ngIf="author">{{ author }}</span><span *ngIf="isbn"> · {{ isbn }}</span>
         </span>
 
-        <span class="tile-sellers" *ngIf="mode === 'sellers'">
+        <span class="tile-sellers card-subtext" *ngIf="mode === 'sellers'">
           {{ (sellerCount === 1 ? 'bookTile.sellerCountOne' : 'bookTile.sellerCount') | t:{n: sellerCount ?? 0} }}
         </span>
         <!-- Condition is the single fact a used-book buyer decides on, and it
@@ -130,18 +130,6 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
       color: inherit;
       text-decoration: none;
       cursor: pointer;
-      transition: transform 0.15s ease;
-    }
-    .tile-body:hover {
-      transform: translateY(-2px);
-    }
-    /* The cover lifts *and* tilts a degree on hover. Pure vertical translation
-       reads as generic card chrome; the slight rotation is the same gesture
-       the hero cover-stack already uses and makes the tile behave like a
-       physical book being picked up, which is the whole visual premise here. */
-    .tile-body:hover .tile-cover {
-      box-shadow: var(--shadow-card-lg);
-      transform: rotate(-0.5deg);
     }
     .tile-cover {
       position: relative;
@@ -204,29 +192,7 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
       font-size: var(--text-sm);
       color: var(--muted);
     }
-    .tile-sellers {
-      display: block;
-      margin: 0;
-      font-size: var(--text-sm);
-      color: var(--muted);
-    }
-    .tile-conditions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-1);
-      margin-top: var(--space-2);
-    }
-    .cond-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 1px var(--space-2);
-      background-color: var(--paper-warm);
-      border: 1px solid var(--line-strong);
-      border-radius: 999px;
-      font-size: var(--text-xs);
-      color: var(--ink-soft);
-      white-space: nowrap;
-    }
+
     .tile-actions:empty {
       display: none;
     }

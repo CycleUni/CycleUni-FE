@@ -17,14 +17,14 @@ export interface TranslationField {
     <div class="translation-item" *ngFor="let t of translationsList; let i = index">
       <div class="translation-header">
         <input type="text" class="input lang-input" [(ngModel)]="t.lang" (ngModelChange)="onChange()" placeholder="Language (e.g. en)">
-        <button class="btn btn-sm btn-danger" (click)="removeTranslation(i)">{{ 'common.delete' | t }}</button>
+        <button class="admin-btn admin-btn-sm admin-btn-danger" (click)="removeTranslation(i)">{{ 'common.delete' | t }}</button>
       </div>
       <div class="translation-row" *ngFor="let field of fields">
         <input *ngIf="field.type === 'text'" type="text" class="input" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t">
         <textarea *ngIf="field.type === 'textarea'" class="input" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t"></textarea>
       </div>
     </div>
-    <button class="btn btn-sm btn-outline mt-2" (click)="addTranslation()">+ Add Language</button>
+    <button class="admin-btn admin-btn-sm admin-btn-outline mt-2" (click)="addTranslation()">+ Add Language</button>
   `,
   styles: [`
     .translation-item { background: var(--paper-warm); padding: 12px; border-radius: 6px; border: 1px solid var(--line); margin-bottom: 8px; }
@@ -35,10 +35,6 @@ export interface TranslationField {
     .mt-2 { margin-top: 8px; }
     .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
     textarea.input { min-height: 80px; resize: vertical; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-    .btn-sm { padding: 4px 8px; font-size: 12px; }
-    .btn-danger { background: transparent; color: #dc2626; border: 1px solid #dc2626; }
-    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
   `]
 })
 export class TranslationEditorComponent {

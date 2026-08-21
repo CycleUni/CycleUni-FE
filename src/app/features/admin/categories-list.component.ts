@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiPagination } from '../../shared/ui/pagination.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCategory, Paginated } from '../../core/services/admin.service';
@@ -10,14 +11,14 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
 @Component({
   selector: 'app-admin-categories-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination],
   template: `
     <ng-container *ngIf="!showModal">
       <div class="header-actions">
         <h2>{{ 'admin.navCategories' | t }}</h2>
         <div>
-          <button class="btn btn-outline" style="margin-right: 12px;" (click)="showImportModal = true">{{ 'admin.bulkImport' | t }}</button>
-          <button class="btn btn-primary" (click)="openCreateModal()">{{ 'admin.addCollege' | t }}</button>
+          <button class="admin-btn admin-btn-outline" style="margin-right: 12px;" (click)="showImportModal = true">{{ 'admin.bulkImport' | t }}</button>
+          <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addCollege' | t }}</button>
         </div>
       </div>
 
@@ -40,24 +41,20 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
               <td>{{ cat.title }}</td>
               <td>{{ cat.sort_order }}</td>
               <td>
-                <span class="status-badge" [class.active]="cat.is_active">{{ (cat.is_active ? 'common.yes' : 'common.no') | t }}</span>
+                <span class="admin-status-badge" [class.active]="cat.is_active">{{ (cat.is_active ? 'common.yes' : 'common.no') | t }}</span>
               </td>
               <td>
-                <button class="btn btn-sm btn-outline" (click)="openEditModal(cat)">{{ 'common.edit' | t }}</button>
-                <button class="btn btn-sm btn-danger" style="margin-left: 8px;" (click)="deleteCategory(cat.id)">{{ 'common.delete' | t }}</button>
+                <button class="admin-btn admin-btn-sm admin-btn-outline" (click)="openEditModal(cat)">{{ 'common.edit' | t }}</button>
+                <button class="admin-btn admin-btn-sm admin-btn-danger" style="margin-left: 8px;" (click)="deleteCategory(cat.id)">{{ 'common.delete' | t }}</button>
               </td>
             </tr>
             <tr *ngIf="categoriesData.results.length === 0">
-              <td colspan="6" class="empty-state">{{ 'common.noMatches' | t }}</td>
+              <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
             </tr>
           </tbody>
         </table>
 
-        <div class="pagination" *ngIf="categoriesData.count > 0">
-          <button class="btn btn-sm btn-outline" [disabled]="!categoriesData.previous" (click)="loadPage(currentPage - 1)">‹</button>
-          <span>{{ currentPage }}</span>
-          <button class="btn btn-sm btn-outline" [disabled]="!categoriesData.next" (click)="loadPage(currentPage + 1)">›</button>
-        </div>
+        <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="currentPage" (pageChange)="loadPage($event)"></ui-pagination>
       </div>
     </ng-container>
 
@@ -65,7 +62,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
       <div class="header-actions">
         <div>
           <h2>{{ editingId ? ('common.edit' | t) : ('common.create' | t) }}: {{ form.title || form.slug }}</h2>
-          <a class="btn btn-sm btn-outline" (click)="showModal = false">‹ {{ 'admin.backToList' | t }}</a>
+          <a class="admin-btn admin-btn-sm admin-btn-outline" (click)="showModal = false">‹ {{ 'admin.backToList' | t }}</a>
         </div>
       </div>
 
@@ -73,23 +70,23 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
         <div class="panel">
           <div class="form-group">
             <label>{{ 'admin.catSlug' | t }}</label>
-            <input type="text" class="input" [(ngModel)]="form.slug">
+            <input type="text" class="admin-form-control" [(ngModel)]="form.slug">
           </div>
 
           <div class="form-group">
             <label>{{ 'admin.catTitle' | t }}</label>
-            <input type="text" class="input" [(ngModel)]="form.title">
+            <input type="text" class="admin-form-control" [(ngModel)]="form.title">
           </div>
 
           <div class="form-group">
             <label>{{ 'admin.catDesc' | t }}</label>
-            <textarea class="input" [(ngModel)]="form.description"></textarea>
+            <textarea class="admin-form-control" [(ngModel)]="form.description"></textarea>
           </div>
 
           <div class="form-group row-group">
             <div class="col">
               <label>{{ 'admin.catSort' | t }}</label>
-              <input type="number" class="input" [(ngModel)]="form.sort_order">
+              <input type="number" class="admin-form-control" [(ngModel)]="form.sort_order">
             </div>
             <div class="col checkbox-col">
               <label>
@@ -108,14 +105,14 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
             </app-translation-editor>
           </div>
 
-          <button class="btn btn-primary" (click)="saveCategory()">{{ 'admin.save' | t }}</button>
+          <button class="admin-btn admin-btn-primary" (click)="saveCategory()">{{ 'admin.save' | t }}</button>
         </div>
       </div>
     </ng-container>
     
     <app-bulk-import-modal 
       [show]="showImportModal"
-      endpoint="categories"
+      [endpoint]="'categories'"
       (close)="showImportModal = false"
       (imported)="showImportModal = false; loadPage(1)">
     </app-bulk-import-modal>
@@ -125,29 +122,12 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     .header-actions h2 { margin-bottom: 8px; }
     .header-actions a { text-decoration: none; cursor: pointer; }
     .detail-grid { max-width: 600px; }
-    .panel { background: white; padding: 24px; border-radius: 8px; border: 1px solid var(--line); }
+    .panel { background: var(--paper); padding: 24px; border-radius: 8px; border: 1px solid var(--line); box-shadow: var(--shadow-card-lg); }
     .panel h3 { margin-top: 0; margin-bottom: 24px; }
-    .table-container { background: white; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
-    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .admin-table th, .admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); }
-    .admin-table th { background: var(--paper-warm); font-weight: 600; }
-    .admin-table tr:last-child td { border-bottom: none; }
-    .empty-state { text-align: center; color: var(--muted); padding: 24px; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
-    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-    .btn-danger { background: transparent; color: #dc2626; border: 1px solid #dc2626; }
-    .btn-sm { padding: 4px 8px; font-size: 12px; }
-    .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-top: 1px solid var(--line); }
-    
-    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: var(--paper-warm); color: var(--muted); }
-    .status-badge.active { background: #e0f2fe; color: #0284c7; }
 
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-    .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
-    textarea.input { min-height: 80px; resize: vertical; }
+    textarea.admin-form-control { min-height: 80px; resize: vertical; }
     .row-group { display: flex; gap: 16px; }
     .row-group .col { flex: 1; }
     .checkbox-col label { display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 32px; cursor: pointer; }
@@ -159,6 +139,8 @@ export class AdminCategoriesListComponent implements OnInit {
 
   categoriesData?: Paginated<AdminCategory>;
   currentPage = 1;
+  total = 0;
+  pageSize = 20;
 
   showModal = false;
   showImportModal = false;
@@ -181,6 +163,7 @@ export class AdminCategoriesListComponent implements OnInit {
     this.adminService.getCategories(opts).subscribe({
       next: (data) => {
         this.categoriesData = data;
+        this.total = data.count;
         this.cdr.markForCheck();
       },
       error: () => this.cdr.markForCheck()

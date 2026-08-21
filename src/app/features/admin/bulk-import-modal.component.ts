@@ -11,8 +11,8 @@ import { TPipe } from '../../core/i18n.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, TPipe],
   template: `
-    <div class="modal-overlay" *ngIf="show">
-      <div class="modal import-modal">
+    <div class="admin-modal-overlay" *ngIf="show">
+      <div class="admin-modal import-modal">
         <h3>{{ 'admin.bulkImport' | t }}</h3>
 
         <div *ngIf="step === 'input'">
@@ -20,7 +20,7 @@ import { TPipe } from '../../core/i18n.service';
             <label>JSON URL (optional)</label>
             <div class="url-input-row">
               <input type="text" class="input" [(ngModel)]="jsonUrl" placeholder="https://example.com/data.json">
-              <button type="button" class="btn btn-sm btn-outline" (click)="fetchJson()" [disabled]="loading">
+              <button type="button" class="admin-btn admin-btn-sm admin-btn-outline" (click)="fetchJson()" [disabled]="loading">
                 {{ loading && loadingAction === 'fetch' ? 'Fetching...' : 'Fetch' }}
               </button>
             </div>
@@ -66,12 +66,12 @@ import { TPipe } from '../../core/i18n.service';
           <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" (click)="close.emit()">{{ 'common.cancel' | t }}</button>
-          <button type="button" *ngIf="step === 'input'" class="btn btn-primary" (click)="preview()" [disabled]="loading">
+        <div class="admin-modal-actions">
+          <button type="button" class="admin-btn admin-btn-secondary" (click)="close.emit()">{{ 'common.cancel' | t }}</button>
+          <button type="button" *ngIf="step === 'input'" class="admin-btn admin-btn-primary" (click)="preview()" [disabled]="loading">
             {{ loading && loadingAction === 'preview' ? 'Previewing...' : 'Preview' }}
           </button>
-          <button type="button" *ngIf="step === 'preview'" class="btn btn-primary" (click)="apply()" [disabled]="loading">
+          <button type="button" *ngIf="step === 'preview'" class="admin-btn admin-btn-primary" (click)="apply()" [disabled]="loading">
             {{ loading && loadingAction === 'apply' ? 'Applying...' : 'Apply Changes' }}
           </button>
         </div>
@@ -80,19 +80,12 @@ import { TPipe } from '../../core/i18n.service';
     </div>
   `,
   styles: [`
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .import-modal { background: white; padding: 24px; border-radius: 8px; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; }
+    .import-modal { background: var(--paper); padding: 24px; border-radius: 8px; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
     .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
     .url-input-row { display: flex; gap: 8px; }
     .json-textarea { min-height: 250px; font-family: monospace; font-size: 13px; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
-    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-    .btn-sm { padding: 4px 8px; font-size: 12px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
     .loading-note { margin-top: 8px; font-size: 13px; color: var(--muted); text-align: right; }
     .error { color: #dc2626; margin-bottom: 16px; font-size: 14px; }
     .warning { color: var(--ink); margin-bottom: 16px; font-size: 14px; }

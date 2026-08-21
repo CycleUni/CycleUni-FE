@@ -25,6 +25,7 @@ import { AccountService } from '../../core/services/account.service';
     </div>
 
     <ui-search-bar 
+      style="display: block; margin-bottom: 24px;"
       [placeholder]="'acct.searchListings' | t" 
       [value]="searchQuery" 
       (search)="onSearchQuery($event)">
@@ -55,38 +56,39 @@ import { AccountService } from '../../core/services/account.service';
     <!-- Edit Modal Overlay -->
     <div class="edit-modal" *ngIf="editingListing">
       <div class="modal-overlay" (click)="closeEdit()"></div>
-      <div class="modal-content">
-        <h3>{{ 'acct.editTitle' | t }}</h3>
-        <p style="margin-top: 0; color: var(--muted); margin-bottom: 16px;">{{ editingListing.book_title }}</p>
+      <div class="modal-content app-modal">
+        <h3 class="app-modal-title">{{ 'acct.editTitle' | t }}</h3>
         
-        <div *ngIf="editingListing.book_source === 'manual'" class="manual-book-edit" style="margin-bottom: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 4px; background-color: var(--paper-warm);">
-          <p style="margin-top: 0; margin-bottom: 12px; font-weight: 500; font-size: 14px;">{{ 'acct.manualBookDesc' | t }}</p>
-          <ui-input [label]="'acct.bookTitleLabel' | t" [(ngModel)]="editForm.book_title" style="margin-bottom: 12px;"></ui-input>
-          <ui-input [label]="'acct.bookAuthorsLabel' | t" [(ngModel)]="editForm.book_authors" style="margin-bottom: 12px;"></ui-input>
-          <ui-input [label]="'acct.isbnLabel' | t" [(ngModel)]="editForm.isbn"></ui-input>
-        </div>
-
-        <ui-input type="number" [label]="'acct.priceLabel' | t" [(ngModel)]="editForm.price" style="margin-bottom: 16px;"></ui-input>
-        <ui-dropdown [label]="'acct.conditionLabel' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
-        <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions" style="margin-bottom: 16px;"></ui-dropdown>
-        <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name" style="margin-bottom: 16px;"></ui-input>
-        <ui-input [label]="'sell.privateNoteLabel' | t" [(ngModel)]="editForm.private_note" style="margin-bottom: 16px;"></ui-input>
-        <ui-input [label]="'sell.descriptionLabel' | t" [(ngModel)]="editForm.description" style="margin-bottom: 16px;"></ui-input>
-        
-
-
-        <div class="photo-upload" style="margin-bottom: 24px;">
-          <label style="display: block; font-weight: 500; font-size: 14px; margin-bottom: 8px;">{{ 'acct.photoLabel' | t }}</label>
-          <div class="photo-preview" *ngIf="editForm.photos && editForm.photos.length > 0" style="margin-bottom: 8px; position: relative; display: inline-block;">
-            <img [src]="editForm.photos[0]" loading="lazy" style="width: 88px; height: 124px; object-fit: cover; border: 1px solid var(--line); border-radius: 4px;" />
-            <button class="delete-photo-btn" (click)="editForm.photos = []" title="{{ 'common.delete' | t }}">✕</button>
+        <div class="modal-body app-modal-body">
+          <p style="margin-top: 0; color: var(--muted); margin-bottom: 16px;">{{ editingListing.book_title }}</p>
+          
+          <div *ngIf="editingListing.book_source === 'manual'" class="manual-book-edit" style="margin-bottom: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 4px; background-color: var(--paper-warm);">
+            <p style="margin-top: 0; margin-bottom: 12px; font-weight: 500; font-size: 14px;">{{ 'acct.manualBookDesc' | t }}</p>
+            <ui-input [label]="'acct.bookTitleLabel' | t" [(ngModel)]="editForm.book_title" style="margin-bottom: 12px;"></ui-input>
+            <ui-input [label]="'acct.bookAuthorsLabel' | t" [(ngModel)]="editForm.book_authors" style="margin-bottom: 12px;"></ui-input>
+            <ui-input [label]="'acct.isbnLabel' | t" [(ngModel)]="editForm.isbn"></ui-input>
           </div>
-          <div>
-            <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput style="display: none;" />
-            <ui-button variant="ghost" (onClick)="fileInput.click()" [disabled]="isUploadingPhoto">{{ (isUploadingPhoto ? 'sell.uploading' : 'acct.uploadPhoto') | t }}</ui-button>
+
+          <ui-input type="number" [label]="'acct.priceLabel' | t" [(ngModel)]="editForm.price" style="margin-bottom: 16px;"></ui-input>
+          <ui-dropdown [label]="'acct.conditionLabel' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
+          <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions" style="margin-bottom: 16px;"></ui-dropdown>
+          <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name" style="margin-bottom: 16px;"></ui-input>
+          <ui-input [label]="'sell.privateNoteLabel' | t" [(ngModel)]="editForm.private_note" style="margin-bottom: 16px;"></ui-input>
+          <ui-input [label]="'sell.descriptionLabel' | t" [(ngModel)]="editForm.description" style="margin-bottom: 16px;"></ui-input>
+          
+          <div class="photo-upload" style="margin-bottom: 24px;">
+            <label style="display: block; font-weight: 500; font-size: 14px; margin-bottom: 8px;">{{ 'acct.photoLabel' | t }}</label>
+            <div class="photo-preview" *ngIf="editForm.photos && editForm.photos.length > 0" style="margin-bottom: 8px; position: relative; display: inline-block;">
+              <img [src]="editForm.photos[0]" loading="lazy" style="width: 88px; height: 124px; object-fit: cover; border: 1px solid var(--line); border-radius: 4px;" />
+              <button class="delete-photo-btn" (click)="editForm.photos = []" title="{{ 'common.delete' | t }}">✕</button>
+            </div>
+            <div>
+              <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput style="display: none;" />
+              <ui-button variant="ghost" (onClick)="fileInput.click()" [disabled]="isUploadingPhoto">{{ (isUploadingPhoto ? 'sell.uploading' : 'acct.uploadPhoto') | t }}</ui-button>
+            </div>
           </div>
         </div>
-        <div class="actions" style="display: flex; gap: 8px; justify-content: flex-end;">
+        <div class="actions app-modal-actions">
           <ui-button variant="ghost" (onClick)="closeEdit()">{{ 'common.cancel' | t }}</ui-button>
           <ui-button (onClick)="submitEdit()">{{ 'acct.save' | t }}</ui-button>
         </div>
@@ -117,14 +119,8 @@ import { AccountService } from '../../core/services/account.service';
     }
     .modal-content {
       position: relative;
-      background: var(--paper);
-      padding: 24px;
-      border-radius: 8px;
       width: 100%;
       max-width: 400px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       z-index: 1001;
     }
     .delete-photo-btn {

@@ -11,6 +11,7 @@ import { TPipe } from '../../core/i18n.service';
       <input 
         type="text" 
         [placeholder]="placeholder" 
+        [attr.aria-label]="placeholder"
         [value]="value" 
         (input)="onInput($event)" 
         (keyup.enter)="onSearchClick()"
@@ -28,7 +29,6 @@ import { TPipe } from '../../core/i18n.service';
     .search-wrapper {
       position: relative;
       width: 100%;
-      margin-bottom: 24px;
       display: flex;
     }
     .search-input {
@@ -38,11 +38,16 @@ import { TPipe } from '../../core/i18n.service';
       border-radius: var(--radius-control);
       font-size: 16px;
       background: var(--paper-warm);
+      color: var(--ink);
       box-sizing: border-box;
       transition: border-color 0.2s;
     }
+    .search-input::placeholder {
+      color: var(--muted);
+    }
     .search-input:focus-visible {
       border-color: var(--accent);
+      outline: 2px solid transparent;
     }
     .search-btn {
       position: absolute;
@@ -59,10 +64,14 @@ import { TPipe } from '../../core/i18n.service';
       padding: var(--space-1);
       border-radius: var(--radius-control);
     }
-    /* Padding expands the hit area on touch without moving the glyph, which
-       stays optically centred on the field's right edge. */
+    /* Expand touch target using pseudo-element instead of margin/padding
+       so the button itself doesn't move and overlap the input. */
     @media (pointer: coarse) {
-      .search-btn { padding: var(--space-3); margin: calc(var(--space-3) * -1); }
+      .search-btn::after {
+        content: '';
+        position: absolute;
+        inset: -12px;
+      }
     }
     .search-btn:hover {
       color: var(--accent);

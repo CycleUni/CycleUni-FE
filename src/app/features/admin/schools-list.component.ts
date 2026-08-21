@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiPagination } from '../../shared/ui/pagination.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminSchool, Paginated } from '../../core/services/admin.service';
@@ -10,17 +11,17 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
 @Component({
   selector: 'app-admin-schools-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent, UiPagination],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navSchools' | t }}</h2>
       <div>
-        <button class="btn btn-outline" style="margin-right: 12px;" (click)="showImportModal = true">{{ 'admin.bulkImport' | t }}</button>
-        <button class="btn btn-primary" (click)="openCreateModal()">{{ 'admin.addSchool' | t }}</button>
+        <button class="admin-btn admin-btn-outline" style="margin-right: 12px;" (click)="showImportModal = true">{{ 'admin.bulkImport' | t }}</button>
+        <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addSchool' | t }}</button>
       </div>
     </div>
 
-    <div class="filters">
+    <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchSchools' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
     </div>
 
@@ -40,40 +41,36 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
             <td>{{ school.name }}</td>
             <td>{{ school.email_domain }}</td>
             <td>
-              <a class="btn btn-sm btn-outline" [routerLink]="[school.id]">{{ 'common.edit' | t }}</a>
+              <a class="admin-btn admin-btn-sm admin-btn-outline" [routerLink]="[school.id]">{{ 'common.edit' | t }}</a>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <div class="pagination" *ngIf="schoolsData.count > 0">
-        <button class="btn btn-sm btn-outline" [disabled]="!schoolsData.previous" (click)="loadPage(currentPage - 1)">‹</button>
-        <span>{{ currentPage }}</span>
-        <button class="btn btn-sm btn-outline" [disabled]="!schoolsData.next" (click)="loadPage(currentPage + 1)">›</button>
-      </div>
+      <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="currentPage" (pageChange)="loadPage($event)"></ui-pagination>
     </div>
 
-    <div class="modal-overlay" *ngIf="showCreateModal">
-      <div class="modal">
+    <div class="admin-modal-overlay" *ngIf="showCreateModal">
+      <div class="admin-modal">
         <h3>{{ 'admin.addSchool' | t }}</h3>
         <div class="form-group">
           <label>{{ 'admin.schoolName' | t }}</label>
-          <input type="text" class="input" [(ngModel)]="newSchool.name">
+          <input type="text" class="admin-form-control" [(ngModel)]="newSchool.name">
         </div>
         <div class="form-group">
           <label>{{ 'admin.colDomain' | t }}</label>
-          <input type="text" class="input" [(ngModel)]="newSchool.email_domain" [placeholder]="'admin.domainDesc' | t">
+          <input type="text" class="admin-form-control" [(ngModel)]="newSchool.email_domain" [placeholder]="'admin.domainDesc' | t">
         </div>
         <div class="form-group">
           <label>{{ 'admin.translationsSection' | t }}</label>
           <div class="translation-row">
             <span class="lang-tag">zh-TW</span>
-            <input type="text" class="input" [(ngModel)]="newSchoolZhTwName" [placeholder]="'admin.schoolName' | t">
+            <input type="text" class="admin-form-control" [(ngModel)]="newSchoolZhTwName" [placeholder]="'admin.schoolName' | t">
           </div>
         </div>
-        <div class="modal-actions">
-          <button class="btn btn-secondary" (click)="showCreateModal = false">{{ 'common.cancel' | t }}</button>
-          <button class="btn btn-primary" (click)="createSchool()">{{ 'admin.save' | t }}</button>
+        <div class="admin-modal-actions">
+          <button class="admin-btn admin-btn-secondary" (click)="showCreateModal = false">{{ 'common.cancel' | t }}</button>
+          <button class="admin-btn admin-btn-primary" (click)="createSchool()">{{ 'admin.save' | t }}</button>
         </div>
       </div>
     </div>
@@ -86,28 +83,10 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     </app-bulk-import-modal>
   `,
   styles: [`
+    .admin-modal { width: 400px; max-width: 90%; }
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .filters { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; flex-wrap: wrap; }
-    .filters ui-search-bar { flex: 1; min-width: 240px; }
-    
-    .table-container { background: white; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
-    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .admin-table th, .admin-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); }
-    .admin-table th { background: var(--paper-warm); font-weight: 600; }
-    .admin-table tr:last-child td { border-bottom: none; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
-    .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-    .btn-sm { padding: 4px 8px; font-size: 12px; }
-    .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-top: 1px solid var(--line); }
-    
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal { background: white; padding: 24px; border-radius: 8px; width: 400px; max-width: 90%; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-    .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
     .translation-row { display: flex; align-items: center; gap: 8px; }
     .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; }
   `]
@@ -118,6 +97,8 @@ export class AdminSchoolsListComponent implements OnInit {
 
   schoolsData?: Paginated<AdminSchool>;
   currentPage = 1;
+  total = 0;
+  pageSize = 20;
   q = '';
 
   showCreateModal = false;
@@ -134,6 +115,7 @@ export class AdminSchoolsListComponent implements OnInit {
     this.adminService.getSchools({ page: this.currentPage, q: this.q }).subscribe({
       next: (data) => {
         this.schoolsData = data;
+        this.total = data.count;
         this.cdr.markForCheck();
       },
       error: () => {

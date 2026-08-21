@@ -29,6 +29,7 @@
   --accent-ink:  #14402F; /* darkened hover state */
   --accent-soft: #E7F0EA; /* accent-tinted ground: selected chips, hover fills */
   --flag:        #A34A2A; /* warnings and the "N people waiting" badge (brick red, these two uses only) */
+  --sponsor:     #8C6B3F; /* gold/kraft tone for sponsor tags */
   --muted:       #647079; /* secondary text */
 
   /* Secondary brand color. The palette had exactly one hue (--accent green)
@@ -122,6 +123,7 @@
     --accent-ink:  #7FC4A6; /* lighter emphasis variant of accent on dark */
     --accent-soft: #1E2B25;
     --flag:        #C97A54; /* brighter terracotta/brick for contrast on a dark ground */
+    --sponsor:     #C49A6C; /* lighter gold/kraft tone for sponsor tags */
     --muted:       #9B9488;
 
     --brand-warm:      #E09A63;
@@ -154,6 +156,7 @@
   --accent-ink:  #7FC4A6;
   --accent-soft: #1E2B25;
   --flag:        #C97A54;
+  --sponsor:     #C49A6C;
   --muted:       #9B9488;
 
   --brand-warm:      #E09A63;
@@ -419,3 +422,140 @@ body {
   text-align: center;
   color: var(--muted);
 }
+
+/*
+ * 書卡與廣告卡共用的 hover 效果
+ */
+.hover-card {
+  transition: transform 0.15s ease;
+}
+.hover-card:hover {
+  transform: translateY(-2px);
+}
+.hover-card:hover .hover-card-cover {
+  box-shadow: var(--shadow-card-lg);
+  transform: rotate(-0.5deg);
+}
+
+/*
+ * 書卡與廣告卡共用的第三行說明文字
+ */
+.card-subtext {
+  display: block;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/*
+ * 共用的標籤樣式 (書況、廣告自訂標籤)
+ */
+.tile-conditions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+.cond-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  background-color: var(--paper-warm);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/*
+ * 後台共用的表格容器
+ */
+.table-container {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: var(--shadow-card);
+}
+
+/*
+ * 後台共用的篩選列容器，解決搜尋輸入框與下拉選單基線對齊問題
+ */
+.admin-filters {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.admin-filters ui-search-bar {
+  flex: 1;
+  min-width: 240px;
+}
+.admin-filters ui-select .select-wrapper {
+  margin-bottom: 0;
+}
+
+/*
+ * 後台共用的表格
+ */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+.admin-table th,
+.admin-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.admin-table th {
+  background: var(--paper-warm);
+  font-weight: 600;
+  color: var(--muted);
+}
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+/*
+ * 後台表格：列可點擊樣式
+ */
+.admin-table-clickable tbody tr {
+  cursor: pointer;
+}
+.admin-table-clickable tbody tr:hover {
+  background: var(--paper-warm);
+}
+
+
+/* Admin shared styles from Work 2 and 3 */
+.admin-btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
+.admin-btn-primary { background: var(--accent); color: var(--paper); }
+.admin-btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
+.admin-btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.admin-btn-danger { background: transparent; color: #dc2626; border: 1px solid #dc2626; }
+.admin-btn-sm { padding: 4px 8px; font-size: 12px; }
+
+.admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.admin-modal { background: var(--paper); padding: 24px; border-radius: 8px; }
+.admin-modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+
+/* Unified Modal Layout (Shared by admin ads and account) */
+.app-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.app-modal { background: var(--paper); padding: 0; border-radius: 8px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: var(--shadow-card-lg); }
+.app-modal-title { padding: 24px 24px 0; margin: 0; flex-shrink: 0; }
+.app-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.app-modal-actions { padding: 0 24px 24px; margin-top: 0 !important; flex-shrink: 0; display: flex; justify-content: flex-end; gap: 12px; }
+
+.admin-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.admin-badge-success { background: rgba(22,163,74,0.12); color: #16a34a; }
+.admin-badge-error { background: rgba(220,38,38,0.12); color: #dc2626; }
+
+.admin-form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; background: var(--paper); color: var(--ink); }
+
+.admin-status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: var(--paper-warm); color: var(--muted); }
+.admin-status-badge.active { background: #e0f2fe; color: #0284c7; }
+.admin-status-badge.ok { background: #e0f2fe; color: #0284c7; }

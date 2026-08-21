@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, effect, DestroyRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, effect, DestroyRef, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { UiBookTile } from './book-tile.component';
+import { UiPromoBanner } from './promo-banner.component';
 import { UiSkeleton } from './skeleton.component';
 import { UiPagination } from './pagination.component';
 import { UiErrorState } from './error-state.component';
@@ -14,7 +15,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'ui-recent-listings',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiBookTile, UiSkeleton, TPipe, UiPagination, UiErrorState],
+  imports: [CommonModule, RouterModule, UiBookTile, UiSkeleton, TPipe, UiPagination, UiErrorState, UiPromoBanner],
   template: `
     <h2 class="section-heading" [id]="headingId">{{ (school ? 'home.recentTitle' : 'home.recentTitleAll') | t }}</h2>
     <ng-container *ngIf="loading">
@@ -26,22 +27,28 @@ import { I18nService, TPipe } from '../../core/i18n.service';
         [message]="errorMessage"
         (retry)="reload()"
       ></ui-error-state>
-      <div class="discover-grid" [class.has-feature]="showFeatureTile" *ngIf="!errorMessage && recentBooks.length">
-        <ui-book-tile
-          *ngFor="let item of recentBooks; let i = index; trackBy: trackById"
-          [feature]="showFeatureTile && i === 0"
-          [title]="item.title || ('home.unknownBook' | t)"
-          [author]="item.authors"
-          [isbn]="item.isbn"
-          [coverUrl]="item.cover_url"
-          [sellerCount]="sellerCountFor(item.conditions)"
-          [conditions]="item.conditions"
-          [minPrice]="item.avg_price"
-          [isAveragePrice]="isAveragePrice(item.conditions)"
-          [link]="['/book']"
-          [linkParams]="bookLinkParams(item)"
-          (tileClick)="cacheBook(item)"
-        ></ui-book-tile>
+      <div class="discover-grid" [class.has-feature]="showFeatureTile" *ngIf="!errorMessage">
+        <ng-container *ngFor="let item of gridItems; let i = index">
+          <ng-container *ngIf="item.type === 'ad'">
+            <ui-promo-banner [ad]="item.data" [feature]="showFeatureTile && i === 0" (adClick)="adClick.emit($event)"></ui-promo-banner>
+          </ng-container>
+          <ng-container *ngIf="item.type === 'book'">
+            <ui-book-tile
+              [feature]="showFeatureTile && i === 0"
+              [title]="item.data.title || ('home.unknownBook' | t)"
+              [author]="item.data.authors"
+              [isbn]="item.data.isbn"
+              [coverUrl]="item.data.cover_url"
+              [sellerCount]="sellerCountFor(item.data.conditions)"
+              [conditions]="item.data.conditions"
+              [minPrice]="item.data.avg_price"
+              [isAveragePrice]="isAveragePrice(item.data.conditions)"
+              [link]="['/book']"
+              [linkParams]="bookLinkParams(item.data)"
+              (tileClick)="cacheBook(item.data)"
+            ></ui-book-tile>
+          </ng-container>
+        </ng-container>
 
         <!-- Cold start: a grid with two books in it reads as "nobody is here".
              Filling the remaining columns with a supply-side invitation turns
@@ -72,6 +79,10 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       gap: var(--space-6) var(--space-5);
       align-items: start;
     }
+    
+    @media (max-width: 768px) {
+      
+    }
     /* The oversized first tile only reads as deliberate hierarchy when there
        are enough siblings for it to tower over. Two conditions gate it: enough
        books (see showFeatureTile) and enough columns. Spanning 2 of 3 columns
@@ -80,7 +91,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
        rest down. At 800px the grid holds four 180px tracks, so the feature
        covers half the row and the others still sit beside it. */
     @container (min-width: 800px) {
-      .discover-grid.has-feature ui-book-tile:first-child {
+      .discover-grid.has-feature > *:first-child {
         grid-column: span 2;
         grid-row: span 2;
       }
@@ -142,6 +153,9 @@ export class UiRecentListings {
   get limit() { return this._limit; }
   private _limit = 200;
 
+  @Input() ads: any[] = [];
+  @Output() adClick = new EventEmitter<any>();
+
   recentBooks: any[] = [];
   loading = true;
   errorMessage: string = '';
@@ -162,6 +176,20 @@ export class UiRecentListings {
       Three keeps the desktop row full without spilling a lone filler cell
       onto a second row. */
   private static readonly COLD_START_SLOTS = 3;
+
+  get gridItems(): any[] {
+    const items: any[] = [...this.recentBooks];
+    if (this.ads && this.ads.length) {
+      const sortedAds = [...this.ads].sort((a, b) => (a.slot_index || 1) - (b.slot_index || 1));
+      for (const ad of sortedAds) {
+        let insertIndex = (ad.slot_index || 1) - 1;
+        if (insertIndex < 0) insertIndex = 0;
+        if (insertIndex > items.length) insertIndex = items.length;
+        items.splice(insertIndex, 0, { type: 'ad', data: ad });
+      }
+    }
+    return items.map(item => item.type === 'ad' ? item : { type: 'book', data: item });
+  }
 
   get showFeatureTile(): boolean {
     return this.recentBooks.length >= UiRecentListings.FEATURE_MIN_BOOKS;

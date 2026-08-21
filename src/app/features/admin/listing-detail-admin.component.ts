@@ -14,7 +14,7 @@ import { UiSelect } from '../../shared/ui/select.component';
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
-    <div *ngIf="loading" class="empty-state">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
     <div class="detail-card" *ngIf="!loading && listing">
       <h2>{{ listing.book?.title }}</h2>
@@ -37,7 +37,7 @@ import { UiSelect } from '../../shared/ui/select.component';
   styles: [`
     .back-link { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
     .back-link:hover { color: var(--accent); }
-    .detail-card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 24px; max-width: 520px; }
+    .detail-card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 24px; max-width: 520px; box-shadow: var(--shadow-card-lg); }
     .detail-card h2 { margin-top: 0; }
     .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     .field { display: flex; flex-direction: column; gap: 2px; }
@@ -46,7 +46,6 @@ import { UiSelect } from '../../shared/ui/select.component';
     .inline-msg { margin: 12px 0; font-size: 14px; }
     .inline-msg.error { color: #dc2626; }
     .inline-msg.ok { color: #16a34a; }
-    .empty-state { padding: 24px; text-align: center; color: var(--muted); }
   `]
 })
 export class AdminListingDetailComponent implements OnInit {

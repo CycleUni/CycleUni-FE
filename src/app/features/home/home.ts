@@ -5,7 +5,6 @@ import { UiButton } from '../../shared/ui/button.component';
 import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { UiErrorState } from '../../shared/ui/error-state.component';
-import { UiPromoBanner } from '../../shared/ui/promo-banner.component';
 import { HomeHero, HeroCover } from './home-hero.component';
 import { UiCategoryRail } from '../../shared/ui/category-rail.component';
 import { ListingService } from '../../core/services/listing.service';
@@ -19,14 +18,15 @@ import { SchoolStateService } from '../../core/services/school-state.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, UiPromoBanner, TPipe],
+  imports: [CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, TPipe],
   template: `
       <app-home-hero [covers]="heroCovers"></app-home-hero>
 
       <!-- Categories: show skeleton during load, then the real content, never blank -->
       <div class="two-cols container" [class.hero-has-covers]="heroCovers.length > 0">
         <section class="col-main" aria-labelledby="recent-listings-heading">
-          <ui-recent-listings [school]="currentSchool" (booksLoaded)="onRecentBooksLoaded($event)"></ui-recent-listings>
+          
+          <ui-recent-listings [school]="currentSchool" (booksLoaded)="onRecentBooksLoaded($event)" [ads]="activeAds" (adClick)="onAdClick($event)"></ui-recent-listings>
         </section>
 
         <section class="col-side" aria-labelledby="waitlist-heading">
@@ -74,13 +74,6 @@ import { SchoolStateService } from '../../core/services/school-state.service';
           <ui-category-rail [categories]="categories"></ui-category-rail>
           <p class="empty-note" *ngIf="categories?.length === 0">{{ 'home.noCategories' | t }}</p>
         </ng-container>
-      </section>
-
-      <!-- Promotions sit below the catalogue, not above it. At the top of the
-           page this banner was the single largest element on the first screen
-           and pushed every real listing past the fold. -->
-      <section class="section container" *ngIf="activeAds?.length" [attr.aria-label]="'home.promoLabel' | t">
-        <ui-promo-banner [ads]="activeAds" (adClick)="onAdClick($event)"></ui-promo-banner>
       </section>
 
       <!-- The three "how it works" steps below are entirely buyer-side
