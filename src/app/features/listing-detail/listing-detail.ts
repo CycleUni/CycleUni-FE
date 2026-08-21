@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, effect, ViewChild, ElementRef, PLATFORM_ID, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, effect, ViewChild, ElementRef, PLATFORM_ID, NgZone, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ListingService } from '../../core/services/listing.service';
@@ -10,6 +10,7 @@ import { TPipe, I18nService } from '../../core/i18n.service';
 import { AuthStore } from '../../core/auth.store';
 import { BookCoverPipe } from '../../shared/pipes/book-cover.pipe';
 import { AccountService } from '../../core/services/account.service';
+import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ReportModalComponent } from './report-modal.component';
 
 @Component({
@@ -19,7 +20,7 @@ import { ReportModalComponent } from './report-modal.component';
   templateUrl: './listing-detail.html',
   styleUrls: ['./listing-detail.css']
 })
-export class ListingDetail implements OnInit {
+export class ListingDetail implements OnInit, OnDestroy {
   @ViewChild('carouselTrack') carouselTrack?: ElementRef<HTMLDivElement>;
 
   listing: any = null;
@@ -35,6 +36,10 @@ export class ListingDetail implements OnInit {
   reportConfirmationMsg = '';
   private currentUserId: string | number | null = null;
 
+  /** Scroll depth milestones already fired for the current listing. */
+  private firedScrollThresholds = new Set<number>();
+  private readonly SCROLL_THRESHOLDS: Array<25 | 50 | 75 | 90> = [25, 50, 75, 90];
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private listingService = inject(ListingService);
@@ -45,6 +50,7 @@ export class ListingDetail implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private ngZone = inject(NgZone);
   readonly i18n = inject(I18nService);
+  private ga = inject(GoogleAnalyticsService);
 
   private currentId: string | null = null;
 
@@ -83,6 +89,7 @@ export class ListingDetail implements OnInit {
         this.isLoading = true;
         this.otherListings = [];
         this.errorMsg = '';
+        this.firedScrollThresholds.clear(); // reset thresholds for new listing
         this.cdr.markForCheck();
         this.loadListing(newId);
         // Fallback in case the API hangs. Running outside Angular's zone
@@ -112,6 +119,14 @@ export class ListingDetail implements OnInit {
       next: (data) => {
         this.listing = data;
         this.isLoading = false;
+        this.ga.trackViewItem({
+          bookId: data.book,
+          isbn: data.isbn,
+          listingId: data.id,
+          name: data.book_title,
+          category: data.category_name,
+          price: data.price
+        });
         
         // Setup photos array (combine user uploaded photos + book cover)
         this.allPhotos = [];
@@ -160,6 +175,7 @@ export class ListingDetail implements OnInit {
       return;
     }
     if (this.listing?.id) {
+      this.ga.trackEvent('click_buy_now', { item_id: this.listing.id });
       this.router.navigate(['/checkout', this.listing.id]);
     }
   }
@@ -178,6 +194,7 @@ export class ListingDetail implements OnInit {
       return;
     }
     if (this.listing?.id) {
+      this.ga.trackContactSeller(this.listing.id);
       this.router.navigate(['/messages'], { queryParams: { listing: this.listing.id } });
     }
   }
@@ -239,11 +256,34 @@ export class ListingDetail implements OnInit {
 
   onReportSubmitted() {
     this.showReportModal = false;
+    if (this.listing?.id) {
+      this.ga.trackEvent('report_listing', { item_id: this.listing.id });
+    }
     this.reportConfirmationMsg = this.i18n.t('moderation.reportSubmitted');
     this.cdr.markForCheck();
   }
 
   trackById(index: number, item: any): any {
     return item.id || index;
+  }
+
+  /** Track scroll depth milestones for listing-detail pages. */
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    if (!isPlatformBrowser(this.platformId) || this.isLoading) return;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    if (docHeight <= 0) return;
+    const percent = Math.floor((scrollTop / docHeight) * 100);
+    for (const threshold of this.SCROLL_THRESHOLDS) {
+      if (percent >= threshold && !this.firedScrollThresholds.has(threshold)) {
+        this.firedScrollThresholds.add(threshold);
+        this.ga.trackScrollDepth(threshold);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.firedScrollThresholds.clear();
   }
 }

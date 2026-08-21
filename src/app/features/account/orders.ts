@@ -11,6 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ReviewModalComponent } from './review-modal.component';
 import { MeetupModalComponent } from './meetup-modal.component';
 import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
+import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 
 @Component({
   selector: 'app-orders',
@@ -219,6 +220,7 @@ export class OrdersComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private i18n = inject(I18nService);
+  private ga = inject(GoogleAnalyticsService);
 
   get filteredBoughtOrders() {
     if (!this.searchQuery) return this.boughtOrders;
@@ -370,6 +372,9 @@ export class OrdersComponent implements OnInit {
     if (!order.id) return;
     this.orderService.updateOrderStatus(order.id, status, cancelReason, meetupTime, meetupLocation).subscribe({
       next: (updatedOrder) => {
+        if (status === 'cancelled') {
+          this.ga.trackCancelOrder(order.id, cancelReason);
+        }
         // Find and replace - MERGE updated fields with existing order
         if (this.activeTab === 'buying') {
           const idx = this.boughtOrders.findIndex(o => o.id === order.id);
@@ -423,6 +428,7 @@ export class OrdersComponent implements OnInit {
       if (this.currentReviewOrderRef) {
         this.currentReviewOrderRef.has_reviewed = true;
       }
+      this.ga.trackSubmitReview(this.currentReviewOrderRef?.id);
       alert(this.i18n.t('order.reviewSubmitted'));
       this.cdr.markForCheck();
     }

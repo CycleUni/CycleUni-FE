@@ -12,6 +12,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { SchoolStateService } from '../../core/services/school-state.service';
 import { MetadataService } from '../../core/services/metadata.service';
+import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -353,6 +354,7 @@ export class Search implements OnInit {
   private i18n = inject(I18nService);
   private schoolStateService = inject(SchoolStateService);
   private metadataService = inject(MetadataService);
+  private ga = inject(GoogleAnalyticsService);
 
   constructor(private route: ActivatedRoute, private router: Router) {
     effect(() => { this.i18n.lang(); this.loadMetadata(); });
@@ -407,6 +409,9 @@ export class Search implements OnInit {
         this.googleUnavailable = !!data.google_unavailable;
         this.loading = false;
         this.fetchError = false;
+        if (this.activeQuery || this.category || this.course) {
+          this.ga.trackSearch(this.activeQuery || `${this.category} ${this.course}`.trim(), this.totalCount, this.currentSchool);
+        }
         this.cdr.markForCheck();
       },
       error: () => {

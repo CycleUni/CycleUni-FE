@@ -12,6 +12,7 @@ import { ListingService } from '../../core/services/listing.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { AuthStore } from '../../core/auth.store';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
@@ -48,6 +49,7 @@ export class Sell implements OnInit, OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private ga = inject(GoogleAnalyticsService);
 
   category = '';
   categoryOptions: any[] = [];
@@ -112,6 +114,7 @@ export class Sell implements OnInit, OnDestroy {
     this.listingService.uploadPhoto(file).subscribe({
       next: (res) => {
         this.uploadedPhotos.push(res.url);
+        this.ga.trackEvent('upload_listing_photo');
         this.isUploading = false;
         this.cdr.markForCheck();
       },
@@ -231,6 +234,7 @@ export class Sell implements OnInit, OnDestroy {
     this.bookService.searchBooks(this.searchQuery, '', '', '', 1, this.engine).subscribe({
       next: (data) => {
         this.isCheckingIsbn = false;
+        this.ga.trackEvent('isbn_lookup', { query: this.searchQuery, engine: this.engine });
         const items = data.results || data;
         if (items && items.length > 0) {
           this.searchResults = items;
@@ -316,6 +320,7 @@ export class Sell implements OnInit, OnDestroy {
 
       this.listingService.createListing(payload).subscribe({
         next: () => {
+          this.ga.trackPublishListing(this.category, this.condition, this.price);
           this.isSubmitting = false;
           this.step = 4;
           this.cdr.markForCheck();

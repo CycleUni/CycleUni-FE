@@ -8,6 +8,7 @@ import { UiSelect } from '../../shared/ui/select.component';
 import { ListingService } from '../../core/services/listing.service';
 import { OrderService } from '../../core/services/order.service';
 import { MessageService } from '../../core/services/message.service';
+import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 
 @Component({
@@ -124,6 +125,7 @@ export class CheckoutComponent implements OnInit {
   private messageService = inject(MessageService);
   readonly i18n = inject(I18nService);
   private cdr = inject(ChangeDetectorRef);
+  private ga = inject(GoogleAnalyticsService);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -140,6 +142,13 @@ export class CheckoutComponent implements OnInit {
       next: (data) => {
         this.listing = data;
         this.isLoading = false;
+        this.ga.trackBeginCheckout({
+          listingId: data.id,
+          bookId: data.book,
+          isbn: data.isbn,
+          itemName: data.book_title,
+          price: data.price
+        });
         this.cdr.markForCheck();
       },
       error: () => {
@@ -170,6 +179,17 @@ export class CheckoutComponent implements OnInit {
 
     this.orderService.createOrder(orderData).subscribe({
       next: (order) => {
+        this.ga.trackPurchase(
+          order.id,
+          this.listing?.price,
+          'TWD',
+          [{
+            item_id: this.listing?.isbn || (this.listing?.book != null ? String(this.listing.book) : ''),
+            item_name: this.listing?.book_title,
+            price: this.listing?.price,
+            listing_id: this.listing?.id
+          }]
+        );
         this.router.navigate(['/checkout/success']);
       },
       error: (err) => {
@@ -214,6 +234,7 @@ export class CheckoutComponent implements OnInit {
 
   contactSeller() {
     if (!this.listingId) return;
+    this.ga.trackEvent('checkout_to_chat', { listing_id: this.listingId });
     this.messageService.startConversation(this.listingId).subscribe({
       next: (conv) => {
         this.router.navigate(['/messages'], { queryParams: { conversation: conv.id } });

@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from '../../core/services/message.service';
 import { AuthStore } from '../../core/auth.store';
 import { OrderService } from '../../core/services/order.service';
+import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { Subscription } from 'rxjs';
@@ -58,6 +59,7 @@ export class Messages implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private http = inject(HttpClient);
   private mobileLayout = inject(MobileLayoutService);
+  private ga = inject(GoogleAnalyticsService);
   private wsSubscription?: Subscription;
   private deletionSubscription?: Subscription;
   private ackSubscription?: Subscription;
@@ -401,6 +403,7 @@ export class Messages implements OnInit, OnDestroy {
   private trySend(msg: any) {
     const sent = this.messageService.sendEdgeMessage(msg.body, msg.message_type || 'text', msg.metadata);
     if (sent) {
+      this.ga.trackSendMessage(this.activeChat?.id);
       // Resolved later by realTimeAcks$ (success) or sendErrors$ (failure).
       this.pendingTempIds.push(msg.id);
     } else {

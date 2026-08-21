@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { GoogleAnalyticsService } from './services/google-analytics.service';
 
 export interface AuthUser {
   id: string | number;
@@ -81,6 +82,13 @@ export class AuthStore {
     this.http.get<AuthUser>('/auth/me/').pipe(
       tap(profile => {
         this._user.set(profile);
+        // Identify user in GA4 for User Explorer & cross-device reports
+        this.ga.setUserId(profile.id);
+        this.ga.setUserProperties({
+          school:      profile.school_name ?? null,
+          is_verified: !!profile.verified_at,
+          role:        null   // enriched later if needed
+        });
       }),
       catchError(err => {
         if (err.status === 401) {
@@ -112,6 +120,7 @@ export class AuthStore {
 
   private router = inject(Router);
   private injector = inject(Injector);
+  private ga = inject(GoogleAnalyticsService);
 
   // Lazy HttpClient: avoids circular dependency with HTTP_INTERCEPTORS.
   // AuthInterceptor → AuthStore → HttpClient → HTTP_INTERCEPTORS → AuthInterceptor
@@ -138,6 +147,8 @@ export class AuthStore {
     this._isAuthenticated.set(false);
     this._user.set(null);
     this.fetchedForToken = null;
+    // Clear GA4 user identity on logout
+    this.ga.setUserId(null);
     this.router.navigate(['/account']);
   }
 
@@ -168,6 +179,7 @@ export class AuthStore {
       tap(response => {
         if (response.access && response.refresh) {
           this.setAuth(response);
+          this.ga.trackLogin('Password');
         }
       })
     );
@@ -182,6 +194,7 @@ export class AuthStore {
       tap(response => {
         if (response.access && response.refresh) {
           this.setAuth(response);
+          this.ga.trackLogin('Google');
         }
       })
     );
@@ -193,11 +206,19 @@ export class AuthStore {
       password,
       first_name: firstName,
       last_name: lastName
-    });
+    }).pipe(
+      tap(() => {
+        this.ga.trackSignUp('Email');
+      })
+    );
   }
 
   requestEduVerification(eduEmail: string): Observable<any> {
-    return this.http.post<any>('/auth/verify/request/', { edu_email: eduEmail });
+    return this.http.post<any>('/auth/verify/request/', { edu_email: eduEmail }).pipe(
+      tap(() => {
+        this.ga.trackEduVerificationRequest();
+      })
+    );
   }
 
   verifyEmail(token: string): Observable<any> {
@@ -209,6 +230,7 @@ export class AuthStore {
       tap(response => {
         if (response.access && response.refresh) {
           this.setAuth(response);
+          this.ga.trackEvent('sign_up_verified');
         }
       })
     );
