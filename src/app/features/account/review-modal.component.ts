@@ -11,67 +11,49 @@ import { OrderService } from '../../core/services/order.service';
   standalone: true,
   imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe],
   template: `
-    <div class="modal-overlay" (click)="close()"></div>
-    <div class="modal-content app-modal">
-      <h3 class="app-modal-title">{{ 'order.reviewTitle' | t }}</h3>
-      
-      <div class="modal-body app-modal-body">
-        <p style="margin-bottom: 16px;" class="muted">
-          {{ 'order.reviewDesc' | t }}
-        </p>
+    <div class="app-modal-overlay" (click)="close()">
+      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()">
+        <h3 class="app-modal-title">{{ 'order.reviewTitle' | t }}</h3>
+        
+        <div class="app-modal-body">
+          <p style="margin-bottom: 16px;" class="muted">
+            {{ 'order.reviewDesc' | t }}
+          </p>
 
-        <div class="checkbox-group" style="margin-bottom: 24px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--flag); font-weight: 500;">
-            <input type="checkbox" [(ngModel)]="isNoShow" (change)="onNoShowChange()">
-            {{ 'order.noShowReport' | t }}
-          </label>
-        </div>
+          <div class="checkbox-group" style="margin-bottom: 24px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--flag); font-weight: 500;">
+              <input type="checkbox" [(ngModel)]="isNoShow" (change)="onNoShowChange()">
+              {{ 'order.noShowReport' | t }}
+            </label>
+          </div>
 
-        <div *ngIf="!isNoShow" style="margin-bottom: 16px;">
-          <label style="display: block; margin-bottom: 8px; font-weight: 500;">{{ 'order.rating' | t }}</label>
-          <div class="stars">
-            <span *ngFor="let star of [1,2,3,4,5]" 
-                  (click)="rating = star"
-                  [class.active]="star <= rating"
-                  class="star">★</span>
+          <div *ngIf="!isNoShow" style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">{{ 'order.rating' | t }}</label>
+            <div class="stars">
+              <span *ngFor="let star of [1,2,3,4,5]" 
+                    (click)="rating = star"
+                    [class.active]="star <= rating"
+                    class="star">★</span>
+            </div>
+          </div>
+
+          <ui-input [label]="'order.comment' | t" [(ngModel)]="comment" [placeholder]="'order.optional' | t"></ui-input>
+
+          <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
+            {{ errorMsg }}
           </div>
         </div>
 
-        <ui-input [label]="'order.comment' | t" [(ngModel)]="comment" [placeholder]="'order.optional' | t"></ui-input>
-
-        <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
-          {{ errorMsg }}
+        <div class="app-modal-actions">
+          <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button (onClick)="submit()" [disabled]="isSubmitting || (!isNoShow && rating === 0)">
+            {{ isSubmitting ? ('order.processing' | t) : ('order.submit' | t) }}
+          </ui-button>
         </div>
-      </div>
-
-      <div class="actions app-modal-actions">
-        <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">{{ 'common.cancel' | t }}</ui-button>
-        <ui-button (onClick)="submit()" [disabled]="isSubmitting || (!isNoShow && rating === 0)">
-          {{ isSubmitting ? ('order.processing' | t) : ('order.submit' | t) }}
-        </ui-button>
       </div>
     </div>
   `,
   styles: [`
-    :host {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      position: relative;
-      width: 100%;
-      max-width: 400px;
-      z-index: 1001;
-    }
     h3 { margin-bottom: 12px; }
     .stars {
       display: flex;

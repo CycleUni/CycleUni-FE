@@ -149,6 +149,7 @@ export class AuthStore {
     this.fetchedForToken = null;
     // Clear GA4 user identity on logout
     this.ga.setUserId(null);
+    this.ga.clearUserProperties();
     this.router.navigate(['/account']);
   }
 

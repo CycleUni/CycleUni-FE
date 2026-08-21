@@ -139,22 +139,23 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
       font-size: 14px;
     }
     .badge {
-      padding: 4px 8px;
+      padding: 3px 7px;
       border-radius: 12px;
       font-size: 12px;
       font-weight: 700;
     }
-    .badge.pending { background: #e2e3e5; color: #383d41; }
-    .badge.accepted { background: #fff3cd; color: #856404; }
-    .badge.handed_over { background: #cce5ff; color: #004085; }
-    .badge.completed { background: #d4edda; color: #155724; }
-    .badge.cancelled { background: #f8d7da; color: #721c24; }
+    .badge.pending { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
+    .badge.accepted { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid color-mix(in srgb, var(--warn-ink) 40%, transparent); }
+    .badge.handed_over { background: var(--accent-soft); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+    .badge.completed { background: var(--success-light); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 40%, transparent); }
+    .badge.cancelled { background: var(--danger-light); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); }
     
     .exclusive-conflict {
-      background: #cce5ff;
-      color: #004085;
+      background: var(--warn-bg);
+      color: var(--warn-ink);
       padding: 12px;
       border-radius: 4px;
+      border: 1px solid color-mix(in srgb, var(--warn-ink) 40%, transparent);
       margin-bottom: 16px;
       display: flex;
       justify-content: space-between;

@@ -107,7 +107,7 @@ import { combineLatest, Subscription } from 'rxjs';
           <h2 class="section-heading" *ngIf="activeQuery">{{ 'search.resultsFor' | t:{q: activeQuery} }}</h2>
           <h2 class="section-heading" *ngIf="!activeQuery && category">{{ 'search.categoryResults' | t }}</h2>
           <p class="scoped-count" *ngIf="(activeQuery || category) && !loading && !fetchError && filteredResults.length > 0">
-            <ng-container *ngIf="currentSchool">{{ 'search.foundCountScoped' | t:{school: currentSchoolLabel, n: filteredResults.length} }}</ng-container>
+            <ng-container *ngIf="currentSchool">{{ 'search.foundCountScoped' | t:{school: currentSchoolLabel, n: localResultsCount} }}</ng-container>
             <ng-container *ngIf="!currentSchool">{{ 'search.foundCountAll' | t:{n: filteredResults.length} }}</ng-container>
           </p>
 
@@ -346,6 +346,10 @@ export class Search implements OnInit {
       }
       return true;
     });
+  }
+
+  get localResultsCount(): number {
+    return this.filteredResults.filter(item => item.localActiveListings > 0).length;
   }
 
   private bookService = inject(BookService);

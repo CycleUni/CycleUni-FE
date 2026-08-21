@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, effect, ViewChild, ElementRef, PLATFORM_ID, NgZone, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, effect, ViewChild, ElementRef, PLATFORM_ID, NgZone } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ListingService } from '../../core/services/listing.service';
@@ -38,6 +38,7 @@ export class ListingDetail implements OnInit, OnDestroy {
 
   /** Scroll depth milestones already fired for the current listing. */
   private firedScrollThresholds = new Set<number>();
+  private scrollHandler?: () => void;
   private readonly SCROLL_THRESHOLDS: Array<25 | 50 | 75 | 90> = [25, 50, 75, 90];
 
   private route = inject(ActivatedRoute);
@@ -111,6 +112,13 @@ export class ListingDetail implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.ngZone.runOutsideAngular(() => {
+        this.scrollHandler = () => this.onWindowScroll();
+        window.addEventListener('scroll', this.scrollHandler, { passive: true });
+      });
+    }
   }
 
 
@@ -268,7 +276,6 @@ export class ListingDetail implements OnInit, OnDestroy {
   }
 
   /** Track scroll depth milestones for listing-detail pages. */
-  @HostListener('window:scroll')
   onWindowScroll(): void {
     if (!isPlatformBrowser(this.platformId) || this.isLoading) return;
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -284,6 +291,10 @@ export class ListingDetail implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.scrollHandler) {
+      window.removeEventListener('scroll', this.scrollHandler);
+      this.scrollHandler = undefined;
+    }
     this.firedScrollThresholds.clear();
   }
 }

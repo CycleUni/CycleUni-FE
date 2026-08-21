@@ -11,46 +11,31 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   standalone: true,
   imports: [CommonModule, FormsModule, UiButton, TPipe],
   template: `
-    <div class="admin-modal-overlay" (click)="close()"></div>
-    <div class="modal-content">
-      <h3>{{ 'admin.forceCancelTitle' | t }}</h3>
+    <div class="app-modal-overlay" (click)="close()">
+      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()">
+        <h3 class="app-modal-title">{{ 'admin.forceCancelTitle' | t }}</h3>
 
-      <div class="textarea-wrapper">
-        <label>{{ 'admin.forceCancelReasonLabel' | t }}</label>
-        <textarea [(ngModel)]="reason" [placeholder]="'admin.forceCancelReasonPlaceholder' | t" rows="3"></textarea>
-      </div>
+        <div class="app-modal-body">
+          <div class="textarea-wrapper">
+            <label>{{ 'admin.forceCancelReasonLabel' | t }}</label>
+            <textarea [(ngModel)]="reason" [placeholder]="'admin.forceCancelReasonPlaceholder' | t" rows="3"></textarea>
+          </div>
 
-      <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
-        {{ errorMsg }}
-      </div>
+          <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
+            {{ errorMsg }}
+          </div>
+        </div>
 
-      <div class="actions" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px;">
-        <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">{{ 'common.cancel' | t }}</ui-button>
-        <ui-button (onClick)="submit()" [disabled]="isSubmitting || reason.trim().length < 3">
-          {{ isSubmitting ? ('admin.saving' | t) : ('admin.forceCancelSubmit' | t) }}
-        </ui-button>
+        <div class="app-modal-actions">
+          <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button (onClick)="submit()" [disabled]="isSubmitting || reason.trim().length < 3">
+            {{ isSubmitting ? ('admin.saving' | t) : ('admin.forceCancelSubmit' | t) }}
+          </ui-button>
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    :host {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
-      position: relative;
-      background: var(--paper);
-      padding: 24px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 400px;
-      z-index: 1001;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
     h3 { margin-top: 0; margin-bottom: 12px; }
     .textarea-wrapper {
       display: flex;

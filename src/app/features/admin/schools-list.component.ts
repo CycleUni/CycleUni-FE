@@ -50,25 +50,27 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
       <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="currentPage" (pageChange)="loadPage($event)"></ui-pagination>
     </div>
 
-    <div class="admin-modal-overlay" *ngIf="showCreateModal">
-      <div class="admin-modal">
-        <h3>{{ 'admin.addSchool' | t }}</h3>
-        <div class="form-group">
-          <label>{{ 'admin.schoolName' | t }}</label>
-          <input type="text" class="admin-form-control" [(ngModel)]="newSchool.name">
-        </div>
-        <div class="form-group">
-          <label>{{ 'admin.colDomain' | t }}</label>
-          <input type="text" class="admin-form-control" [(ngModel)]="newSchool.email_domain" [placeholder]="'admin.domainDesc' | t">
-        </div>
-        <div class="form-group">
-          <label>{{ 'admin.translationsSection' | t }}</label>
-          <div class="translation-row">
-            <span class="lang-tag">zh-TW</span>
-            <input type="text" class="admin-form-control" [(ngModel)]="newSchoolZhTwName" [placeholder]="'admin.schoolName' | t">
+    <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
+      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()">
+        <h3 class="app-modal-title">{{ 'admin.addSchool' | t }}</h3>
+        <div class="app-modal-body">
+          <div class="form-group">
+            <label>{{ 'admin.schoolName' | t }}</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="newSchool.name">
+          </div>
+          <div class="form-group">
+            <label>{{ 'admin.colDomain' | t }}</label>
+            <input type="text" class="admin-form-control" [(ngModel)]="newSchool.email_domain" [placeholder]="'admin.domainDesc' | t">
+          </div>
+          <div class="form-group">
+            <label>{{ 'admin.translationsSection' | t }}</label>
+            <div class="translation-row">
+              <span class="lang-tag">zh-TW</span>
+              <input type="text" class="admin-form-control" [(ngModel)]="newSchoolZhTwName" [placeholder]="'admin.schoolName' | t">
+            </div>
           </div>
         </div>
-        <div class="admin-modal-actions">
+        <div class="app-modal-actions">
           <button class="admin-btn admin-btn-secondary" (click)="showCreateModal = false">{{ 'common.cancel' | t }}</button>
           <button class="admin-btn admin-btn-primary" (click)="createSchool()">{{ 'admin.save' | t }}</button>
         </div>
@@ -83,7 +85,6 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     </app-bulk-import-modal>
   `,
   styles: [`
-    .admin-modal { width: 400px; max-width: 90%; }
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }

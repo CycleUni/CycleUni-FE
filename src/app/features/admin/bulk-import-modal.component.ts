@@ -11,62 +11,65 @@ import { TPipe } from '../../core/i18n.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, TPipe],
   template: `
-    <div class="admin-modal-overlay" *ngIf="show">
-      <div class="admin-modal import-modal">
-        <h3>{{ 'admin.bulkImport' | t }}</h3>
+    <div class="app-modal-overlay" *ngIf="show" (click)="close.emit()">
+      <div class="app-modal import-modal" (click)="$event.stopPropagation()">
+        <h3 class="app-modal-title">{{ 'admin.bulkImport' | t }}</h3>
 
-        <div *ngIf="step === 'input'">
-          <div class="form-group">
-            <label>JSON URL (optional)</label>
-            <div class="url-input-row">
-              <input type="text" class="input" [(ngModel)]="jsonUrl" placeholder="https://example.com/data.json">
-              <button type="button" class="admin-btn admin-btn-sm admin-btn-outline" (click)="fetchJson()" [disabled]="loading">
-                {{ loading && loadingAction === 'fetch' ? 'Fetching...' : 'Fetch' }}
-              </button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Or Paste JSON</label>
-            <textarea class="input json-textarea" [(ngModel)]="jsonText" [placeholder]="sampleFormat"></textarea>
-          </div>
-          <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
-        </div>
-
-        <div *ngIf="step === 'preview'">
-          <div class="summary-section">
-            <h4>Summary</h4>
-            <ul class="summary-list">
-              <li>New: {{ newCount }}</li>
-              <li>Modified: {{ modifiedCount }}</li>
-              <li>Unchanged: {{ unchangedCount }}</li>
-            </ul>
-            <div class="hint" *ngIf="totalCount === 0">No valid changes found in preview result.</div>
-          </div>
-          <div class="warning" *ngIf="warningMsg">{{ warningMsg }}</div>
-          <div class="diff-section" *ngIf="diff.new?.length">
-            <h4>New Items ({{ diff.new.length }})</h4>
-            <div class="diff-box">
-              <pre *ngFor="let text of previewNewItems">{{ text }}</pre>
-            </div>
-            <div class="hint" *ngIf="hiddenNewCount > 0">{{ hiddenNewCount }} more new item(s) not shown.</div>
-          </div>
-          <div class="diff-section" *ngIf="diff.modified?.length">
-            <h4>Modified Items ({{ diff.modified.length }})</h4>
-            <div class="diff-box diff-modified">
-              <div *ngFor="let item of previewModifiedItems" class="diff-item">
-                <div class="old">Old: <pre>{{ item.oldText }}</pre></div>
-                <div class="new">New: <pre>{{ item.newText }}</pre></div>
+        <div class="app-modal-body">
+          <div *ngIf="step === 'input'">
+            <div class="form-group">
+              <label>JSON URL (optional)</label>
+              <div class="url-input-row">
+                <input type="text" class="input" [(ngModel)]="jsonUrl" placeholder="https://example.com/data.json">
+                <button type="button" class="admin-btn admin-btn-sm admin-btn-outline" (click)="fetchJson()" [disabled]="loading">
+                  {{ loading && loadingAction === 'fetch' ? 'Fetching...' : 'Fetch' }}
+                </button>
               </div>
             </div>
-            <div class="hint" *ngIf="hiddenModifiedCount > 0">{{ hiddenModifiedCount }} more modified item(s) not shown.</div>
+            <div class="form-group">
+              <label>Or Paste JSON</label>
+              <textarea class="input json-textarea" [(ngModel)]="jsonText" [placeholder]="sampleFormat"></textarea>
+            </div>
+            <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
           </div>
-          <div class="diff-section" *ngIf="diff.unchanged?.length">
-            <h4>Unchanged Items ({{ diff.unchanged.length }})</h4>
+
+          <div *ngIf="step === 'preview'">
+            <div class="summary-section">
+              <h4>Summary</h4>
+              <ul class="summary-list">
+                <li>New: {{ newCount }}</li>
+                <li>Modified: {{ modifiedCount }}</li>
+                <li>Unchanged: {{ unchangedCount }}</li>
+              </ul>
+              <div class="hint" *ngIf="totalCount === 0">No valid changes found in preview result.</div>
+            </div>
+            <div class="warning" *ngIf="warningMsg">{{ warningMsg }}</div>
+            <div class="diff-section" *ngIf="diff.new?.length">
+              <h4>New Items ({{ diff.new.length }})</h4>
+              <div class="diff-box">
+                <pre *ngFor="let text of previewNewItems">{{ text }}</pre>
+              </div>
+              <div class="hint" *ngIf="hiddenNewCount > 0">{{ hiddenNewCount }} more new item(s) not shown.</div>
+            </div>
+            <div class="diff-section" *ngIf="diff.modified?.length">
+              <h4>Modified Items ({{ diff.modified.length }})</h4>
+              <div class="diff-box diff-modified">
+                <div *ngFor="let item of previewModifiedItems" class="diff-item">
+                  <div class="old">Old: <pre>{{ item.oldText }}</pre></div>
+                  <div class="new">New: <pre>{{ item.newText }}</pre></div>
+                </div>
+              </div>
+              <div class="hint" *ngIf="hiddenModifiedCount > 0">{{ hiddenModifiedCount }} more modified item(s) not shown.</div>
+            </div>
+            <div class="diff-section" *ngIf="diff.unchanged?.length">
+              <h4>Unchanged Items ({{ diff.unchanged.length }})</h4>
+            </div>
+            <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
           </div>
-          <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
+          <div class="loading-note" *ngIf="loading">{{ loadingText }}</div>
         </div>
 
-        <div class="admin-modal-actions">
+        <div class="app-modal-actions">
           <button type="button" class="admin-btn admin-btn-secondary" (click)="close.emit()">{{ 'common.cancel' | t }}</button>
           <button type="button" *ngIf="step === 'input'" class="admin-btn admin-btn-primary" (click)="preview()" [disabled]="loading">
             {{ loading && loadingAction === 'preview' ? 'Previewing...' : 'Preview' }}
@@ -75,12 +78,11 @@ import { TPipe } from '../../core/i18n.service';
             {{ loading && loadingAction === 'apply' ? 'Applying...' : 'Apply Changes' }}
           </button>
         </div>
-        <div class="loading-note" *ngIf="loading">{{ loadingText }}</div>
       </div>
     </div>
   `,
   styles: [`
-    .import-modal { background: var(--paper); padding: 24px; border-radius: 8px; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; }
+    .import-modal { width: 600px; max-width: 90%; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
     .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; font-family: inherit; }

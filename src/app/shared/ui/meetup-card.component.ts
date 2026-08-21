@@ -63,43 +63,33 @@ export type MeetupMessageType = 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'CANCEL' | 'C
     }
 
     /* Accept Card Variant (Green Success) */
-    .meetup-card.card-accept {
-      background-color: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-left: 4px solid #16a34a;
+    .meetup-card.card-accept, .meetup-card.card-complete {
+      background-color: var(--success-light);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--success);
     }
-    .meetup-card.card-accept .meetup-title {
-      color: #15803d;
+    .meetup-card.card-accept .meetup-title, .meetup-card.card-complete .meetup-title {
+      color: var(--success);
     }
 
     /* Decline Card Variant (Red Error) */
     .meetup-card.card-decline {
-      background-color: #fef2f2;
-      border: 1px solid #fecaca;
-      border-left: 4px solid #dc2626;
+      background-color: var(--danger-light);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--danger);
     }
     .meetup-card.card-decline .meetup-title {
-      color: #b91c1c;
+      color: var(--danger);
     }
 
     /* Cancel Card Variant (Muted Gray) */
     .meetup-card.card-cancel {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-left: 4px solid #94a3b8;
+      background-color: var(--paper-warm);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--muted);
     }
     .meetup-card.card-cancel .meetup-title {
-      color: #64748b;
-    }
-
-    /* Complete Card Variant (Green Success, reuses Accept color scheme) */
-    .meetup-card.card-complete {
-      background-color: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-left: 4px solid #16a34a;
-    }
-    .meetup-card.card-complete .meetup-title {
-      color: #15803d;
+      color: var(--muted);
     }
 
     .meetup-card-header {

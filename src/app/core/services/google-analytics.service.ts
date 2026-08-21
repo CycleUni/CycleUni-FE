@@ -227,7 +227,7 @@ export class GoogleAnalyticsService {
       (window as any).gtag('config', this.gaId, { user_id: String(userId) });
     } else {
       // Clear user_id on logout
-      (window as any).gtag('config', this.gaId, { user_id: undefined });
+      (window as any).gtag('config', this.gaId, { user_id: null });
     }
   }
 
@@ -245,6 +245,19 @@ export class GoogleAnalyticsService {
       school:      props.school      ?? undefined,
       is_verified: props.is_verified ?? undefined,
       role:        props.role        ?? undefined
+    });
+  }
+
+  /**
+   * Clear GA4 user properties on logout so anonymous browsing is not
+   * still attributed to the previous user's segment.
+   */
+  public clearUserProperties(): void {
+    if (!isPlatformBrowser(this.platformId) || !(window as any).gtag) return;
+    (window as any).gtag('set', 'user_properties', {
+      school: null,
+      is_verified: null,
+      role: null
     });
   }
 
