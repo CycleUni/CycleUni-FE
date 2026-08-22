@@ -3,6 +3,10 @@ const path = require('path');
 
 const envDir = path.join(__dirname, '../src/environments');
 
+if (!fs.existsSync(envDir)) {
+  fs.mkdirSync(envDir, { recursive: true });
+}
+
 const envConfigFile = `
 export const environment = {
   production: false,
@@ -19,19 +23,13 @@ export const environment = {
 };
 `;
 
-function writeIfChanged(filePath, content, label) {
-  let current = '';
-  try { current = fs.readFileSync(filePath, 'utf8'); } catch (e) {}
-  if (current !== content) {
-    fs.writeFileSync(filePath, content, { encoding: 'utf8' });
-    console.log(`${label} generated at ${filePath}`);
-  } else {
-    console.log(`${label} is already up-to-date.`);
-  }
+function writeFile(filePath, content, label) {
+  fs.writeFileSync(filePath, content, { encoding: 'utf8' });
+  console.log(`${label} generated at ${filePath}`);
 }
 
-writeIfChanged(path.join(envDir, 'environment.ts'), envConfigFile, 'environment.ts');
-writeIfChanged(path.join(envDir, 'environment.prod.ts'), prodConfigFile, 'environment.prod.ts');
+writeFile(path.join(envDir, 'environment.ts'), envConfigFile, 'environment.ts');
+writeFile(path.join(envDir, 'environment.prod.ts'), prodConfigFile, 'environment.prod.ts');
 
 // Update angular.json allowedHosts if NG_APP_ALLOWED_HOSTS is provided
 if (process.env.NG_APP_ALLOWED_HOSTS) {
