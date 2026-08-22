@@ -5,7 +5,18 @@
   <title>CycleUni - Campus Marketplace</title>
   <meta name="description" content="CycleUni is a second-hand book and item trading platform designed for university students, making campus resource recycling simple.">
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- interactive-widget=resizes-content: on Android Chrome the default
+       (resizes-visual) keeps the *layout* viewport pinned to the full screen
+       resolution when the on-screen keyboard opens — only the visual
+       viewport shrinks. Since 100dvh/flex sizing in this app is computed
+       against the layout viewport, that default makes the keyboard cover
+       the message input instead of the layout reflowing above it, i.e. the
+       input's position ends up governed by raw device resolution rather
+       than the real visible height. resizes-content makes the layout
+       viewport (and therefore 100dvh) shrink with the keyboard, matching
+       the "real page height, not device resolution" behavior the bottom
+       nav bar's 100dvh already relies on. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <meta name="theme-color" content="#1E5C46">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">

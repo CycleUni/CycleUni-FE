@@ -1,4 +1,4 @@
-import { Injectable, Injector, signal, inject, untracked } from '@angular/core';
+import { Injectable, Injector, signal, inject, untracked, runInInjectionContext } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -48,7 +48,13 @@ export class AuthStore {
         // persisted token. Deferred via setTimeout to break the construction
         // cycle — AuthStore → HttpClient → HTTP_INTERCEPTORS → AuthInterceptor
         // → AuthStore. Waiting one microtask lets all providers finish.
-        setTimeout(() => untracked(() => this.fetchUserProfile()), 0);
+        // Wrapped in runInInjectionContext: this fires as an independent
+        // macrotask that can land in the same browser task turn as the
+        // router's initial (possibly lazy-loaded) route resolution, and
+        // without an explicit context the nested first-time DI resolution
+        // inside fetchUserProfile() (HttpClient + interceptors) can race
+        // Angular's internal "current injector" tracking and throw NG0203.
+        setTimeout(() => runInInjectionContext(this.injector, () => untracked(() => this.fetchUserProfile())), 0);
       }
     }
 

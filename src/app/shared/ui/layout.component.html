@@ -1,5 +1,5 @@
     <div class="layout-wrapper" [class.is-full-bleed]="fullBleed">
-      <header class="app-header">
+      <header class="app-header" [class.hide-on-mobile-chat]="mobileLayout.hideBottomNav()">
         <div class="header-content">
           <div class="brand-area">
             <div class="logo"><a routerLink="/"><span class="logo-name">CycleUni</span><span class="logo-cn">易校網</span></a></div>

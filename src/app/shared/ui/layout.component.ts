@@ -124,7 +124,7 @@ export class UiLayout implements OnDestroy {
       this.unreadCount = count;
       this.cdr.markForCheck();
     });
-    
+
     // Automatically set the school to the user's verified school once the profile loads
     // (if they haven't manually chosen a school yet).
     effect(() => {

@@ -5,8 +5,26 @@
     }
     .layout-wrapper.is-full-bleed {
       height: 100vh;
-      height: 100dvh;
-      overflow: hidden;
+      /* 100svh is the small (toolbar-at-its-largest) viewport height — the
+         one value guaranteed correct from the very first paint on real
+         mobile browsers, unlike 100dvh which can briefly resolve against
+         the large/toolbar-collapsed size before a resize event corrects
+         it. */
+      height: 100svh;
+      /* Deliberately NOT overflow:hidden. `.message-input-area` inside
+         `/messages` is `position: fixed` (matching `.bottom-tab-bar`'s own
+         positioning below) so it tracks the real viewport bottom edge
+         directly instead of depending on this wrapper's height math being
+         exactly right — but a `position:fixed` descendant is still CLIPPED
+         by any ancestor's `overflow:hidden`, even though it's positioned
+         relative to the viewport, not that ancestor. With overflow:hidden
+         here, the tiniest gap between 100svh and the real visible height
+         (which real devices do produce) sliced the fixed input off at this
+         wrapper's edge — same bug as before, just moved one layer up. The
+         flex chain's `min-height: 0` (messages.css `.message-history`)
+         is what actually keeps this shell from needing to scroll; overflow
+         doesn't need to be hidden on top of that as a second safety net,
+         and doing so was actively breaking the fixed input above. */
     }
     .app-header {
       border-bottom: 1px solid var(--line);
@@ -151,11 +169,15 @@
     }
     /* A route that owns the viewport: min-height:0 is what actually lets a
        flex child shrink below its content size, so the page itself stops
-       scrolling and the route scrolls its own panes instead. */
+       scrolling and the route scrolls its own panes instead. Deliberately
+       no overflow:hidden here (see the matching note on
+       .layout-wrapper.is-full-bleed) — this was the second of two
+       overflow:hidden ancestors clipping /messages' position:fixed input
+       area; removing only the outer one on .layout-wrapper left this one
+       still cutting it off one layer down. */
     .main-content.full-bleed {
       display: flex;
       min-height: 0;
-      overflow: hidden;
     }
     .bottom-tab-bar {
       display: none;
@@ -242,6 +264,15 @@
       /* Primary nav moves to the bottom tab bar on mobile; only the language
          switcher stays in the header. */
       .header-right .nav-links {
+        display: none;
+      }
+      /* Same signal that hides .bottom-tab-bar while a chat is open on
+         mobile (messages.ts sets this true) — the conversation's own
+         .chat-header takes over as the top bar, position:fixed to the
+         real viewport top the same way .message-input-area is fixed to
+         the real bottom. Two competing top:0 bars would overlap if both
+         stayed on screen. */
+      .app-header.hide-on-mobile-chat {
         display: none;
       }
       .main-content {

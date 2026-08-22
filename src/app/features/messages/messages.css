@@ -227,6 +227,19 @@
     }
 
     .message-history {
+      /* min-height:0 is required here even though overflow-y:auto is set:
+         per spec, a flex item's automatic minimum size should already
+         collapse to 0 when it has overflow other than visible, but WebKit
+         (Safari, including iOS) doesn't reliably apply that automatic
+         sizing rule — it keeps the item's content-based intrinsic min
+         height (i.e. the full height of the message list) as a floor and
+         pushes every ancestor up the flex chain taller than the viewport
+         to accommodate it. Chromium implements the spec rule correctly, so
+         this gap was invisible in desktop/emulated testing but produces
+         exactly the "page taller than the actual screen" symptom on real
+         iOS Safari once a chat is open. Explicit min-height:0 removes the
+         ambiguity on every engine. */
+      min-height: 0;
       flex: 1;
       padding: 24px;
       overflow-y: auto;
@@ -330,6 +343,14 @@
     }
 
     .message-input-area {
+      /* Base default: a relative containing block for .upload-progress's
+         position:absolute below. The mobile media query further down
+         overrides this to `fixed`, but that override previously lost to a
+         second, later `.message-input-area { position: relative }` rule
+         near the bottom of this file (same specificity — last one in
+         source order wins) that was silently clobbering it on every mobile
+         width. Declaring it once here removes that duplicate/conflict. */
+      position: relative;
       padding: 16px;
       border-top: 1px solid var(--line);
       display: flex;
@@ -373,14 +394,66 @@
       .back-btn {
         display: inline-block;
       }
+      /* Fixed the same way .message-input-area is fixed to the real bottom
+         edge (see that rule below): scrolling the message list was
+         dragging this along with it whenever the page's own height math
+         came up even slightly short of the real viewport, forcing an
+         outer scroll that took the whole layout — header included — with
+         it. .app-header (layout.component.css) hides itself while a
+         mobile chat is open so this doesn't stack under/over it. */
       .chat-header {
-        padding: 12px 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 101;
+        padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+      }
+      /* Stacked directly below .chat-header at a fixed offset, for the same
+         reason and the same way — *ngIf'd (only conversations linked to a
+         listing show it), so .message-history's reserved top padding below
+         accounts for both this being present and absent via :has(). */
+      .listing-banner {
+        position: fixed;
+        top: calc(64px + env(safe-area-inset-top, 0px));
+        left: 0;
+        right: 0;
+        z-index: 100;
       }
       .message-history {
         padding: 16px;
+        /* Reserve space for the now-fixed .chat-header above (and
+           .listing-banner too, via the :has() rule right below, when a
+           conversation has one) and .message-input-area below — same
+           pattern .main-content uses to clear the fixed .bottom-tab-bar
+           (see layout.component.css) — otherwise content ends up hidden
+           behind them. */
+        padding-top: calc(16px + 64px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(16px + 72px + env(safe-area-inset-bottom, 0px));
+      }
+      .chat-area:has(.listing-banner) .message-history {
+        padding-top: calc(16px + 64px + 88px + env(safe-area-inset-top, 0px));
       }
       .msg-bubble {
         max-width: 85%;
+      }
+      /* Anchored the exact same way as .bottom-tab-bar (position:fixed +
+         bottom:0 in layout.component.css) instead of being sized by the
+         ancestor flex chain's height. A normal-flow element's position is
+         only as correct as the container height math above it — and that
+         math (100svh/100dvh vs. the browser's actual toolbar state at a
+         given instant) has repeatedly proven unreliable on real mobile
+         browsers. `position: fixed; bottom: 0` sidesteps all of that by
+         asking the browser directly for "the real bottom edge" the same
+         way the nav bar does, rather than us re-deriving it. */
+      .message-input-area {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        background-color: var(--paper);
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
       }
     }
 
@@ -448,8 +521,5 @@
       height: 100%;
       background: var(--accent);
       transition: width 0.2s;
-    }
-    .message-input-area {
-      position: relative;
     }
 
