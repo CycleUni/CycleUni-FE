@@ -116,7 +116,10 @@
     .listing-banner-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      /* Matches .chat-header's gap (16px) so the thumbnail's indent lines up
+         with .back-btn's indent above it — see .listing-thumb/.placeholder-thumb
+         below for the other half of this alignment fix. */
+      gap: 16px;
       cursor: pointer;
       flex: 1;
       min-width: 0;
@@ -134,6 +137,17 @@
       width: 48px;
       height: 64px;
       border-radius: var(--radius-sm);
+      /* Without this, the thumb is a flex item with the default
+         flex-shrink:1, so on narrow viewports it gets squeezed below its
+         48px width whenever the title/actions content is tight for space —
+         which also drags .listing-details' left edge inward, unpredictably
+         misaligning it against .chat-header's .partner-info above (that
+         misalignment reads as "the info bar doesn't line up with the
+         header" and gets worse/better depending on listing title length,
+         which is why it looked inconsistent). Keep the thumb's box a fixed
+         48px so .listing-details always starts at a fixed, predictable
+         offset. */
+      flex-shrink: 0;
     }
     .listing-thumb {
       object-fit: cover;
@@ -147,6 +161,11 @@
       flex-direction: column;
       justify-content: center;
       gap: 4px;
+      /* Pairs with .listing-thumb/.placeholder-thumb's flex-shrink:0 above:
+         without this, this flex item's automatic minimum width (based on
+         its longest unbreakable content) can still force the thumb to
+         shrink instead of letting the title text wrap. */
+      min-width: 0;
     }
     .listing-title {
       font-family: 'Noto Serif TC', serif;
@@ -394,45 +413,57 @@
       .back-btn {
         display: inline-block;
       }
-      /* Fixed the same way .message-input-area is fixed to the real bottom
-         edge (see that rule below): scrolling the message list was
-         dragging this along with it whenever the page's own height math
-         came up even slightly short of the real viewport, forcing an
-         outer scroll that took the whole layout — header included — with
-         it. .app-header (layout.component.css) hides itself while a
-         mobile chat is open so this doesn't stack under/over it. */
-      .chat-header {
+      /* .chat-header and .listing-banner used to each be independently
+         position:fixed with a hand-guessed pixel offset so the banner would
+         sit directly below the header. That guess (64px) never exactly
+         matched the header's real rendered height (which shifts with font
+         metrics, translated string length, badge presence, etc.), leaving a
+         thin gap between the two fixed elements that scrolling message
+         content showed through — see the "Meetup Cancelled" bleed-through
+         reported from a real Android device.
+
+         Fix: fix the *wrapper*, not the children. `.chat-top-fixed` is the
+         only position:fixed element here; `.chat-header` and
+         `.listing-banner` stack inside it via normal document flow, so the
+         banner's top is always exactly wherever the header's bottom really
+         rendered — computed by the browser, not guessed by us. This is the
+         same real-bottom-edge trick `.message-input-area` below (and
+         `.bottom-tab-bar` in layout.component.css) uses for the same class
+         of viewport-height unreliability. */
+      .chat-top-fixed {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         z-index: 101;
-        padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
       }
-      /* Stacked directly below .chat-header at a fixed offset, for the same
-         reason and the same way — *ngIf'd (only conversations linked to a
-         listing show it), so .message-history's reserved top padding below
-         accounts for both this being present and absent via :has(). */
-      .listing-banner {
-        position: fixed;
-        top: calc(64px + env(safe-area-inset-top, 0px));
-        left: 0;
-        right: 0;
-        z-index: 100;
+      .chat-header {
+        padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
       }
       .message-history {
         padding: 16px;
-        /* Reserve space for the now-fixed .chat-header above (and
-           .listing-banner too, via the :has() rule right below, when a
-           conversation has one) and .message-input-area below — same
-           pattern .main-content uses to clear the fixed .bottom-tab-bar
-           (see layout.component.css) — otherwise content ends up hidden
-           behind them. */
-        padding-top: calc(16px + 64px + env(safe-area-inset-top, 0px));
+        /* Reserve space for the now-fixed .chat-top-fixed wrapper above
+           (header, or header+banner — see the :has() rule right below) and
+           .message-input-area below — same pattern .main-content uses to
+           clear the fixed .bottom-tab-bar (see layout.component.css) —
+           otherwise content ends up hidden behind them.
+
+           These two numbers (72px / 92px) are hand-measured-from-CSS
+           estimates of .chat-header's and .listing-banner's real rendered
+           heights (padding + border + line-height of their tallest content
+           row), deliberately rounded UP a few px past the tightest exact
+           reading. Unlike the old two-independent-fixed-elements setup,
+           an inaccurate guess here can now only ever produce a small
+           harmless blank strip under the fixed wrapper (scrolls away
+           immediately) — never the see-through/hidden-content bug the
+           gap used to cause, because the gap itself is now structurally
+           impossible (see .chat-top-fixed above). Still worth re-measuring
+           against a real device when possible. */
+        padding-top: calc(16px + 72px + env(safe-area-inset-top, 0px));
         padding-bottom: calc(16px + 72px + env(safe-area-inset-bottom, 0px));
       }
       .chat-area:has(.listing-banner) .message-history {
-        padding-top: calc(16px + 64px + 88px + env(safe-area-inset-top, 0px));
+        padding-top: calc(16px + 72px + 92px + env(safe-area-inset-top, 0px));
       }
       .msg-bubble {
         max-width: 85%;

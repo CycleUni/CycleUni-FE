@@ -9,25 +9,67 @@
         </div>
 
         <div class="chat-area" *ngIf="activeChat">
-          <div class="chat-header">
-            <button class="back-btn" type="button" (click)="closeChat()">{{ 'msg.back' | t }}</button>
-            <div class="partner-info">
-              <h4>
-                {{ 'msg.conversationWith' | t:{name: activeChat.other_party} }}
-                <ui-role-badge [role]="activeChat.other_party_role"></ui-role-badge>
-              </h4>
+          <div class="chat-top-fixed">
+            <div class="chat-header">
+              <button class="back-btn" type="button" (click)="closeChat()">{{ 'msg.back' | t }}</button>
+              <div class="partner-info">
+                <h4>
+                  {{ 'msg.conversationWith' | t:{name: activeChat.other_party} }}
+                  <ui-role-badge [role]="activeChat.other_party_role"></ui-role-badge>
+                </h4>
+              </div>
+              <div class="connection-status" *ngIf="connectionState === 'reconnecting'">
+                <span class="reconnecting-badge">{{ 'msg.reconnecting' | t }}</span>
+              </div>
+              <button class="report-btn" type="button" (click)="showReport = true" [title]="'msg.reportConversation' | t">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                  <line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+              </button>
             </div>
-            <div class="connection-status" *ngIf="connectionState === 'reconnecting'">
-              <span class="reconnecting-badge">{{ 'msg.reconnecting' | t }}</span>
+
+            <div class="listing-banner" *ngIf="activeChat.listing_title">
+              <div class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
+                <img *ngIf="activeChat.listing_photo" [src]="activeChat.listing_photo" [attr.alt]="activeChat.listing_title || ('common.bookCover' | t)" class="listing-thumb">
+                <div class="placeholder-thumb" *ngIf="!activeChat.listing_photo"></div>
+                <div class="listing-details">
+                  <div class="listing-title">{{ activeChat.listing_title }}</div>
+                  <div class="listing-meta">
+                    <span class="price">NT$ {{ activeChat.listing_price }}</span>
+                    <span class="condition badge">{{ ('cond.' + activeChat.listing_condition) | t }}</span>
+                    <span class="course" *ngIf="activeChat.listing_course">{{ activeChat.listing_course }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="listing-banner-actions">
+                <ng-container *ngIf="activeChat.order_id">
+                  <ui-button variant="ghost" (onClick)="goToOrder()">
+                    {{ 'msg.viewOrder' | t }}
+                  </ui-button>
+                </ng-container>
+
+                <ng-container *ngIf="!activeChat.order_id">
+                  <ng-container *ngIf="activeChat.other_party_role === 'seller'">
+                    <ui-button variant="ghost" (onClick)="goToListing(activeChat.listing_id)">
+                      {{ 'msg.viewListing' | t }}
+                    </ui-button>
+                    <ui-button (onClick)="goToCheckout(activeChat.listing_id)">
+                      {{ 'msg.buyNow' | t }}
+                    </ui-button>
+                  </ng-container>
+
+                  <ng-container *ngIf="activeChat.other_party_role === 'buyer'">
+                    <ui-button variant="ghost" (onClick)="goToListing(activeChat.listing_id)">
+                      {{ 'msg.viewListing' | t }}
+                    </ui-button>
+                  </ng-container>
+                </ng-container>
+              </div>
             </div>
-            <button class="report-btn" type="button" (click)="showReport = true" [title]="'msg.reportConversation' | t">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-                <line x1="4" y1="22" x2="4" y2="15"/>
-              </svg>
-            </button>
           </div>
-          
+
           <ui-report-modal
             *ngIf="showReport"
             [conversationId]="activeChat.id"
@@ -37,46 +79,6 @@
 
           <ui-image-lightbox [src]="selectedImageUrl" (close)="closeImageModal()"></ui-image-lightbox>
 
-          <div class="listing-banner" *ngIf="activeChat.listing_title">
-            <div class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
-              <img *ngIf="activeChat.listing_photo" [src]="activeChat.listing_photo" [attr.alt]="activeChat.listing_title || ('common.bookCover' | t)" class="listing-thumb">
-              <div class="placeholder-thumb" *ngIf="!activeChat.listing_photo"></div>
-              <div class="listing-details">
-                <div class="listing-title">{{ activeChat.listing_title }}</div>
-                <div class="listing-meta">
-                  <span class="price">NT$ {{ activeChat.listing_price }}</span>
-                  <span class="condition badge">{{ ('cond.' + activeChat.listing_condition) | t }}</span>
-                  <span class="course" *ngIf="activeChat.listing_course">{{ activeChat.listing_course }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="listing-banner-actions">
-              <ng-container *ngIf="activeChat.order_id">
-                <ui-button variant="ghost" (onClick)="goToOrder()">
-                  {{ 'msg.viewOrder' | t }}
-                </ui-button>
-              </ng-container>
-
-              <ng-container *ngIf="!activeChat.order_id">
-                <ng-container *ngIf="activeChat.other_party_role === 'seller'">
-                  <ui-button variant="ghost" (onClick)="goToListing(activeChat.listing_id)">
-                    {{ 'msg.viewListing' | t }}
-                  </ui-button>
-                  <ui-button (onClick)="goToCheckout(activeChat.listing_id)">
-                    {{ 'msg.buyNow' | t }}
-                  </ui-button>
-                </ng-container>
-
-                <ng-container *ngIf="activeChat.other_party_role === 'buyer'">
-                  <ui-button variant="ghost" (onClick)="goToListing(activeChat.listing_id)">
-                    {{ 'msg.viewListing' | t }}
-                  </ui-button>
-                </ng-container>
-              </ng-container>
-            </div>
-          </div>
-          
           <div class="message-history" #scrollMe>
             <div class="msg-bubble" *ngFor="let msg of messages" [class.self]="msg.is_mine" [class.failed]="msg.failed" [class.meetup-card]="isMeetupRequest(msg.body)" [class.image-msg]="msg.message_type === 'image'">
               <ng-container *ngIf="isMeetupRequest(msg.body); else normalMsg">
