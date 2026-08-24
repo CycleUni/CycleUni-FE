@@ -149,11 +149,11 @@ export class GoogleAuthService {
 
   private get isDarkTheme(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false;
-    if (this.themeService.mode() === 'dark') return true;
-    if (this.themeService.mode() === 'system') {
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
+    // resolved() already collapses 'system' to the OS preference, and does so
+    // as a signal — the previous inline matchMedia read here was imperative,
+    // so an OS appearance change while the page was open recoloured the site
+    // but left the Google button rendered in the old variant.
+    return this.themeService.resolved() === 'dark';
   }
 
   private loadAndRenderButton(elementId: string) {

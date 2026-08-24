@@ -108,7 +108,9 @@ export class Account {
     // (e.g. the school name) come back in the new language
     this.langEffectRef = effect(() => {
       this.i18n.lang();
-      this.theme.mode(); // Track theme changes to re-render Google button
+      // resolved(), not mode(): in 'system' mode the OS flipping light/dark
+      // never changes mode(), so the button would keep its stale variant.
+      this.theme.resolved(); // Track theme changes to re-render Google button
       if (this.auth.isLoggedIn()) {
         this.loadProfile();
         this.profileLoaded = true;

@@ -26,7 +26,7 @@ import { TPipe } from '../../core/i18n.service';
       content: '';
       position: absolute;
       top: 0;
-      bottom: 8px;
+      bottom: 0;
       width: 56px;
       z-index: 1;
       pointer-events: none;
@@ -65,12 +65,11 @@ import { TPipe } from '../../core/i18n.service';
       display: flex;
       overflow-x: auto;
       gap: var(--space-4);
-      padding-bottom: var(--space-2);
-      scrollbar-width: thin;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
       -webkit-overflow-scrolling: touch;
     }
-    .categories-grid::-webkit-scrollbar { height: 6px; }
-    .categories-grid::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--radius-sm); }
+    .categories-grid::-webkit-scrollbar { display: none; }
     .category-card {
       display: flex;
       flex-direction: column;

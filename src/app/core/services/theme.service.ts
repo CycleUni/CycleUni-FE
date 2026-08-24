@@ -1,4 +1,4 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 
@@ -9,9 +9,18 @@ const STORAGE_KEY = 'cycleuni_theme';
 })
 export class ThemeService {
   mode = signal<ThemeMode>(this.readStored());
+  private systemDark = signal<boolean>(this.getSystemDarkPreference());
+
+  readonly resolved = computed<'light' | 'dark'>(() => {
+    const currentMode = this.mode();
+    if (currentMode === 'light') return 'light';
+    if (currentMode === 'dark') return 'dark';
+    return this.systemDark() ? 'dark' : 'light';
+  });
 
   constructor() {
     effect(() => this.apply(this.mode()));
+    this.listenToSystemTheme();
   }
 
   setMode(mode: ThemeMode) {
@@ -42,5 +51,35 @@ export class ThemeService {
     const root = document.documentElement;
     if (mode === 'system') root.removeAttribute('data-theme');
     else root.setAttribute('data-theme', mode);
+  }
+
+  private getSystemDarkPreference(): boolean {
+    if (typeof window === 'undefined' || typeof window.matchMedia === 'undefined') {
+      return false;
+    }
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  }
+
+  private listenToSystemTheme() {
+    if (typeof window === 'undefined' || typeof window.matchMedia === 'undefined') {
+      return;
+    }
+    try {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const update = (e: MediaQueryListEvent | MediaQueryList) => {
+        this.systemDark.set(e.matches);
+      };
+      if (typeof mediaQuery.addEventListener === 'function') {
+        mediaQuery.addEventListener('change', update);
+      } else if (typeof (mediaQuery as any).addListener === 'function') {
+        (mediaQuery as any).addListener(update);
+      }
+    } catch {
+      // matchMedia may not be available or throw in certain test environments
+    }
   }
 }
