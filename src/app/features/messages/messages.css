@@ -231,7 +231,7 @@
       align-items: center;
     }
     .reconnecting-badge {
-      background-color: #f39c12;
+      background-color: var(--flag);
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
@@ -349,7 +349,7 @@
     }
     .msg-failed-text {
       font-size: 11px;
-      color: #c0392b;
+      color: var(--danger);
     }
     .msg-retry-btn {
       background: none;

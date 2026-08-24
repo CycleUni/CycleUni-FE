@@ -89,7 +89,7 @@ import { TPipe } from '../../core/i18n.service';
     .url-input-row { display: flex; gap: 8px; }
     .json-textarea { min-height: 250px; font-family: monospace; font-size: 13px; }
     .loading-note { margin-top: 8px; font-size: 13px; color: var(--muted); text-align: right; }
-    .error { color: #dc2626; margin-bottom: 16px; font-size: 14px; }
+    .error { color: var(--danger); margin-bottom: 16px; font-size: 14px; }
     .warning { color: var(--ink); margin-bottom: 16px; font-size: 14px; }
     .hint { color: var(--ink); font-size: 13px; }
     .summary-section { margin-bottom: 16px; }
@@ -101,8 +101,8 @@ import { TPipe } from '../../core/i18n.service';
     .diff-box { background: var(--paper-warm); padding: 12px; border-radius: 4px; max-height: 200px; overflow-y: auto; font-size: 12px; font-family: monospace; }
     .diff-item { border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 8px; }
     .diff-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .old { color: #dc2626; }
-    .new { color: #16a34a; }
+    .old { color: var(--danger); }
+    .new { color: var(--success); }
   `]
 })
 export class BulkImportModalComponent {

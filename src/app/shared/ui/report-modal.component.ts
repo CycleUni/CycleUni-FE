@@ -51,7 +51,7 @@ import { UiButton } from './button.component';
     .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
     .report-modal textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 14px; resize: vertical; margin-bottom: 16px; box-sizing: border-box; font-family: inherit; }
     .report-actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .error-msg { color: #dc2626; font-size: 13px; margin-top: 8px; }
+    .error-msg { color: var(--danger); font-size: 13px; margin-top: 8px; }
     .success-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }
   `]
 })

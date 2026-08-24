@@ -51,7 +51,7 @@ import { ForceCancelModalComponent } from './force-cancel-modal.component';
     .field label { font-size: 12px; color: var(--muted); }
     .field span { font-size: 14px; color: var(--ink); }
     .inline-msg { margin: 12px 0; font-size: 14px; }
-    .inline-msg.ok { color: #16a34a; }
+    .inline-msg.ok { color: var(--success); }
   `]
 })
 export class AdminOrderDetailComponent implements OnInit {

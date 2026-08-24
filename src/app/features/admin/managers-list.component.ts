@@ -85,7 +85,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     }
     .btn-toggle.revoke {
       border-color: rgba(220,38,38,0.3);
-      color: #dc2626;
+      color: var(--danger);
     }
     .btn-toggle.revoke:hover {
       background: rgba(220,38,38,0.05);

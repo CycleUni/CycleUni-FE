@@ -252,14 +252,14 @@
       margin-bottom: 24px;
     }
     .alert-box.warning {
-      background-color: #fff3cd;
-      border: 1px solid #ffe69c;
-      color: #664d03;
+      background-color: var(--warn-bg);
+      border: 1px solid color-mix(in srgb, var(--warn-ink) 40%, transparent);
+      color: var(--warn-ink);
     }
     .alert-box.success {
-      background-color: #d1e7dd;
-      border: 1px solid #a3cfbb;
-      color: #0f5132;
+      background-color: var(--success-light);
+      border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+      color: var(--success);
     }
     .alert-box strong {
       display: block;
@@ -279,12 +279,12 @@
     .inline-msg {
       padding: 8px;
       border-radius: 4px;
-      background-color: #d1e7dd;
-      color: #0f5132;
+      background-color: var(--success-light);
+      color: var(--success);
     }
     .inline-msg.error {
-      background-color: #f8d7da;
-      color: #842029;
+      background-color: var(--danger-light);
+      color: var(--danger);
     }
     .edit-modal {
       position: fixed;

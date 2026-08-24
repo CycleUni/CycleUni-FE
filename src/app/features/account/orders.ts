@@ -198,7 +198,7 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
       animation: highlight 2s;
     }
     @keyframes highlight {
-      0% { background-color: var(--accent-light, #e0f2fe); }
+      0% { background-color: var(--accent-soft); }
       100% { background-color: transparent; }
     }
   `]
