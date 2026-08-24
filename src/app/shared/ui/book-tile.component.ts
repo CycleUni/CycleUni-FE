@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TPipe } from '../../core/i18n.service';
-import { BookCoverPipe } from '../pipes/book-cover.pipe';
+import { UiBookCover } from './book-cover.component';
 
 /**
  * `book-tile`: a bookstore-catalog-style card for the Book-discovery layer
@@ -31,7 +31,7 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
 @Component({
   selector: 'ui-book-tile',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, BookCoverPipe],
+  imports: [CommonModule, RouterModule, TPipe, UiBookCover],
   template: `
     <div class="book-tile" [class.feature]="feature">
       <a
@@ -50,14 +50,13 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
 
       <ng-template #body>
         <span class="tile-cover hover-card-cover">
-          <!-- Google Books serves zoom=1 at ~128px; these tiles draw at ~242px,
-               i.e. 3.8x in device pixels on a 2x screen. -->
-          <img *ngIf="coverUrl && !imageBroken" [src]="coverUrl | bookCover: 3" [alt]="title" (error)="onImageError()" />
-          <span class="placeholder book-placeholder" *ngIf="!coverUrl || imageBroken" aria-hidden="true">
-            <span class="bp-title">{{ title }}</span>
-            <span class="bp-author" *ngIf="author">{{ author }}</span>
-            <span class="bp-isbn" *ngIf="isbn">{{ isbn }}</span>
-          </span>
+          <ui-book-cover
+            [coverUrl]="coverUrl"
+            [title]="title"
+            [author]="author"
+            [isbn]="isbn"
+            [zoom]="3"
+          ></ui-book-cover>
 
           <span class="price-tag stamp-tag" *ngIf="mode === 'sellers'" [class.unpriced]="!hasPrice">
             <ng-container *ngIf="hasPrice && !isFree">
@@ -148,18 +147,6 @@ import { BookCoverPipe } from '../pipes/book-cover.pipe';
        5:7 like a regular tile and gets its size purely from spanning more
        grid columns/rows in the parent layout (see recent-listings.component
        / search.ts's .discover-grid). */
-    .tile-cover img, .tile-cover .placeholder {
-      border-radius: inherit;
-    }
-    .tile-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    /* A cover-less book used to render as a blank warm rectangle, which on a
-       page with only a handful of listings looks like a failed image load.
-       The ruled fill comes from the global .book-placeholder. */
     /* shape comes from the global .stamp-tag */
     .price-tag { left: -6px; bottom: -6px; color: var(--accent); }
     /* A book whose aggregate price is 0/absent used to print "NT$ 0" in the
@@ -230,8 +217,6 @@ export class UiBookTile {
 
   @Output() tileClick = new EventEmitter<void>();
 
-  imageBroken = false;
-
   /** Treat a missing or negative aggregate as "no price known yet". */
   get hasPrice(): boolean {
     return this.minPrice !== null && this.minPrice !== undefined && this.minPrice >= 0;
@@ -267,8 +252,5 @@ export class UiBookTile {
   get waitingValue(): number {
     return this.waitingCount ?? 0;
   }
-
-  onImageError() {
-    this.imageBroken = true;
-  }
 }
+

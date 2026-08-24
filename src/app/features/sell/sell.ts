@@ -6,6 +6,7 @@ import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiConditionPicker } from '../../shared/ui/condition-picker.component';
+import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { AccountService } from '../../core/services/account.service';
 import { BookService } from '../../core/services/book.service';
 import { ListingService } from '../../core/services/listing.service';
@@ -18,7 +19,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 @Component({
   selector: 'app-sell',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiDropdown, UiConditionPicker, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiDropdown, UiConditionPicker, UiBookCover, TPipe],
   templateUrl: './sell.html',
   styleUrls: ['./sell.css']
 })
@@ -35,7 +36,7 @@ export class Sell implements OnInit, OnDestroy {
   apiError = '';
   isSearchQueryDirty = false;
   hideSearchButtonForNow = false;
-  engine: 'google' | 'openlibrary' = 'google';
+  engine: 'googlebooks' | 'openlibrary' = 'googlebooks';
 
   isScanning = false;
   cameraError = '';

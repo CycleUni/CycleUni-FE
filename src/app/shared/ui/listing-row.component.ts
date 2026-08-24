@@ -2,17 +2,22 @@ import { Component, Input, Output, EventEmitter, inject, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { UiBadge } from './badge.component';
 import { UiButton } from './button.component';
+import { UiBookCover } from './book-cover.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
 @Component({
   selector: 'ui-listing-row',
   standalone: true,
-  imports: [CommonModule, UiBadge, UiButton, TPipe],
+  imports: [CommonModule, UiBadge, UiButton, UiBookCover, TPipe],
   template: `
     <div class="listing-row">
       <div class="cover">
-        <img *ngIf="coverUrl && !imageBroken" [src]="coverUrl" [alt]="title || ('home.unknownBook' | t)" (error)="onImageError()" />
-        <div class="placeholder" *ngIf="!coverUrl || imageBroken"></div>
+        <ui-book-cover
+          [coverUrl]="coverUrl"
+          [title]="title"
+          [author]="authorLine"
+          [isbn]="isbnLine"
+        ></ui-book-cover>
       </div>
       <div class="info">
         <h3 class="title book-title-serif">{{ title }}</h3>
@@ -66,11 +71,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       box-shadow: var(--shadow-card);
       background-color: var(--paper-warm);
       overflow: hidden;
-    }
-    .cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
     }
     .info {
       flex: 1;
@@ -194,18 +194,11 @@ export class UiListingRow implements OnChanges {
 
   private i18n = inject(I18nService);
   conditionText: string = '';
-  imageBroken = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['condition']) {
       this.conditionText = this.condition ? this.i18n.t(`cond.${this.condition}`) : '';
     }
-    if (changes['coverUrl']) {
-      this.imageBroken = false;
-    }
-  }
-
-  onImageError() {
-    this.imageBroken = true;
   }
 }
+

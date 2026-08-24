@@ -172,9 +172,14 @@ describe('UiBookTile', () => {
   it('marks the image as broken when it fails to load, so the placeholder takes over', () => {
     component.coverUrl = 'https://example.com/cover.jpg';
     fixture.detectChanges();
-    expect(component.imageBroken).toBe(false);
+    const img = fixture.debugElement.query(By.css('img'));
+    expect(img).toBeTruthy();
 
-    component.onImageError();
-    expect(component.imageBroken).toBe(true);
+    img.triggerEventHandler('error', new Event('error'));
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('img'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('.placeholder'))).toBeTruthy();
   });
 });
+

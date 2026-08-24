@@ -11,25 +11,26 @@ import { ChangeDetectorRef } from '@angular/core';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { SchoolStateService } from '../../core/services/school-state.service';
 import { UiListingCard } from '../../shared/ui/listing-card.component';
-import { BookCoverPipe } from '../../shared/pipes/book-cover.pipe';
+import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, BookCoverPipe, UiPagination],
+  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, UiBookCover, UiPagination],
   template: `
       <div class="container" *ngIf="book">
         <ui-back-button></ui-back-button>
 
         <div class="book-header">
           <div class="book-cover">
-            <img *ngIf="book.cover_url" [src]="book.cover_url | bookCover: 2" alt="" style="width: 100%; height: 100%; object-fit: cover;" />
-            <span class="book-placeholder" *ngIf="!book.cover_url" aria-hidden="true">
-              <span class="bp-title">{{ book.title }}</span>
-              <span class="bp-author" *ngIf="book.authors">{{ book.authors }}</span>
-              <span class="bp-isbn" *ngIf="book.isbn13">{{ book.isbn13 }}</span>
-            </span>
+            <ui-book-cover
+              [coverUrl]="book.cover_url"
+              [title]="book.title"
+              [author]="book.authors"
+              [isbn]="book.isbn13"
+              [zoom]="2"
+            ></ui-book-cover>
           </div>
           <div class="book-info">
             <h2 class="book-title">{{ book.title }}</h2>
@@ -235,6 +236,14 @@ export class Book implements OnInit {
   currentPage = 1;
   isLoadingListings = true;
   private isLocalCache = false;
+  // Which external catalogue to query when this ISBN isn't in our own DB
+  // yet — defaults to 'googlebooks' server-side. Threaded through from the
+  // route so a link built from a search result (rendered via a specific
+  // engine, see search.ts's bookLinkParams) fetches from that same engine
+  // instead of falling back to whichever one this page defaults to, which
+  // is what caused the same ISBN to show a different cover here than on
+  // the search result it was opened from.
+  private engine: string | null = null;
 
   get currentSchoolLabel(): string {
     return this.schoolStateService.getSchoolLabel(this.currentSchool);
@@ -282,6 +291,7 @@ export class Book implements OnInit {
 
     this.route.queryParamMap.subscribe(params => {
       this.bookId = params.get('isbn') || params.get('id');
+      this.engine = params.get('engine') === 'openlibrary' ? 'openlibrary' : null;
       const localCache = params.get('local_cache');
 
       if (this.bookId) {
@@ -348,9 +358,25 @@ export class Book implements OnInit {
 
   private fetchBook(silent = false) {
     this.isLoadingListings = true;
-    this.bookService.getBook(this.bookId!, this.currentPage, this.currentSchool).subscribe({
+    // A silent refresh of an already-cached preview is only supposed to
+    // supplement it with real listing status, not replace it — but when the
+    // book has no local DB row, this refetch re-runs the same kind of
+    // external lookup that produced the cached preview in the first place,
+    // and Open Library (and Google Books) can return a different edition's
+    // title/cover for a plain ISBN lookup than their own search endpoint
+    // just showed on the search page (confirmed: their /api/books ISBN
+    // endpoint and /search.json endpoint aren't guaranteed to agree). Since
+    // the cached preview is exactly what the user just saw and clicked,
+    // prefer it over a possibly-worse live re-lookup for this identity data.
+    const previewToKeep = (silent && this.isLocalCache) ? this.book : null;
+    this.bookService.getBook(this.bookId!, this.currentPage, this.currentSchool, this.engine ?? undefined).subscribe({
       next: (data) => {
-        this.book = data;
+        // `data.id` set means this came from our own catalog (an
+        // authoritative record), not another external lookup — always
+        // trust that over the preview.
+        this.book = (previewToKeep && !data.id)
+          ? { ...previewToKeep, listings: data.listings, waiting_count: data.waiting_count, is_subscribed: data.is_subscribed, subscription_id: data.subscription_id }
+          : data;
         // handle both raw array (old API) or paginated object (new API)
         if (data.listings && !Array.isArray(data.listings)) {
           this.listings = data.listings.results || [];

@@ -272,7 +272,7 @@ import { combineLatest, Subscription } from 'rxjs';
 })
 export class Search implements OnInit {
   searchQuery = ''; activeQuery = ''; category = ''; course = '';
-  engine: 'google' | 'openlibrary' = 'google';
+  engine: 'googlebooks' | 'openlibrary' = 'googlebooks';
   googleUnavailable = false;
   loading = true; fetchError = false;
   filtersOpen = false;
@@ -381,7 +381,7 @@ export class Search implements OnInit {
       this.searchQuery = params['q'] || ''; this.activeQuery = this.searchQuery;
       this.category = params['category'] || '';
       this.course = params['course'] || '';
-      this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : 'google';
+      this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : 'googlebooks';
       this.currentPage = parseInt(params['page'] || '1', 10);
 
       this.bookService.getTopCourses(this.currentSchool, this.category).subscribe({
@@ -431,14 +431,14 @@ export class Search implements OnInit {
     const params: any = {}; if (this.activeQuery) params.q = this.activeQuery;
     if (this.category) params.category = this.category;
     if (this.course) params.course = this.course;
-    if (this.engine !== 'google') params.engine = this.engine;
+    params.engine = this.engine;
     params.page = page;
     this.router.navigate(['/search'], { queryParams: params });
   }
   onSearch() {
     if (this.searchQuery.trim()) {
       const params: any = { q: this.searchQuery.trim() };
-      if (this.engine !== 'google') params.engine = this.engine;
+      params.engine = this.engine;
       this.router.navigate(['/search'], { queryParams: params });
     }
   }
@@ -447,7 +447,7 @@ export class Search implements OnInit {
     if (this.activeQuery) params.q = this.activeQuery;
     if (cat) params.category = cat;
     // We intentionally drop this.course when category changes
-    if (this.engine !== 'google') params.engine = this.engine;
+    params.engine = this.engine;
     this.router.navigate(['/search'], { queryParams: params });
   }
 
@@ -456,7 +456,7 @@ export class Search implements OnInit {
     if (this.activeQuery) params.q = this.activeQuery;
     if (this.category) params.category = this.category;
     if (course) params.course = course;
-    if (this.engine !== 'google') params.engine = this.engine;
+    params.engine = this.engine;
     this.router.navigate(['/search'], { queryParams: params });
   }
 
@@ -464,6 +464,12 @@ export class Search implements OnInit {
   bookLinkParams(item: any): Record<string, any> {
     const params: Record<string, any> = { local_cache: 'true' };
     if (item.isbn) params['isbn'] = item.isbn; else params['id'] = item.id;
+    // Belt-and-suspenders alongside goToBook()'s sessionStorage priming:
+    // if the cache entry is missing (cleared tab, private browsing) the
+    // book page falls back to a live lookup, which must use the same
+    // engine this tile's data came from — otherwise the two pages can show
+    // different covers/titles for the same ISBN.
+    params['engine'] = this.engine;
     return params;
   }
 

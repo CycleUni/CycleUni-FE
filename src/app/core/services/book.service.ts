@@ -33,11 +33,14 @@ export class BookService {
     return this.http.get<any[]>(url, { context: OPTIONAL_AUTH_NO_LANG });
   }
 
-  getBook(idOrIsbn: string, page: number = 1, school?: string): Observable<any> {
+  getBook(idOrIsbn: string, page: number = 1, school?: string, engine?: string): Observable<any> {
     const isIsbn = /^\d{10,13}$/.test(idOrIsbn);
     let param = isIsbn ? `?isbn=${idOrIsbn}&page=${page}` : `?id=${idOrIsbn}&page=${page}`;
     if (school) {
       param += `&school=${encodeURIComponent(school)}`;
+    }
+    if (engine) {
+      param += `&engine=${encodeURIComponent(engine)}`;
     }
     return this.http.get<any>(`/books/${param}`);
   }
@@ -65,7 +68,7 @@ export class BookService {
 
   getEngineOptions(i18n: I18nService) {
     return [
-      { label: i18n.t('search.engineGoogle'), value: 'google' },
+      { label: i18n.t('search.engineGoogle'), value: 'googlebooks' },
       { label: i18n.t('search.engineOpenLibrary'), value: 'openlibrary' }
     ];
   }

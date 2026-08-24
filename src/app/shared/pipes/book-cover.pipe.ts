@@ -17,6 +17,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class BookCoverPipe implements PipeTransform {
   transform(url: string | null | undefined, zoom: 1 | 2 | 3 = 1): string {
     if (!url) return '';
+    // Proxy Open Library covers as-is (no zoom rewriting)
+    if (url.includes('covers.openlibrary.org')) {
+      return `/api/cover?src=${encodeURIComponent(url)}`;
+    }
     // Only modify Google Books URLs
     if (!url.includes('books.google.com')) return url;
     try {
@@ -26,7 +30,7 @@ export class BookCoverPipe implements PipeTransform {
       if (zoom >= 2) {
         u.searchParams.delete('edge');
       }
-      return u.toString();
+      return `/api/cover?src=${encodeURIComponent(u.toString())}`;
     } catch {
       return url;
     }

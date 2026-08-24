@@ -23,6 +23,23 @@ npm test         # vitest 單元測試
 npm run build    # 正式 production 建置
 ```
 
+### 書籍封面與 `/api/cover`
+
+書封不直接連到 Google Books／Open Library，而是走 `functions/api/cover.ts`
+這支 Cloudflare Pages Function 代理（負責過濾兩邊 API 都會回 200 的假封面、
+zoom 逐級降級、以及長效 CDN 快取）。
+
+`ng serve` **不會**執行 `functions/`，所以開發時封面需要另外起一個 wrangler：
+
+```bash
+npm run smoke    # 另開一個終端機，於 :8788 提供 /api/cover
+npm start        # proxy.conf.json 會把 /api/cover 轉發到 :8788
+```
+
+只跑 `npm start` 不會壞掉，但 `/api/cover` 會失敗，所有封面都會退成
+站內樣式的預設封面（`<ui-book-cover>` 的 placeholder）。正式部署到
+Cloudflare Pages 時 Function 由平台自動執行，不需要這一步。
+
 詳細架構見 `docs/frontend-ssd.md`（位於上層 CycleUni 工作根目錄）。
 
 ---

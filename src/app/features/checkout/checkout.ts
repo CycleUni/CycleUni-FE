@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiSelect } from '../../shared/ui/select.component';
+import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { ListingService } from '../../core/services/listing.service';
 import { OrderService } from '../../core/services/order.service';
 import { MessageService } from '../../core/services/message.service';
@@ -14,7 +15,7 @@ import { TPipe, I18nService } from '../../core/i18n.service';
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiBookCover, TPipe],
   template: `
       <main class="container">
         <h2>{{ 'checkout.title' | t }}</h2>
@@ -28,9 +29,12 @@ import { TPipe, I18nService } from '../../core/i18n.service';
           <div class="summary-card">
             <h3>{{ 'checkout.summary' | t }}</h3>
             <div class="book-info">
-              <img *ngIf="listing.photos?.length > 0" [src]="listing.photos[0]" [attr.alt]="listing.book_title" class="book-cover">
-              <img *ngIf="!listing.photos?.length && listing.book_cover_url" [src]="listing.book_cover_url" [attr.alt]="listing.book_title" class="book-cover">
-              <div class="placeholder-cover" *ngIf="!listing.photos?.length && !listing.book_cover_url"></div>
+              <ui-book-cover
+                class="book-cover"
+                [coverUrl]="listing.photos?.length ? listing.photos[0] : listing.book_cover_url"
+                [title]="listing.book_title"
+                [author]="listing.book_authors"
+              ></ui-book-cover>
               <div>
                 <h4 class="book-title-serif">{{ listing.book_title }}</h4>
                 <p class="muted">{{ listing.book_authors }}</p>
@@ -84,16 +88,10 @@ import { TPipe, I18nService } from '../../core/i18n.service';
     .book-cover {
       width: 80px;
       height: 120px;
-      object-fit: cover;
+      flex-shrink: 0;
       border: 1px solid var(--line);
       border-radius: 4px;
-    }
-    .placeholder-cover {
-      width: 80px;
-      height: 120px;
-      background: var(--paper-warm);
-      border: 1px solid var(--line);
-      border-radius: 4px;
+      overflow: hidden;
     }
     .price {
       font-size: 20px;

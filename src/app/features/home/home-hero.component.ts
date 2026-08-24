@@ -4,8 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
-import { BookCoverPipe } from '../../shared/pipes/book-cover.pipe';
 
 /** One book in the hero's tilted cover stack. */
 export interface HeroCover {
@@ -31,7 +31,7 @@ export interface HeroCover {
 @Component({
   selector: 'app-home-hero',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, TPipe, BookCoverPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, TPipe, UiBookCover],
   template: `
       <section class="hero-search" aria-labelledby="hero-title">
         <div class="hero-inner container">
@@ -100,11 +100,12 @@ export interface HeroCover {
               [queryParams]="heroBookParams(cover)"
               (click)="cacheHeroBook(cover)"
             >
-              <img *ngIf="cover.coverUrl" [src]="cover.coverUrl | bookCover: 3" [alt]="cover.title" />
-              <span class="placeholder book-placeholder" *ngIf="!cover.coverUrl" aria-hidden="true">
-                <span class="bp-title">{{ cover.title }}</span>
-                <span class="bp-isbn" *ngIf="cover.isbn">{{ cover.isbn }}</span>
-              </span>
+              <ui-book-cover
+                [coverUrl]="cover.coverUrl"
+                [title]="cover.title"
+                [isbn]="cover.isbn"
+                [zoom]="3"
+              ></ui-book-cover>
               <span class="demand-tag stamp-tag" *ngIf="cover.count">{{ 'home.waitingCount' | t:{n: cover.count} }}</span>
             </a>
           </div>
@@ -286,15 +287,6 @@ export interface HeroCover {
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       transform: translateX(var(--x)) rotate(var(--r));
     }
-    /* This lived in home.ts, merged into a shared '.wcover img, .cover-card img'
-       selector to save bytes. That coupled the waitlist thumbnail to the hero
-       cover; when the hero moved into this component the rule stayed behind,
-       where view encapsulation could no longer reach the image — so it fell
-       back to object-fit:fill at its intrinsic 128x178 inside a 240x336 card.
-       Keep it here, and keep it un-merged. */
-    .cover-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .cover-card img, .cover-card .placeholder { border-radius: inherit; }
-    /* type scale comes from the global .book-placeholder container queries */
     /* shape comes from the global .stamp-tag */
     .demand-tag {
       left: -8px; bottom: -8px; color: var(--flag);

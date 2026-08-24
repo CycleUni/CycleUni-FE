@@ -49,8 +49,12 @@
             <h4 class="select-hint">{{ 'sell.selectBook' | t }}</h4>
             <div class="book-match selectable" *ngFor="let result of searchResults" (click)="selectBook(result)">
               <div class="cover">
-                <img *ngIf="result.coverUrl" [src]="result.coverUrl" [attr.alt]="result.title || ('common.bookCover' | t)" />
-                <div class="placeholder" *ngIf="!result.coverUrl"></div>
+                <ui-book-cover
+                  [coverUrl]="result.coverUrl"
+                  [title]="result.title"
+                  [author]="result.author || result.authors"
+                  [isbn]="result.isbn"
+                ></ui-book-cover>
               </div>
               <div class="info" style="flex: 1;">
                 <h3 class="book-title-serif">{{ result.title }}</h3>
@@ -66,8 +70,11 @@
           <!-- Selected Book Preview -->
           <div class="book-match" *ngIf="bookPreview">
             <div class="cover">
-              <img *ngIf="bookPreview.coverUrl" [src]="bookPreview.coverUrl" [attr.alt]="bookPreview.title || ('common.bookCover' | t)" />
-              <div class="placeholder" *ngIf="!bookPreview.coverUrl"></div>
+              <ui-book-cover
+                [coverUrl]="bookPreview.coverUrl"
+                [title]="bookPreview.title"
+                [author]="bookPreview.authors"
+              ></ui-book-cover>
             </div>
             <div class="info" *ngIf="!bookPreview.isManual" style="flex: 1;">
               <h3 class="book-title-serif">{{ bookPreview.title }}</h3>
