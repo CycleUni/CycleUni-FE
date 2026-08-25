@@ -4,11 +4,12 @@ import { UiBadge } from './badge.component';
 import { UiButton } from './button.component';
 import { UiBookCover } from './book-cover.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { CountCapPipe } from '../pipes/count-cap.pipe';
 
 @Component({
   selector: 'ui-listing-row',
   standalone: true,
-  imports: [CommonModule, UiBadge, UiButton, UiBookCover, TPipe],
+  imports: [CommonModule, UiBadge, UiButton, UiBookCover, TPipe, CountCapPipe],
   template: `
     <div class="listing-row">
       <div class="cover">
@@ -42,7 +43,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
         <ui-badge *ngIf="status === 'inactive'" condition="damaged">{{ 'row.inactive' | t }}</ui-badge>
         <ui-badge *ngIf="condition && (!status || status === 'active')" [condition]="condition">{{ conditionText }}</ui-badge>
         <div class="condition-summary" *ngIf="conditionSummary">{{ conditionSummary }}</div>
-        <ui-badge *ngIf="waitlistCount" type="waitlist">{{ 'home.waitingCount' | t:{n: waitlistCount} }}</ui-badge>
+        <ui-badge *ngIf="waitlistCount" type="waitlist">{{ 'home.waitingCount' | t:{n: waitlistCount | countCap} }}</ui-badge>
 
         <!-- management buttons -->
         <div class="manage-actions" *ngIf="isEditable">
@@ -55,6 +56,10 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      container-type: inline-size;
+    }
     .listing-row {
       display: flex;
       gap: 16px;
@@ -74,6 +79,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     }
     .info {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -81,11 +87,15 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     .title {
       margin: 0;
       font-size: 18px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .meta, .course, .note {
       margin: 0;
       font-size: 14px;
       color: var(--muted);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .note {
       display: -webkit-box;
@@ -100,6 +110,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       align-items: flex-end;
       gap: 8px;
       min-width: 100px;
+      flex-shrink: 0;
     }
     .price {
       font-size: 20px;
@@ -116,6 +127,9 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       font-size: 13px;
       color: var(--muted);
       text-align: right;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      max-width: 260px;
     }
     .manage-actions {
       display: flex;
@@ -127,7 +141,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       content: ' • ';
       margin: 0 4px;
     }
-    @media (max-width: 768px) {
+    @container (max-width: 580px) {
       .listing-row {
         flex-wrap: wrap;
       }

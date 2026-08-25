@@ -10,7 +10,15 @@ describe('UiListingRow', () => {
 
   beforeEach(() => {
     mockI18n = {
-      t: (key: string) => `Translated: ${key}`
+      t: (key: string, params?: Record<string, string | number>) => {
+        let text = `Translated: ${key}`;
+        if (params) {
+          for (const [name, value] of Object.entries(params)) {
+            text += ` (${name}=${value})`;
+          }
+        }
+        return text;
+      }
     };
 
     TestBed.configureTestingModule({
@@ -62,5 +70,17 @@ describe('UiListingRow', () => {
     fixture.detectChanges();
     const zeroPriceDiv = fixture.debugElement.query(By.css('.price'));
     expect(zeroPriceDiv).toBeTruthy();
+  });
+
+  it('renders waitlist badge as-is below threshold and caps at 9999+ above threshold', () => {
+    fixture.componentRef.setInput('waitlistCount', 5);
+    fixture.detectChanges();
+    let badge = fixture.debugElement.query(By.css('ui-badge[type="waitlist"]'));
+    expect(badge.nativeElement.textContent).toContain('n=5');
+
+    fixture.componentRef.setInput('waitlistCount', 10000);
+    fixture.detectChanges();
+    badge = fixture.debugElement.query(By.css('ui-badge[type="waitlist"]'));
+    expect(badge.nativeElement.textContent).toContain('n=9999+');
   });
 });
