@@ -17,6 +17,30 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { Html5Qrcode } from 'html5-qrcode';
 
+/**
+ * Cleans and validates an ISBN string (mirroring backend clean_and_validate_isbn).
+ * Strips hyphens and whitespace, uppercases 'X', and validates:
+ * - ISBN-13: exactly 13 digits (EAN-13)
+ * - ISBN-10: exactly 10 characters (first 9 digits, last char digit or 'X')
+ * Returns the cleaned ISBN string if valid, or null if invalid.
+ */
+export function cleanAndValidateIsbn(isbnStr: string | null | undefined): string | null {
+  if (!isbnStr) {
+    return null;
+  }
+  const rawIsbn = String(isbnStr).replace(/[-\s]/g, '').toUpperCase();
+  const isAllDigits = /^\d+$/.test(rawIsbn);
+  const is10WithX = rawIsbn.length === 10 && /^\d{9}[0-9X]$/.test(rawIsbn);
+  if (isAllDigits || is10WithX) {
+    if (rawIsbn.length === 10 || rawIsbn.length === 13) {
+      return rawIsbn;
+    }
+  }
+  return null;
+}
+
+export const clean_and_validate_isbn = cleanAndValidateIsbn;
+
 @Component({
   selector: 'app-sell',
   standalone: true,
@@ -190,6 +214,30 @@ export class Sell implements OnInit, OnDestroy {
     }
   }
 
+  cleanAndValidateIsbn(isbnStr: string | null | undefined): string | null {
+    return cleanAndValidateIsbn(isbnStr);
+  }
+
+  handleScanResult(decodedText: string): boolean {
+    const validIsbn = cleanAndValidateIsbn(decodedText);
+    if (!validIsbn) {
+      const errorMsg = this.i18n.t('sell.invalidBarcodeScanned');
+      if (this.cameraError !== errorMsg) {
+        this.cameraError = errorMsg;
+        this.cdr.markForCheck();
+      }
+      return false;
+    }
+
+    this.cameraError = '';
+    this.searchQuery = validIsbn;
+    this.onSearchQueryChange();
+    this.stopScanner().then(() => {
+      this.searchBook();
+    });
+    return true;
+  }
+
   async startScanner() {
     this.cameraError = '';
     this.isScanning = true;
@@ -201,11 +249,7 @@ export class Sell implements OnInit, OnDestroy {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 150 } },
         (decodedText) => {
-          this.searchQuery = decodedText;
-          this.onSearchQueryChange();
-          this.stopScanner().then(() => {
-            this.searchBook();
-          });
+          this.handleScanResult(decodedText);
         },
         (errorMessage) => {
           // ignore scan errors, they happen continuously when no code is visible
@@ -227,6 +271,9 @@ export class Sell implements OnInit, OnDestroy {
       } catch (err) {
         console.error('Error stopping scanner', err);
       }
+    }
+    if (this.cameraError === this.i18n.t('sell.invalidBarcodeScanned')) {
+      this.cameraError = '';
     }
     this.isScanning = false;
     this.cdr.markForCheck();

@@ -348,6 +348,7 @@ export const en: Record<string, string> = {
   'sell.scanBarcode': 'Scan Barcode',
   'sell.stopScan': 'Stop Scan',
   'sell.cameraPermission': 'Cannot access camera. Please check your permissions.',
+  'sell.invalidBarcodeScanned': "Scanned code doesn't look like a valid ISBN, try again.",
   'sell.selectBook': 'Please select your book:',
   'sell.enterManually': 'Not found? Enter manually',
   'sell.reselect': 'Reselect',

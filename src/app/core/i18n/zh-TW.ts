@@ -347,6 +347,7 @@ export const zhTW: Record<string, string> = {
   'sell.scanBarcode': '掃描條碼',
   'sell.stopScan': '停止掃描',
   'sell.cameraPermission': '無法存取相機，請檢查權限設定。',
+  'sell.invalidBarcodeScanned': '掃描的條碼不符合 ISBN 格式，請再試一次。',
   'sell.selectBook': '請從搜尋結果中選擇您的書本：',
   'sell.enterManually': '以上皆非？手動輸入',
   'sell.reselect': '重新選擇',
