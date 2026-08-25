@@ -1,4 +1,5 @@
-import { Component, inject, effect, signal } from '@angular/core';
+import { Component, inject, effect, signal, PLATFORM_ID, DestroyRef } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { I18nService, TPipe } from './core/i18n.service';
@@ -9,6 +10,10 @@ import { GoogleAnalyticsService } from './core/services/google-analytics.service
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
+import { interval, fromEvent } from 'rxjs';
+
+export const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+export const VISIBILITY_CHECK_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
 
 /** App shell: the persistent layout (header/footer) wraps the router outlet,
  * so route changes swap only the page content instead of re-rendering the
@@ -66,10 +71,13 @@ export class App {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private swUpdate = inject(SwUpdate);
+  private destroyRef = inject(DestroyRef);
+  private platformId = inject(PLATFORM_ID);
 
   private router = inject(Router);
 
   updateReady = signal(false);
+  private lastCheckTime = Date.now();
 
   constructor() {
     effect(() => {
@@ -104,7 +112,7 @@ export class App {
       this.swUpdate.versionUpdates
         .pipe(
           filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-          takeUntilDestroyed()
+          takeUntilDestroyed(this.destroyRef)
         )
         .subscribe(() => {
           this.swUpdate.activateUpdate().then(() => {
@@ -117,12 +125,61 @@ export class App {
         .pipe(
           filter(event => event instanceof NavigationEnd),
           filter(() => updateActivated),
-          takeUntilDestroyed()
+          takeUntilDestroyed(this.destroyRef)
         )
         .subscribe(() => {
           document.location.reload();
         });
+
+      // 1. Periodic update check: periodically poll for new versions while running.
+      interval(UPDATE_CHECK_INTERVAL_MS)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          this.checkForUpdate();
+        });
+
+      // 2. Visibility / resume check: check for updates when a background tab or PWA becomes visible again.
+      if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
+        fromEvent(document, 'visibilitychange')
+          .pipe(
+            filter(() => document.visibilityState === 'visible'),
+            takeUntilDestroyed(this.destroyRef)
+          )
+          .subscribe(() => {
+            const now = Date.now();
+            if (now - this.lastCheckTime >= VISIBILITY_CHECK_THROTTLE_MS) {
+              this.checkForUpdate();
+            }
+          });
+      }
+
+      // 3. Handle unrecoverable state: recover when cached assets/manifest are broken beyond repair.
+      this.swUpdate.unrecoverable
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          // A plain location.reload() may continue to be intercepted and served by the broken
+          // service worker or corrupted offline cache. Unregistering active service workers
+          // ensures the subsequent page load hits the network directly for fresh assets.
+          if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+            navigator.serviceWorker
+              .getRegistrations()
+              .then(registrations => Promise.all(registrations.map(r => r.unregister())))
+              .catch(() => {})
+              .finally(() => {
+                location.reload();
+              });
+          } else {
+            location.reload();
+          }
+        });
     }
+  }
+
+  private checkForUpdate(): void {
+    this.lastCheckTime = Date.now();
+    this.swUpdate.checkForUpdate().catch(() => {
+      // Ignore errors caused by network failures, offline status, or SW not ready.
+    });
   }
 
   reloadPage() {
