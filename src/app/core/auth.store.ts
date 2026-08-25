@@ -18,7 +18,7 @@ export interface AuthUser {
   verified_at?: string | null;
   average_rating?: number;
   review_count?: number;
-  no_show_count?: boolean;
+  no_show_count?: number;
   has_password?: boolean;
   avatar_url?: string;
   is_google_linked?: boolean;
