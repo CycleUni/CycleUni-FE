@@ -151,6 +151,9 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
       font-size: 13px;
       color: var(--accent);
       margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .chat-preview {
       font-size: 14px;

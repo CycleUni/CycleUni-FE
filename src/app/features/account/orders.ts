@@ -171,20 +171,30 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
     .order-body {
       display: flex;
       justify-content: space-between;
+      gap: 16px;
+    }
+    .info {
+      flex: 1;
+      min-width: 0;
     }
     .info h3 {
       margin: 0 0 8px;
       font-size: 18px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .info p {
       margin: 4px 0;
       font-size: 14px;
       color: var(--muted);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .price {
       font-size: 20px;
       font-weight: 700;
       color: var(--accent);
+      flex-shrink: 0;
     }
     .order-actions {
       display: flex;

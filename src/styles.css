@@ -280,6 +280,8 @@ body {
 .book-title-serif {
   font-family: 'Noto Serif TC', serif;
   font-weight: 700;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /*
@@ -383,6 +385,8 @@ body {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-weight: 700;
   font-size: clamp(11px, 9cqi, 20px);
   line-height: 1.35;
@@ -395,6 +399,8 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-family: 'Noto Sans TC', sans-serif;
   font-size: clamp(9px, 6cqi, 13px);
   line-height: 1.4;
@@ -408,9 +414,13 @@ body {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-/* Below roughly a waitlist thumbnail there is no room for words at all, so
-   the ruled board stands alone rather than showing clipped fragments. */
-@container (max-width: 90px) {
+/* Below roughly 50px of usable width (such as 64px mobile listing rows,
+   60px sell previews, and 32px waitlist thumbnails) there is no room for
+   legible words at all, so the ruled board stands alone rather than showing
+   clipped fragments or chimney-wrapped text. Desktop listing rows (88px box,
+   ~62px usable width) and checkout (80px box, ~54px usable width) keep the
+   stamped title. */
+@container (max-width: 50px) {
   .book-placeholder .bp-title,
   .book-placeholder .bp-author,
   .book-placeholder .bp-isbn { display: none; }

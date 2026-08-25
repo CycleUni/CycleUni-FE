@@ -112,6 +112,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     }
     .book-info {
       flex: 1;
+      min-width: 0;
     }
     .book-title {
       margin-top: 0;
@@ -121,6 +122,8 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       font-weight: 700;
       border-bottom: 2px solid var(--line);
       padding-bottom: 12px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     
     .meta-list {
@@ -142,6 +145,9 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     }
     .meta-value {
       color: var(--ink);
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .waitlist-banner {

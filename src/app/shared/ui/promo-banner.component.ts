@@ -49,6 +49,7 @@ import { TPipe } from '../../core/i18n.service';
       flex-direction: column;
       position: relative;
       height: 100%;
+      min-width: 0;
       text-decoration: none;
       /* Differentiate from book cards: Removed gray background and dashed border.
          We now rely solely on the .sponsor-tag for disclosure, aligning with native
@@ -84,16 +85,22 @@ import { TPipe } from '../../core/i18n.service';
     }
     .promo-body {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       gap: var(--space-1);
     }
     .promo-title {
-      display: block;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
       margin: 0 0 var(--space-1);
       font-weight: 700;
       font-size: var(--text-base);
       line-height: 1.3;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .promo-subtitle {
       margin: 0 0 var(--space-1);
@@ -104,6 +111,8 @@ import { TPipe } from '../../core/i18n.service';
       -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .promo-banner-card.feature .promo-title {

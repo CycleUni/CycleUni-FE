@@ -50,6 +50,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     }
     .listing-content {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
     }
@@ -106,11 +107,15 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     .seller-info {
       font-size: 15px;
       margin-bottom: 8px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .course-info {
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 8px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .listing-note {
       font-size: 14px;
@@ -120,6 +125,8 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       padding: 12px;
       background-color: var(--paper-warm);
       border-left: 3px solid var(--line);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
   `]
 })

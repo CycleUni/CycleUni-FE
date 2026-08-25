@@ -84,8 +84,18 @@
       border-radius: var(--radius-xs);
       overflow: hidden;
     }
+    .book-match .info {
+      flex: 1;
+      min-width: 0;
+    }
     .book-match h3 {
       margin: 0 0 4px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .book-match .muted {
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .photo-upload label {
       display: block;

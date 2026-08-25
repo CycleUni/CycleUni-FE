@@ -60,7 +60,7 @@ import { AccountService } from '../../core/services/account.service';
         <h3 class="app-modal-title">{{ 'acct.editTitle' | t }}</h3>
         
         <div class="modal-body app-modal-body">
-          <p style="margin-top: 0; color: var(--muted); margin-bottom: 16px;">{{ editingListing.book_title }}</p>
+          <p style="margin-top: 0; color: var(--muted); margin-bottom: 16px; overflow-wrap: anywhere; word-break: break-word;">{{ editingListing.book_title }}</p>
           
           <div *ngIf="editingListing.book_source === 'manual'" class="manual-book-edit" style="margin-bottom: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 4px; background-color: var(--paper-warm);">
             <p style="margin-top: 0; margin-bottom: 12px; font-weight: 500; font-size: 14px;">{{ 'acct.manualBookDesc' | t }}</p>

@@ -85,6 +85,20 @@ import { TPipe, I18nService } from '../../core/i18n.service';
       gap: 16px;
       margin-top: 16px;
     }
+    .book-info > div {
+      flex: 1;
+      min-width: 0;
+    }
+    .book-info h4 {
+      margin: 0 0 4px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .book-info .muted {
+      margin: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .book-cover {
       width: 80px;
       height: 120px;
