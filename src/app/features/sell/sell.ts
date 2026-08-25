@@ -69,6 +69,37 @@ export function isValidIsbnChecksum(isbn: string): boolean {
   return false;
 }
 
+/**
+ * Selects the most appropriate rear camera from available video devices,
+ * avoiding ultra-wide and telephoto lenses which suffer from poor close-up focus on iOS.
+ */
+export function selectBestRearCamera(devices: { id: string; label: string }[] | null | undefined): string | null {
+  if (!devices || devices.length === 0) return null;
+
+  // Filter out front-facing cameras
+  const frontRegex = /front|user|前置|前相機|前鏡頭|facetime|selfie/i;
+  const backDevices = devices.filter(d => !frontRegex.test(d.label || ''));
+  const candidates = backDevices.length > 0 ? backDevices : devices;
+
+  // Avoid ultra-wide and telephoto lenses
+  const ultraWideRegex = /ultra[\s-]?wide|0\.5x|超廣角/i;
+  const telephotoRegex = /telephoto|望遠|長焦|[2-9]x/i;
+
+  const normalBackCameras = candidates.filter(d =>
+    !ultraWideRegex.test(d.label || '') && !telephotoRegex.test(d.label || '')
+  );
+
+  if (normalBackCameras.length > 0) {
+    // If there is one explicitly labeled as main / wide / back camera, prefer it
+    const preferred = normalBackCameras.find(d =>
+      /back camera|main|廣角|後置|後相機/i.test(d.label || '')
+    );
+    return preferred ? preferred.id : normalBackCameras[0].id;
+  }
+
+  return candidates[0]?.id || null;
+}
+
 @Component({
   selector: 'app-sell',
   standalone: true,
@@ -281,26 +312,83 @@ export class Sell implements OnInit, OnDestroy {
           Html5QrcodeSupportedFormats.EAN_8,
           Html5QrcodeSupportedFormats.QR_CODE
         ],
-        verbose: false
-      });
-      await this.html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 280, height: 120 },
-          videoConstraints: {
-            facingMode: "environment",
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          }
-        },
-        (decodedText) => {
-          this.handleScanResult(decodedText);
-        },
-        (errorMessage) => {
-          // ignore scan errors, they happen continuously when no code is visible
+        verbose: false,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
         }
-      );
+      });
+
+      // Try camera enumeration to pick standard wide rear camera if available
+      let selectedDeviceId: string | null = null;
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        selectedDeviceId = selectBestRearCamera(devices);
+      } catch (e) {
+        // Device enumeration can fail if permissions not yet granted or unsupported; fall back to facingMode
+        console.warn('Camera enumeration fallback to facingMode', e);
+      }
+
+      const qrboxFn = (viewfinderWidth: number, viewfinderHeight: number) => {
+        const width = Math.max(Math.floor(viewfinderWidth * 0.9), 250);
+        const height = Math.min(
+          Math.max(Math.floor(viewfinderHeight * 0.6), 160),
+          Math.max(viewfinderHeight - 20, 50)
+        );
+        return {
+          width: Math.min(width, viewfinderWidth),
+          height: Math.min(height, viewfinderHeight)
+        };
+      };
+
+      const primaryConfig = {
+        fps: 10,
+        qrbox: qrboxFn,
+        videoConstraints: selectedDeviceId
+          ? {
+              deviceId: { exact: selectedDeviceId },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
+          : {
+              facingMode: "environment",
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
+      };
+
+      const cameraIdOrConfig = selectedDeviceId
+        ? { deviceId: { exact: selectedDeviceId } }
+        : { facingMode: "environment" };
+
+      try {
+        await this.html5QrCode.start(
+          cameraIdOrConfig,
+          primaryConfig,
+          (decodedText) => {
+            this.handleScanResult(decodedText);
+          },
+          (errorMessage) => {
+            // ignore scan errors, they happen continuously when no code is visible
+          }
+        );
+      } catch (startErr) {
+        console.warn('Initial camera start failed, retrying with fallback constraints', startErr);
+        // Fallback retry with simplest constraints in case resolution negotiation fails
+        await this.html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: qrboxFn,
+            videoConstraints: { facingMode: "environment" }
+          },
+          (decodedText) => {
+            this.handleScanResult(decodedText);
+          },
+          (errorMessage) => {
+            // ignore scan errors
+          }
+        );
+      }
     } catch (err) {
       console.error('Scanner error', err);
       this.cameraError = this.i18n.t('sell.cameraPermission');

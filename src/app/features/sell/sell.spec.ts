@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Sell, cleanAndValidateIsbn, clean_and_validate_isbn, isValidIsbnChecksum } from './sell';
+import { Sell, cleanAndValidateIsbn, clean_and_validate_isbn, isValidIsbnChecksum, selectBestRearCamera } from './sell';
 import { provideRouter } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { I18nService } from '../../core/i18n.service';
@@ -10,6 +10,49 @@ import { ListingService } from '../../core/services/listing.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { of } from 'rxjs';
+
+describe('selectBestRearCamera', () => {
+  it('returns null for empty or null camera list', () => {
+    expect(selectBestRearCamera([])).toBeNull();
+    expect(selectBestRearCamera(null)).toBeNull();
+    expect(selectBestRearCamera(undefined)).toBeNull();
+  });
+
+  it('selects normal back camera avoiding ultra wide and telephoto', () => {
+    const devices = [
+      { id: 'cam-front', label: 'Front Camera' },
+      { id: 'cam-ultra', label: 'Back Ultra Wide Camera (0.5x)' },
+      { id: 'cam-main', label: 'Back Camera' },
+      { id: 'cam-tele', label: 'Back Telephoto Camera (3x)' }
+    ];
+    expect(selectBestRearCamera(devices)).toBe('cam-main');
+  });
+
+  it('handles localized Chinese camera labels correctly', () => {
+    const devices = [
+      { id: 'cam1', label: '前置相機' },
+      { id: 'cam2', label: '後置超廣角鏡頭' },
+      { id: 'cam3', label: '後置廣角主相機' }
+    ];
+    expect(selectBestRearCamera(devices)).toBe('cam3');
+  });
+
+  it('falls back to the first non-front camera if labels are unspecific', () => {
+    const devices = [
+      { id: 'cam1', label: 'camera2 0, facing back' },
+      { id: 'cam2', label: 'camera2 1, facing front' }
+    ];
+    expect(selectBestRearCamera(devices)).toBe('cam1');
+  });
+
+  it('falls back to first candidate if labels are empty/opaque', () => {
+    const devices = [
+      { id: 'cam1', label: '' },
+      { id: 'cam2', label: '' }
+    ];
+    expect(selectBestRearCamera(devices)).toBe('cam1');
+  });
+});
 
 describe('isValidIsbnChecksum', () => {
   it('accepts real ISBN-13 and ISBN-10 check digits', () => {
