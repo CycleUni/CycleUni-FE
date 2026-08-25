@@ -15,7 +15,18 @@ describe('HomeHero', () => {
   let router: Router;
 
   beforeEach(async () => {
-    mockI18n = { t: (key: string) => key, lang: () => 'zh-TW' };
+    mockI18n = {
+      t: (key: string, params?: Record<string, string | number>) => {
+        let text = key;
+        if (params) {
+          for (const [name, value] of Object.entries(params)) {
+            text += ` (${name}=${value})`;
+          }
+        }
+        return text;
+      },
+      lang: () => 'zh-TW'
+    };
 
     await TestBed.configureTestingModule({
       imports: [HomeHero],
@@ -57,5 +68,74 @@ describe('HomeHero', () => {
       .toEqual({ local_cache: 'true', isbn: '978' });
     expect(component.heroBookParams({ id: 7, title: 'x' }))
       .toEqual({ local_cache: 'true', id: 7 });
+  });
+
+  it('renders the request CTA when covers array is empty', () => {
+    component.covers = [];
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cta = compiled.querySelector('.hero-cta');
+    const stack = compiled.querySelector('.hero-stack');
+    expect(cta).not.toBeNull();
+    expect(stack).toBeNull();
+    expect(cta?.textContent).toContain('home.requestCtaTitle');
+  });
+
+  it('renders the cover stack and sponsored tag when hero ad cover is provided', () => {
+    const heroAd: any = { id: 10, title: 'Ad Promo', image_url: 'http://ad.jpg', target_url: 'http://promo.com' };
+    component.covers = [{
+      id: 10,
+      title: 'Ad Promo',
+      coverUrl: 'http://ad.jpg',
+      isAd: true,
+      targetUrl: 'http://promo.com',
+      adData: heroAd
+    }];
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const stack = compiled.querySelector('.hero-stack');
+    const cta = compiled.querySelector('.hero-cta');
+    expect(stack).not.toBeNull();
+    expect(cta).toBeNull();
+
+    const adCard = compiled.querySelector('.cover-card') as HTMLAnchorElement;
+    expect(adCard.href).toBe('http://promo.com/');
+    expect(adCard.target).toBe('_blank');
+    expect(adCard.rel).toContain('noopener');
+
+    const sponsorTag = compiled.querySelector('.sponsor-tag');
+    expect(sponsorTag).not.toBeNull();
+    expect(sponsorTag?.textContent).toContain('home.sponsored');
+  });
+
+  it('renders demand tag capped at 9999+ when waiting count exceeds 9999', () => {
+    component.covers = [
+      { id: 1, title: 'Normal Book', count: 12 },
+      { id: 2, title: 'Popular Book', count: 10500 }
+    ];
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const tags = compiled.querySelectorAll('.demand-tag');
+    expect(tags.length).toBe(2);
+    expect(tags[0].textContent).toContain('n=12');
+    expect(tags[1].textContent).toContain('n=9999+');
+  });
+
+  it('emits adClick when onHeroAdClick is called with adData', () => {
+    const heroAd: any = { id: 10, title: 'Ad Promo' };
+    const spy = vi.fn();
+    component.adClick.subscribe(spy);
+
+    component.onHeroAdClick({
+      id: 10,
+      title: 'Ad Promo',
+      isAd: true,
+      adData: heroAd
+    });
+
+    expect(spy).toHaveBeenCalledWith(heroAd);
   });
 });

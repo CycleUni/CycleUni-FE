@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,14 +6,19 @@ import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { CountCapPipe } from '../../shared/pipes/count-cap.pipe';
+import { PublicAd } from '../../core/services/metadata.service';
 
-/** One book in the hero's tilted cover stack. */
+/** One book or ad in the hero's tilted cover stack. */
 export interface HeroCover {
   id: any;
   isbn?: string;
   title: string;
   coverUrl?: string;
   count?: number;
+  isAd?: boolean;
+  targetUrl?: string;
+  adData?: PublicAd;
 }
 
 /**
@@ -31,7 +36,7 @@ export interface HeroCover {
 @Component({
   selector: 'app-home-hero',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, TPipe, UiBookCover],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, TPipe, UiBookCover, CountCapPipe],
   template: `
       <section class="hero-search" aria-labelledby="hero-title">
         <div class="hero-inner container">
@@ -89,32 +94,68 @@ export interface HeroCover {
           </div>
 
           <div class="hero-stack" *ngIf="covers.length">
-            <a
-              class="cover-card"
-              *ngFor="let cover of covers; let i = index"
-              [style.z-index]="covers.length - i"
-              [style.--r]="heroCoverRotations(i)"
-              [style.--x]="heroCoverOffsets(i)"
-              [style.--hover-dir]="heroCoverHoverDir(i)"
-              [routerLink]="['/book']"
-              [queryParams]="heroBookParams(cover)"
-              (click)="cacheHeroBook(cover)"
-            >
-              <ui-book-cover
-                [coverUrl]="cover.coverUrl"
-                [title]="cover.title"
-                [isbn]="cover.isbn"
-                [zoom]="3"
-              ></ui-book-cover>
-              <span class="demand-tag stamp-tag" *ngIf="cover.count">{{ 'home.waitingCount' | t:{n: cover.count} }}</span>
-            </a>
+            <ng-container *ngFor="let cover of covers; let i = index">
+              <!-- Ad card -->
+              <a
+                *ngIf="cover.isAd"
+                class="cover-card"
+                [style.z-index]="covers.length - i"
+                [style.--r]="heroCoverRotations(i)"
+                [style.--x]="heroCoverOffsets(i)"
+                [style.--hover-dir]="heroCoverHoverDir(i)"
+                [href]="cover.targetUrl || null"
+                target="_blank"
+                rel="noopener noreferrer"
+                (click)="onHeroAdClick(cover)"
+              >
+                <ui-book-cover
+                  [coverUrl]="cover.coverUrl"
+                  [title]="cover.title"
+                  [zoom]="3"
+                ></ui-book-cover>
+                <span class="stamp-tag sponsor-tag">{{ 'home.sponsored' | t }}</span>
+              </a>
+
+              <!-- Book cover card -->
+              <a
+                *ngIf="!cover.isAd"
+                class="cover-card"
+                [style.z-index]="covers.length - i"
+                [style.--r]="heroCoverRotations(i)"
+                [style.--x]="heroCoverOffsets(i)"
+                [style.--hover-dir]="heroCoverHoverDir(i)"
+                [routerLink]="['/book']"
+                [queryParams]="heroBookParams(cover)"
+                (click)="cacheHeroBook(cover)"
+              >
+                <ui-book-cover
+                  [coverUrl]="cover.coverUrl"
+                  [title]="cover.title"
+                  [isbn]="cover.isbn"
+                  [zoom]="3"
+                ></ui-book-cover>
+                <span class="demand-tag stamp-tag" *ngIf="cover.count">{{ 'home.waitingCount' | t:{n: cover.count | countCap} }}</span>
+              </a>
+            </ng-container>
+          </div>
+
+          <div class="hero-cta" *ngIf="!covers.length">
+            <div class="hero-cta-inner">
+              <div class="hero-cta-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                  <path d="M6 6h10"/>
+                  <path d="M6 10h7"/>
+                </svg>
+              </div>
+              <h2 class="hero-cta-title">{{ 'home.requestCtaTitle' | t }}</h2>
+              <p class="hero-cta-desc">{{ 'home.requestCtaDesc' | t }}</p>
+              <ui-button [link]="['/search']" size="md" class="hero-cta-btn">{{ 'home.requestCtaButton' | t }}</ui-button>
+            </div>
           </div>
         </div>
       </section>  `,
   styles: [`
-    /* An extracted component's host defaults to display:inline, which stops
-       it establishing a block box — child margins then collapse through it
-       and the band loses height. */
     :host { display: block; }
 
     /* ---- hero ------------------------------------------------------- */
@@ -122,17 +163,8 @@ export interface HeroCover {
       padding-block: var(--space-5);
       background-color: var(--paper-warm);
       border-bottom: 1px solid var(--line);
-      /* One step tighter than the --space-7 that separates ordinary sections:
-         the band's own --space-8 padding already supplies most of the break,
-         so the full section gap on top of it read as a gap in the page. Not
-         zero, though — at zero the next section's heading sits directly on
-         the band's border with no breathing room at all. */
       margin-bottom: var(--space-4);
     }
-    /* Grid, not space-between. With the copy capped at ~480px and the cover
-       stack only 220px wide, 'justify-content: space-between' pushed the two
-       to opposite edges and left a 420px hole between them that read as
-       missing content rather than as white space. */
     .hero-inner {
       display: grid;
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
@@ -145,14 +177,12 @@ export interface HeroCover {
       font-size: var(--text-hero);
       font-weight: 700;
       line-height: 1.25;
-      /* No negative tracking. The -0.01em here was a Latin optical correction
-         applied to a string that is almost entirely full-width CJK, where it
-         just crushes the glyphs together; Han type needs its natural advance
-         width, and the Latin brand name gets its own rule in the header. */
       letter-spacing: normal;
       margin: 0 0 var(--space-2);
       max-width: 16em;
       text-wrap: balance;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .hero-subtitle {
       margin: 0 0 var(--space-4);
@@ -178,12 +208,7 @@ export interface HeroCover {
       pointer-events: none;
     }
     .hero-input { display: block; width: 100%; height: 100%; }
-    /* The icon only stands in for the label below the breakpoint. */
     .search-submit .submit-icon { display: none; }
-    /* Underline treatment for the hero search field only: ui-input hardcodes
-       its own boxed border with no variant hook, so this is scoped narrowly
-       via ::ng-deep to .hero-input rather than touched globally. The left
-       padding makes room for .search-icon sitting inside the field. */
     .hero-input ::ng-deep .input-wrapper, .hero-input ::ng-deep input { height: 100%; }
     .hero-input ::ng-deep input {
       min-height: 44px;
@@ -208,9 +233,6 @@ export interface HeroCover {
       color: var(--muted);
       margin-bottom: var(--space-3);
     }
-    /* Real chips with a real hit area. These were 42x20px text links with a
-       hairline underline — under half the minimum touch target, and visually
-       indistinguishable from body copy. */
     .tag-btn {
       display: inline-flex;
       align-items: center;
@@ -251,9 +273,6 @@ export interface HeroCover {
       .hero-sell-link { min-height: var(--tap-min); }
     }
 
-    /* "No commission" and "verified campus email" are the two reasons to pick
-       this over a Facebook group, and they were buried in step 3's body copy
-       at 14px. One line, in the hero, above the fold. */
     .hero-trust {
       margin: 0; padding: 0; list-style: none;
       font-weight: 500;
@@ -288,29 +307,25 @@ export interface HeroCover {
       transform: translateX(var(--x)) rotate(var(--r));
     }
     /* shape comes from the global .stamp-tag */
-    .demand-tag {
-      left: -8px; bottom: -8px; color: var(--flag);
+    .demand-tag, .sponsor-tag {
+      left: -8px; bottom: -8px;
       transition: opacity 0.2s ease;
     }
-    .cover-card:not(:first-child) .demand-tag {
+    .demand-tag { color: var(--flag); }
+    .sponsor-tag { color: var(--sponsor); z-index: 2; }
+    .cover-card:not(:first-child) :is(.demand-tag, .sponsor-tag) {
       opacity: 0;
       pointer-events: none;
     }
     
-    /* Hover/Focus expanded state */
-    .hero-stack:hover .cover-card,
-    .hero-stack:focus-within .cover-card {
+    .hero-stack:is(:hover, :focus-within) .cover-card {
       transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale));
     }
-    .hero-stack:hover .cover-card:not(:first-child) .demand-tag,
-    .hero-stack:focus-within .cover-card:not(:first-child) .demand-tag {
+    .hero-stack:is(:hover, :focus-within) .cover-card:not(:first-child) :is(.demand-tag, .sponsor-tag) {
       opacity: 1;
       pointer-events: auto;
     }
-    /* Single card hover effect while expanded */
-    .hero-stack:hover .cover-card:hover,
-    .hero-stack:focus-within .cover-card:hover,
-    .hero-stack:focus-within .cover-card:focus-visible {
+    .hero-stack:is(:hover, :focus-within) .cover-card:is(:hover, :focus-visible) {
       transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale)) translateY(-6px) !important;
     }
 
@@ -318,7 +333,7 @@ export interface HeroCover {
       .cover-card {
         transform: translateX(calc(var(--hover-dir) * var(--card-shift))) scale(var(--card-scale));
       }
-      .cover-card:not(:first-child) .demand-tag {
+      .cover-card:not(:first-child) :is(.demand-tag, .sponsor-tag) {
         opacity: 1;
         pointer-events: auto;
       }
@@ -327,64 +342,62 @@ export interface HeroCover {
       }
     }
 
+    /* ---- hero cta ---------------------------------------------------- */
+    .hero-cta {
+      width: 100%;
+      max-width: 368px;
+      justify-self: end;
+      margin-inline: auto;
+    }
+    .hero-cta-inner {
+      background-color: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-card-lg);
+      padding: var(--space-6) var(--space-5);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+    .hero-cta-mark {
+      color: var(--accent);
+      margin-bottom: var(--space-1);
+    }
+    .hero-cta-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: var(--text-xl);
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0;
+      color: var(--ink);
+    }
+    .hero-cta-desc {
+      font-size: var(--text-sm);
+      line-height: 1.6;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+    .hero-cta-btn {
+      margin-top: var(--space-2);
+    }
+
     @media (max-width: 768px) {
       .hero-search { padding-block: var(--space-4); margin-bottom: var(--space-4); }
-      /* align-items must not be 'center' here: in a column flow that makes
-         .hero-copy shrink-to-fit, which is why the search field ended up
-         240px wide on a 375px screen while every other control on the page
-         was 343px. */
       .hero-inner { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: var(--space-3); }
-      /* Hide cover stack on mobile to save vertical space. The first screen
-         needs to show real content below the fold. */
-      .hero-stack { display: none; }
-      /* No font-size override. The old '22px' here fought --text-hero's clamp
-         and produced a 34px -> 22px cliff across a single pixel of viewport
-         width, landing the hero title 2px away from .section-heading. The
-         clamp's own lower bound handles small screens. */
+      .hero-stack, .hero-cta { display: none; }
       .search-title { line-height: 1.2; max-width: 100%; overflow-wrap: anywhere; }
       .hero-subtitle { font-size: var(--text-sm); margin-bottom: var(--space-3); }
-      /* Stays a row. Stacking put a 343x48 filled button under the field —
-         the largest control on the screen for an action the field's own
-         Enter key already performs. It collapses to a square icon instead,
-         which is the shape ui-search-bar already uses elsewhere. */
       .search-bar { max-width: none; margin-bottom: var(--space-2); }
       .hero-input-wrap { flex: 1; min-width: 0; }
-      /* Two magnifiers side by side would be the alternative, so the
-         decorative one inside the field steps aside for the real control. */
       .hero-input-wrap .search-icon { display: none; }
       .hero-input ::ng-deep input { padding-left: var(--space-2); min-height: 40px; }
-      /* Width goes on the host: .ui-btn is width:100%, so it inherits whatever
-         the host is. The padding override has to out-specify .ui-btn.lg —
-         matching its specificity only ties, and the tie goes to whichever
-         component stylesheet the bundler emits last. */
       .search-submit { flex: 0 0 40px; align-self: stretch; }
       .search-submit ::ng-deep .ui-btn.lg { padding-inline: 0; min-height: 40px; height: 100%; }
       .search-submit .submit-icon { display: block; }
-
-      /* The three blocks below the search field cost 230px here — 38% of the
-         hero and 28% of the viewport, more than the title and subtitle put
-         together — which left the first book starting 743px down an 812px
-         screen, i.e. barely a sliver of it on the first screen. */
-
-      /* Redundant on this breakpoint twice over: the page carries a dedicated
-         seller band above "How it works", and the bottom tab bar keeps a Sell
-         entry fixed on screen at all times. Desktop keeps it — there is no tab
-         bar there. */
-      .hero-sell { display: none; }
-
-      /* Dropping the "Popular:" label frees roughly the width it occupied, and
-         the three chips then settle on one row instead of wrapping to two.
-         Preferred over making the row scroll horizontally: that would hide
-         part of the set behind a gesture to save the same 52px. */
-      .tag-label { display: none; }
+      .hero-sell, .tag-label { display: none; }
       .popular-tags { margin-bottom: var(--space-2); }
-
-      /* Kept at --text-base with the accent icons intact. What the earlier
-         review objected to was the *hierarchy* — 13px --muted text sitting
-         under a hairline rule, which read as a copyright notice — not the
-         number of rows. Tightening the gaps lets the Chinese strings settle
-         on one line (they are far shorter than the English); English still
-         wraps, to two rows rather than three. */
       .hero-trust { gap: var(--space-1) var(--space-2); margin-top: 0; font-size: var(--text-sm); }
       .hero-trust li { gap: var(--space-1); }
     }
@@ -393,6 +406,7 @@ export interface HeroCover {
 export class HomeHero {
   /** Books to show in the stack; the page decides which ones. */
   @Input() covers: HeroCover[] = [];
+  @Output() adClick = new EventEmitter<PublicAd>();
 
   searchQuery = '';
 
@@ -454,4 +468,9 @@ export class HomeHero {
     sessionStorage.setItem(`cachedBook_${cover.isbn || cover.id}`, JSON.stringify(cached));
   }
 
+  onHeroAdClick(cover: HeroCover) {
+    if (cover.adData) {
+      this.adClick.emit(cover.adData);
+    }
+  }
 }

@@ -20,7 +20,15 @@ describe('HomeComponent', () => {
 
   beforeEach(async () => {
     mockI18n = {
-      t: (key: string) => `Translated: ${key}`,
+      t: (key: string, params?: Record<string, string | number>) => {
+        let text = `Translated: ${key}`;
+        if (params) {
+          for (const [name, value] of Object.entries(params)) {
+            text += ` (${name}=${value})`;
+          }
+        }
+        return text;
+      },
       lang: () => 'zh-TW'
     };
 
@@ -34,7 +42,9 @@ describe('HomeComponent', () => {
         categories: [{ slug: 'cat1', title: 'Cat 1', desc: 'Cat 1 desc' }],
         waitlist: [{ title: 'Wait 1', count: 5 }]
       })),
-      getActiveAds: vi.fn().mockReturnValue(of({ results: [] }))
+      getActiveAds: vi.fn().mockReturnValue(of({ results: [] })),
+      recordAdView: vi.fn().mockReturnValue(of({})),
+      recordAdClick: vi.fn().mockReturnValue(of({}))
     };
 
     mockSchoolStateService = {
@@ -86,5 +96,70 @@ describe('HomeComponent', () => {
   it('should provide trackBy ids correctly', () => {
     expect(component.trackById(0, { id: 10 })).toBe(10);
     expect(component.trackByTitle(0, { title: 'book' })).toBe('book');
+  });
+
+  it('leaves hero covers empty when there is no waitlist and no hero ad', () => {
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist: [] }));
+    mockMetadataService.getActiveAds.mockReturnValue(of({ results: [] }));
+
+    component.loadAds();
+    component.loadMetadata();
+
+    expect(component.heroCovers).toEqual([]);
+  });
+
+  it('places a show_in_hero ad at the front of hero covers with waitlist books', () => {
+    const heroAd: any = { id: 99, title: 'Ad Title', image_url: 'http://img.png', target_url: 'http://link.com', show_in_hero: true, slot_index: 1 };
+    const waitlist = [
+      { book_id: 1, title: 'Book 1', cover_url: 'http://b1.png', count: 4 },
+      { book_id: 2, title: 'Book 2', cover_url: 'http://b2.png', count: 3 },
+      { book_id: 3, title: 'Book 3', cover_url: 'http://b3.png', count: 2 },
+    ];
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist }));
+    mockMetadataService.getActiveAds.mockReturnValue(of({ results: [heroAd] }));
+
+    component.loadAds();
+    component.loadMetadata();
+
+    expect(component.heroCovers.length).toBe(3);
+    expect(component.heroCovers[0]).toEqual({
+      id: 99,
+      title: 'Ad Title',
+      coverUrl: 'http://img.png',
+      isAd: true,
+      targetUrl: 'http://link.com',
+      adData: heroAd
+    });
+    expect(component.heroCovers[1].id).toBe(1);
+    expect(component.heroCovers[2].id).toBe(2);
+  });
+
+  it('shows the hero ad alone when there is no waitlist', () => {
+    const heroAd: any = { id: 99, title: 'Ad Title', image_url: 'http://img.png', target_url: 'http://link.com', show_in_hero: true, slot_index: 1 };
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist: [] }));
+    mockMetadataService.getActiveAds.mockReturnValue(of({ results: [heroAd] }));
+
+    component.loadAds();
+    component.loadMetadata();
+
+    expect(component.heroCovers.length).toBe(1);
+    expect(component.heroCovers[0].isAd).toBe(true);
+  });
+
+  it('renders waitlist wcount as-is below 10000 and capped at 9999+ when exceeding 9999', () => {
+    const waitlist = [
+      { book_id: 1, title: 'Book 1', cover_url: '', count: 50 },
+      { book_id: 2, title: 'Book 2', cover_url: '', count: 12000 }
+    ];
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist }));
+
+    component.loadMetadata();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const wcounts = compiled.querySelectorAll('.wcount');
+    expect(wcounts.length).toBe(2);
+    expect(wcounts[0].textContent).toContain('n=50');
+    expect(wcounts[1].textContent).toContain('n=9999+');
   });
 });

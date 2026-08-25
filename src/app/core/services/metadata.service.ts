@@ -13,6 +13,7 @@ export interface PublicAd {
   advertiser_name?: string;
   slot_index: number;
   labels?: string[];
+  show_in_hero?: boolean;
 }
 
 @Injectable({

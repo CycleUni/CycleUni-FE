@@ -76,6 +76,7 @@ export interface AdminAd {
   start_date: string;
   end_date: string;
   is_active: boolean;
+  show_in_hero?: boolean;
   is_internal_image?: boolean;
   clicks_count: number;
   views_count: number;

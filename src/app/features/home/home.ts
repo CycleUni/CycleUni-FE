@@ -12,21 +12,21 @@ import { Subject } from 'rxjs';
 import { takeUntil, distinctUntilChanged } from 'rxjs/operators';
 import { ChangeDetectorRef, effect } from '@angular/core';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { CountCapPipe } from '../../shared/pipes/count-cap.pipe';
 import { MetadataService, PublicAd } from '../../core/services/metadata.service';
 import { SchoolStateService } from '../../core/services/school-state.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, TPipe],
+  imports: [CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, TPipe, CountCapPipe],
   template: `
-      <app-home-hero [covers]="heroCovers"></app-home-hero>
+      <app-home-hero [covers]="heroCovers" (adClick)="onAdClick($event)"></app-home-hero>
 
       <!-- Categories: show skeleton during load, then the real content, never blank -->
       <div class="two-cols container" [class.hero-has-covers]="heroCovers.length > 0">
         <section class="col-main" aria-labelledby="recent-listings-heading">
-          
-          <ui-recent-listings [school]="currentSchool" (booksLoaded)="onRecentBooksLoaded($event)" [ads]="activeAds" (adClick)="onAdClick($event)"></ui-recent-listings>
+          <ui-recent-listings [school]="currentSchool" [ads]="activeAds" (adClick)="onAdClick($event)"></ui-recent-listings>
         </section>
 
         <section class="col-side" aria-labelledby="waitlist-heading">
@@ -53,7 +53,7 @@ import { SchoolStateService } from '../../core/services/school-state.service';
                   <span class="wcover-mark" *ngIf="!wait.cover_url">{{ (wait.title || '').slice(0, 1) }}</span>
                 </span>
                 <span class="wtitle">{{ wait.title }}</span>
-                <span class="wcount">{{ 'home.waitingCount' | t:{n: wait.count} }}</span>
+                <span class="wcount">{{ 'home.waitingCount' | t:{n: wait.count | countCap} }}</span>
               </a>
               <ui-button variant="ghost" [link]="['/sell']" class="waitlist-cta">{{ 'home.sellCta' | t }}</ui-button>
             </div>
@@ -257,7 +257,6 @@ export class Home implements OnInit, OnDestroy {
   activeAds: PublicAd[] = [];
   currentSchool: string = '';
   heroCovers: HeroCover[] = [];
-  private recentBooksFallback: any[] = [];
 
   /**
    * Ceiling for the "most wanted" list, mirroring the `[:7]` the metadata
@@ -352,6 +351,7 @@ export class Home implements OnInit, OnDestroy {
       next: (resp: any) => {
         // BE returns paginated format { count, results } after adding pagination_class
         this.activeAds = resp?.results ?? (Array.isArray(resp) ? resp : []);
+        this.updateHeroCovers();
         this.cdr.markForCheck();
 
         this.activeAds.forEach(ad => {
@@ -366,6 +366,7 @@ export class Home implements OnInit, OnDestroy {
       },
       error: () => {
         this.activeAds = [];
+        this.updateHeroCovers();
         this.cdr.markForCheck();
       }
     });
@@ -383,29 +384,28 @@ export class Home implements OnInit, OnDestroy {
       .subscribe({ error: () => {} });
   }
 
-  // Reuses ui-recent-listings' already-fetched aggregate data as the hero
-  // cover-stack fallback when there's no waitlist yet — avoids a second
-  // recent_books/ API call just for the hero.
-  onRecentBooksLoaded(books: any[]) {
-    this.recentBooksFallback = books || [];
-    this.updateHeroCovers();
-  }
-
   private updateHeroCovers() {
-    if (this.waitlist.length > 0) {
-      this.heroCovers = this.waitlist.slice(0, Home.HERO_COVERS_MAX).map(w => ({
-        id: w.book_id,
-        title: w.title,
-        coverUrl: w.cover_url,
-        count: w.count
-      }));
-    } else if (this.recentBooksFallback.length > 0) {
-      this.heroCovers = this.recentBooksFallback.slice(0, Home.HERO_COVERS_MAX).map(b => ({
-        id: b.id,
-        isbn: b.isbn,
-        title: b.title,
-        coverUrl: b.cover_url
-      }));
+    const heroAd = this.activeAds.find(ad => ad.show_in_hero);
+    const maxWaitlist = heroAd ? Math.max(0, Home.HERO_COVERS_MAX - 1) : Home.HERO_COVERS_MAX;
+    const waitlistCovers: HeroCover[] = this.waitlist.slice(0, maxWaitlist).map(w => ({
+      id: w.book_id,
+      title: w.title,
+      coverUrl: w.cover_url,
+      count: w.count
+    }));
+
+    if (heroAd) {
+      const adCover: HeroCover = {
+        id: heroAd.id,
+        title: heroAd.headline || heroAd.title,
+        coverUrl: heroAd.image_url,
+        isAd: true,
+        targetUrl: heroAd.target_url,
+        adData: heroAd
+      };
+      this.heroCovers = [adCover, ...waitlistCovers];
+    } else if (waitlistCovers.length > 0) {
+      this.heroCovers = waitlistCovers;
     } else {
       this.heroCovers = [];
     }

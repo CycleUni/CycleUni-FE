@@ -147,6 +147,11 @@ import { firstValueFrom } from 'rxjs';
             <input type="checkbox" id="adIsActive" [(ngModel)]="formData.is_active">
             <label for="adIsActive" style="margin: 0; font-weight: normal;">{{ 'admin.advertiserActive' | t }}</label>
           </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="adShowInHero" [(ngModel)]="formData.show_in_hero">
+            <label for="adShowInHero" style="margin: 0; font-weight: normal;">{{ 'admin.adShowInHero' | t }}</label>
+          </div>
         </div>
         
         <div class="app-modal-actions">
@@ -191,7 +196,8 @@ export class AdminAdsListComponent implements OnInit {
     headline: '',
     subheadline: '',
     slot_index: 1,
-    is_active: true
+    is_active: true,
+    show_in_hero: false
   };
   labelsInput = '';
 
@@ -252,6 +258,7 @@ export class AdminAdsListComponent implements OnInit {
       subheadline: '',
       slot_index: 1,
       is_active: true,
+      show_in_hero: false,
       start_date: this.formatDateForInput(new Date().toISOString()),
       end_date: this.formatDateForInput(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
     };
@@ -263,7 +270,7 @@ export class AdminAdsListComponent implements OnInit {
 
   openEditModal(ad: AdminAd) {
     this.editingId = ad.id;
-    this.formData = { ...ad };
+    this.formData = { ...ad, show_in_hero: !!ad.show_in_hero };
     this.labelsInput = ad.labels ? ad.labels.join(', ') : '';
     // Format dates for datetime-local input
     if (this.formData.start_date) {

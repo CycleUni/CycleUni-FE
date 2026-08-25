@@ -134,11 +134,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   `]
 })
 export class UiRecentListings {
-  // Lets the home page reuse this component's already-fetched aggregate
-  // data (e.g. for the hero cover stack fallback) without issuing a second
-  // recent_books/ API call.
-  @Output() booksLoaded = new EventEmitter<any[]>();
-
   @Input() set school(val: string) {
     this._school = val;
     this.fetchRecentBooks();
@@ -234,7 +229,6 @@ export class UiRecentListings {
         this.recentBooks = data.results || data;
         this.totalCount = data.count || this.recentBooks.length;
         this.errorMessage = '';
-        this.booksLoaded.emit(this.recentBooks);
       }
       this.loading = false;
       this.cdr.markForCheck();
