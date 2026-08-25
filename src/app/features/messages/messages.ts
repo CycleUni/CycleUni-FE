@@ -9,6 +9,7 @@ import { UiImageLightbox } from '../../shared/ui/image-lightbox.component';
 import { UiReportModal } from '../../shared/ui/report-modal.component';
 import { UiRoleBadge } from '../../shared/ui/role-badge.component';
 import { MessagesInboxList } from './inbox-list.component';
+import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from '../../core/services/message.service';
 import { AuthStore } from '../../core/auth.store';
@@ -24,7 +25,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe, UiVerificationPrompt],
   templateUrl: './messages.html',
   styleUrls: ['./messages.css']
 })
@@ -33,6 +34,7 @@ export class Messages implements OnInit, OnDestroy {
   activeChat: any = null;
   messages: any[] = [];
   newMessage = '';
+  showUnverifiedPrompt = false;
   chatToken = '';
   edgeChatUrl = '';
   userId = '';
@@ -79,6 +81,9 @@ export class Messages implements OnInit, OnDestroy {
   // through that same tick as a fallback, then clears itself.
   private imeJustEnded = false;
 
+  private readonly MAX_DRAFT_LENGTH = 2000;
+  private readonly DRAFT_STORAGE_PREFIX = 'cycleuni.chat.draft.';
+
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit() {
@@ -112,11 +117,11 @@ export class Messages implements OnInit, OnDestroy {
       if (this.activeChat) {
         const exists = this.messages.some(m => m.id === msg.id || (m.id.startsWith('temp_') && m.body === msg.content && m.is_mine));
         if (!exists) {
-          this.messages.push({
+          this.insertMessageSorted({
             id: msg.id,
             body: msg.content,
             is_mine: String(msg.user_id) === String(this.userId),
-            created_at: new Date(msg.timestamp).toISOString(),
+            created_at: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
             message_type: msg.message_type || 'text'
           });
         }
@@ -160,6 +165,10 @@ export class Messages implements OnInit, OnDestroy {
       const msg = this.messages.find(m => m.id === tempId);
       if (msg) {
         msg.id = ack.id;
+        if (ack.timestamp) {
+          msg.created_at = new Date(ack.timestamp).toISOString();
+          this.sortMessages();
+        }
       }
     });
 
@@ -204,6 +213,9 @@ export class Messages implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.activeChat?.id) {
+      this.saveDraft(this.activeChat.id, this.newMessage);
+    }
     // The hub connection is owned by the app shell (ui-layout), not this
     // page, so it stays alive across navigation — only disconnectEdgeChat
     // (the per-room connection for whichever chat was open) belongs here.
@@ -264,7 +276,12 @@ export class Messages implements OnInit, OnDestroy {
                 },
                 error: (err) => {
                   console.error('Failed to start conversation', err);
-                  alert(this.i18n.t('msg.chatOpenFailed') || 'Failed to open chat');
+                  if (err?.status === 403 || err?.error?.error?.code === 'auth.errNotVerified' || err?.error?.error?.code === 'acct.errUnverified') {
+                    this.showUnverifiedPrompt = true;
+                  } else {
+                    alert(this.i18n.t('msg.chatOpenFailed') || 'Failed to open chat');
+                  }
+                  this.cdr.markForCheck();
                 }
               });
             }
@@ -280,13 +297,21 @@ export class Messages implements OnInit, OnDestroy {
   }
 
   closeChat() {
+    if (this.activeChat?.id) {
+      this.saveDraft(this.activeChat.id, this.newMessage);
+    }
+    this.newMessage = '';
     this.activeChat = null;
     this.mobileLayout.setHideBottomNav(false);
   }
 
   selectChat(chat: any) {
     if (this.activeChat?.id === chat.id && this.messages.length > 0) return;
+    if (this.activeChat?.id && this.activeChat.id !== chat.id) {
+      this.saveDraft(this.activeChat.id, this.newMessage);
+    }
     this.activeChat = chat;
+    this.newMessage = this.loadDraft(chat.id);
     this.mobileLayout.setHideBottomNav(true);
     this.pendingTempIds = [];
     this.messages = [];
@@ -378,6 +403,8 @@ export class Messages implements OnInit, OnDestroy {
     if (this.connectionState !== 'connected') return;
     if (this.newMessage.trim() && this.activeChat) {
       const text = this.newMessage.trim();
+      const chatId = this.activeChat.id;
+      this.clearDraft(chatId);
       this.newMessage = '';
 
       const tempMsg: any = {
@@ -386,7 +413,7 @@ export class Messages implements OnInit, OnDestroy {
         is_mine: true,
         created_at: new Date().toISOString()
       };
-      this.messages.push(tempMsg);
+      this.insertMessageSorted(tempMsg);
       this.activeChat.latest_message = text;
       this.cdr.markForCheck();
       setTimeout(() => this.scrollToBottom(), 10);
@@ -566,13 +593,36 @@ export class Messages implements OnInit, OnDestroy {
       };
     });
 
-      this.messages = newMessages.sort((a, b) =>
+    // Preserve any pending optimistic messages that are currently in flight
+    const pendingOptimistic = this.messages.filter(m => m.id && String(m.id).startsWith('temp_') && !newMessages.some(nm => nm.body === m.body && nm.is_mine));
+
+    this.messages = [...newMessages, ...pendingOptimistic].sort((a, b) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
 
     this.cdr.markForCheck();
     setTimeout(() => this.scrollToBottom(true), 50);
     setTimeout(() => this.scrollToBottom(true), 500); // Backup for slow rendering
+  }
+
+  private insertMessageSorted(msg: any): void {
+    const msgTime = new Date(msg.created_at).getTime();
+    let low = 0;
+    let high = this.messages.length;
+    while (low < high) {
+      const mid = (low + high) >>> 1;
+      const midTime = new Date(this.messages[mid].created_at).getTime();
+      if (midTime <= msgTime) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    this.messages.splice(low, 0, msg);
+  }
+
+  private sortMessages(): void {
+    this.messages.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }
 
   private isMeetupRequestMsg(msg: any): boolean {
@@ -728,13 +778,57 @@ export class Messages implements OnInit, OnDestroy {
     this.messageService.deleteConversation(chat.id).subscribe({
       next: () => {
         // Remove from sidebar
+        this.clearDraft(chat.id);
         this.chats = this.chats.filter(c => c.id !== chat.id);
         if (this.activeChat?.id === chat.id) {
           this.activeChat = null;
           this.messages = [];
+          this.newMessage = '';
         }
         this.cdr.markForCheck();
       }
     });
   }
+
+  onDraftChange(text: string) {
+    if (this.activeChat?.id) {
+      this.saveDraft(this.activeChat.id, text);
+    }
+  }
+
+  private saveDraft(conversationId: string | number, text: string): void {
+    if (!conversationId || typeof window === 'undefined' || !window.sessionStorage) return;
+    try {
+      const key = `${this.DRAFT_STORAGE_PREFIX}${conversationId}`;
+      const capped = (text || '').slice(0, this.MAX_DRAFT_LENGTH);
+      if (capped.length > 0) {
+        window.sessionStorage.setItem(key, capped);
+      } else {
+        window.sessionStorage.removeItem(key);
+      }
+    } catch {
+      // Storage unavailable or quota exceeded — fail gracefully without throwing
+    }
+  }
+
+  private loadDraft(conversationId: string | number): string {
+    if (!conversationId || typeof window === 'undefined' || !window.sessionStorage) return '';
+    try {
+      const key = `${this.DRAFT_STORAGE_PREFIX}${conversationId}`;
+      return window.sessionStorage.getItem(key) || '';
+    } catch {
+      return '';
+    }
+  }
+
+  private clearDraft(conversationId: string | number): void {
+    if (!conversationId || typeof window === 'undefined' || !window.sessionStorage) return;
+    try {
+      const key = `${this.DRAFT_STORAGE_PREFIX}${conversationId}`;
+      window.sessionStorage.removeItem(key);
+    } catch {
+      // Storage unavailable — ignore
+    }
+  }
 }
+
