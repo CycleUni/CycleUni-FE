@@ -7,6 +7,7 @@ import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiConditionPicker } from '../../shared/ui/condition-picker.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
+import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 import { AccountService } from '../../core/services/account.service';
 import { BookService } from '../../core/services/book.service';
 import { ListingService } from '../../core/services/listing.service';
@@ -19,7 +20,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 @Component({
   selector: 'app-sell',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiDropdown, UiConditionPicker, UiBookCover, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiDropdown, UiConditionPicker, UiBookCover, UiVerificationPrompt, TPipe],
   templateUrl: './sell.html',
   styleUrls: ['./sell.css']
 })
@@ -30,6 +31,7 @@ export class Sell implements OnInit, OnDestroy {
   bookPreview: any = null;
   isLoggedIn = false;
   isVerified = false;
+  showUnverifiedPrompt = false;
   isLoading = true;
   isCheckingIsbn = false;
   isSubmitting = false;
@@ -157,6 +159,10 @@ export class Sell implements OnInit, OnDestroy {
         next: (profile) => {
           this.isLoading = false;
           this.isVerified = !!profile.verified_at;
+          // Both triggers for this banner — landing here unverified, and a
+          // later submit blocked by a stale 403 — must go through the same
+          // flag, or the dismiss button only silences one of the two paths.
+          if (!this.isVerified) this.showUnverifiedPrompt = true;
           this.cdr.markForCheck();
         },
         error: () => {
@@ -297,6 +303,12 @@ export class Sell implements OnInit, OnDestroy {
   async submit() {
     this.apiError = '';
 
+    if (!this.isVerified) {
+      this.showUnverifiedPrompt = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
     if (this.price === null || this.price < 0) {
       this.apiError = this.i18n.t('sell.priceRequired');
       return;
@@ -331,7 +343,11 @@ export class Sell implements OnInit, OnDestroy {
         error: (err) => {
           this.isSubmitting = false;
           const code = err.error?.error?.code;
-          this.apiError = this.i18n.t('sell.listFailed') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.error?.detail || this.i18n.t('sell.unknownError')));
+          if (err.status === 403 || code === 'acct.errUnverified' || code === 'auth.errNotVerified') {
+            this.showUnverifiedPrompt = true;
+          } else {
+            this.apiError = this.i18n.t('sell.listFailed') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.error?.detail || this.i18n.t('sell.unknownError')));
+          }
           this.cdr.markForCheck();
         }
       });

@@ -13,11 +13,12 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
 import { AccountService } from '../../core/services/account.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ReportModalComponent } from './report-modal.component';
+import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 
 @Component({
   selector: 'app-listing-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent],
+  imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
   templateUrl: './listing-detail.html',
   styleUrls: ['./listing-detail.css']
 })
@@ -27,6 +28,7 @@ export class ListingDetail implements OnInit, OnDestroy {
   listing: any = null;
   isLoading = true;
   errorMsg = '';
+  showUnverifiedPrompt = false;
   
   allPhotos: string[] = [];
   selectedIndex: number = 0;
@@ -200,6 +202,12 @@ export class ListingDetail implements OnInit, OnDestroy {
   contactSeller() {
     if (!this.auth.isLoggedIn()) {
       this.router.navigate(['/account'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    const user = this.auth.getUser();
+    if (user && !user.verified_at) {
+      this.showUnverifiedPrompt = true;
+      this.cdr.markForCheck();
       return;
     }
     if (this.listing?.id) {

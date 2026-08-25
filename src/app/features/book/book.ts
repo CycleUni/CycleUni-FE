@@ -13,14 +13,21 @@ import { SchoolStateService } from '../../core/services/school-state.service';
 import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, UiBookCover, UiPagination],
+  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, UiBookCover, UiPagination, UiVerificationPrompt],
   template: `
       <div class="container" *ngIf="book">
         <ui-back-button></ui-back-button>
+
+        <ui-verification-prompt
+          *ngIf="showUnverifiedPrompt"
+          (onDismiss)="showUnverifiedPrompt = false"
+          [message]="'acct.unverifiedDesc' | t">
+        </ui-verification-prompt>
 
         <div class="book-header">
           <div class="book-cover">
@@ -241,6 +248,8 @@ export class Book implements OnInit {
   currentSchool = '';
   currentPage = 1;
   isLoadingListings = true;
+  isVerified = false;
+  showUnverifiedPrompt = false;
   private isLocalCache = false;
   // Which external catalogue to query when this ISBN isn't in our own DB
   // yet — defaults to 'googlebooks' server-side. Threaded through from the
@@ -263,7 +272,6 @@ export class Book implements OnInit {
   private i18n = inject(I18nService);
   private schoolStateService = inject(SchoolStateService);
 
-  isVerified = false;
   private isFirstSchoolEmission = true;
 
   constructor(private route: ActivatedRoute, private router: Router) {
@@ -438,9 +446,8 @@ export class Book implements OnInit {
     }
 
     if (!this.isVerified) {
-      if (confirm(this.i18n.t('alert.verifyToContact'))) {
-        this.router.navigate(['/account']);
-      }
+      this.showUnverifiedPrompt = true;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -450,7 +457,14 @@ export class Book implements OnInit {
       next: (conv) => {
         this.router.navigate(['/messages'], { queryParams: { chat: conv.id } });
       },
-      error: (err) => alert(err.error?.error || this.i18n.t('alert.conversationFailed'))
+      error: (err) => {
+        if (err?.status === 403 || err?.error?.error?.code === 'auth.errNotVerified' || err?.error?.error?.code === 'acct.errUnverified') {
+          this.showUnverifiedPrompt = true;
+          this.cdr.markForCheck();
+        } else {
+          alert(err.error?.error || this.i18n.t('alert.conversationFailed'));
+        }
+      }
     });
   }
 

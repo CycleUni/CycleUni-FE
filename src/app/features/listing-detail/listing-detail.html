@@ -86,6 +86,12 @@
             </div>
           </div>
 
+          <ui-verification-prompt
+            *ngIf="showUnverifiedPrompt"
+            (onDismiss)="showUnverifiedPrompt = false"
+            [message]="'acct.unverifiedDesc' | t">
+          </ui-verification-prompt>
+
           <div class="action-buttons">
             <ui-button style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="buyNow()">
               {{ 'checkout.buyNow' | t }}

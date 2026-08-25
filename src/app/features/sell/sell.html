@@ -9,15 +9,14 @@
         </div>
       </div>
 
-      <div *ngIf="isLoggedIn && !isVerified && !isLoading" class="unverified-state">
-        <div class="alert-box warning">
-          <h3>{{ 'acct.unverifiedTitle' | t }}</h3>
-          <p>{{ 'sell.unverifiedDesc' | t }}</p>
-          <ui-button style="margin-top: 16px;" (onClick)="goToAccountSettings()">{{ 'sell.goVerify' | t }}</ui-button>
-        </div>
-      </div>
+      <ng-container *ngIf="isLoggedIn && !isLoading">
+        <ui-verification-prompt
+          *ngIf="showUnverifiedPrompt"
+          (onDismiss)="showUnverifiedPrompt = false"
+          storageKey="cycleuni.verification_prompt.sell"
+          [message]="'sell.unverifiedDesc' | t">
+        </ui-verification-prompt>
 
-      <ng-container *ngIf="isLoggedIn && isVerified && !isLoading">
         <div class="stepper">
         <div class="step" [class.active]="step === 1">{{ 'sell.step1' | t }}</div>
         <div class="step" [class.active]="step === 2">{{ 'sell.step2' | t }}</div>
