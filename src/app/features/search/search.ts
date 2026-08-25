@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, effect } from '@angular/core';
+import { Component, OnInit, inject, effect, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { UiInput } from '../../shared/ui/input.component';
@@ -19,6 +20,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { UiFacetList, FacetOption } from '../../shared/ui/facet-list.component';
 import { combineLatest, Subscription } from 'rxjs';
+import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-search',
@@ -355,6 +357,7 @@ export class Search implements OnInit {
   private bookService = inject(BookService);
   private auth = inject(AuthStore);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private i18n = inject(I18nService);
   private schoolStateService = inject(SchoolStateService);
   private metadataService = inject(MetadataService);
@@ -376,17 +379,32 @@ export class Search implements OnInit {
       this.cdr.markForCheck();
     });
 
-    combineLatest([this.route.queryParams, this.schoolStateService.selectedSchool$]).subscribe(([params, school]) => {
+    combineLatest([
+      this.schoolStateService.selectedSchool$.pipe(distinctUntilChanged()),
+      this.route.queryParams.pipe(
+        map(params => params['category'] || ''),
+        distinctUntilChanged()
+      )
+    ]).pipe(
+      switchMap(([school, category]) => this.bookService.getTopCourses(school, category)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: data => { this.courses = data; this.cdr.markForCheck(); },
+      error: err => console.error('Failed to load courses', err)
+    });
+
+    // queryParams and selectedSchool$ both outlive this routed component, so
+    // without this every visit to /search left another live subscription
+    // calling markForCheck() on a destroyed view.
+    combineLatest([this.route.queryParams, this.schoolStateService.selectedSchool$]).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(([params, school]) => {
       this.currentSchool = school; this.cdr.markForCheck();
       this.searchQuery = params['q'] || ''; this.activeQuery = this.searchQuery;
       this.category = params['category'] || '';
       this.course = params['course'] || '';
       this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : 'googlebooks';
       this.currentPage = parseInt(params['page'] || '1', 10);
-
-      this.bookService.getTopCourses(this.currentSchool, this.category).subscribe({
-        next: data => { this.courses = data; this.cdr.markForCheck(); }
-      });
 
       if (this.activeQuery || this.category || this.course) {
         this.fetchResults();
