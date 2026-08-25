@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Sell, cleanAndValidateIsbn, clean_and_validate_isbn } from './sell';
+import { Sell, cleanAndValidateIsbn, clean_and_validate_isbn, isValidIsbnChecksum } from './sell';
 import { provideRouter } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { I18nService } from '../../core/i18n.service';
@@ -10,6 +10,20 @@ import { ListingService } from '../../core/services/listing.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { of } from 'rxjs';
+
+describe('isValidIsbnChecksum', () => {
+  it('accepts real ISBN-13 and ISBN-10 check digits', () => {
+    expect(isValidIsbnChecksum('9786264140720')).toBe(true);
+    expect(isValidIsbnChecksum('0306406152')).toBe(true);
+    expect(isValidIsbnChecksum('000000006X')).toBe(true);
+  });
+
+  it('rejects a same-length, all-digit misread with the wrong check digit', () => {
+    // Right shape (13 digits), wrong content — e.g. a garbled camera scan.
+    expect(isValidIsbnChecksum('9786264140721')).toBe(false);
+    expect(isValidIsbnChecksum('0123456788')).toBe(false);
+  });
+});
 
 describe('cleanAndValidateIsbn', () => {
   it('should accept valid 13-digit ISBNs', () => {
@@ -168,15 +182,32 @@ describe('Sell Component Barcode Scanner Validation', () => {
     const stopScannerSpy = vi.spyOn(component, 'stopScanner').mockResolvedValue();
     const searchBookSpy = vi.spyOn(component, 'searchBook').mockImplementation(() => {});
 
-    const result = component.handleScanResult('0-1234-5678-x');
+    const result = component.handleScanResult('0-0000-0006-x');
 
     expect(result).toBe(true);
-    expect(component.searchQuery).toBe('012345678X');
+    expect(component.searchQuery).toBe('000000006X');
     expect(component.cameraError).toBe('');
     expect(stopScannerSpy).toHaveBeenCalled();
 
     await Promise.resolve();
     expect(searchBookSpy).toHaveBeenCalled();
+  });
+
+  it('should reject a correctly-shaped but checksum-invalid scan (garbled misread)', () => {
+    const stopScannerSpy = vi.spyOn(component, 'stopScanner');
+    const searchBookSpy = vi.spyOn(component, 'searchBook');
+
+    component.searchQuery = '';
+
+    // 13 digits, passes the format check, but the check digit is wrong —
+    // the shape a camera misread often produces.
+    const result = component.handleScanResult('9786264140721');
+
+    expect(result).toBe(false);
+    expect(component.searchQuery).toBe('');
+    expect(stopScannerSpy).not.toHaveBeenCalled();
+    expect(searchBookSpy).not.toHaveBeenCalled();
+    expect(component.cameraError).toBe("Scanned code doesn't look like a valid ISBN, try again.");
   });
 
   it('should reject non-ISBN scan, keep scanner running, and set cameraError', () => {

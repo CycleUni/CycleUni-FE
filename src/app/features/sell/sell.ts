@@ -15,7 +15,7 @@ import { MetadataService } from '../../core/services/metadata.service';
 import { AuthStore } from '../../core/auth.store';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 /**
  * Cleans and validates an ISBN string (mirroring backend clean_and_validate_isbn).
@@ -40,6 +40,34 @@ export function cleanAndValidateIsbn(isbnStr: string | null | undefined): string
 }
 
 export const clean_and_validate_isbn = cleanAndValidateIsbn;
+
+/**
+ * Verifies the ISBN-10/13 check digit. Deliberately kept separate from
+ * cleanAndValidateIsbn (which mirrors the backend's format-only check used
+ * for typed search input) — a camera misread can produce a string that's
+ * the right length and all-digit but numerically wrong, which a checksum
+ * catches and a length/format check alone cannot.
+ */
+export function isValidIsbnChecksum(isbn: string): boolean {
+  if (isbn.length === 13) {
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+      sum += Number(isbn[i]) * (i % 2 === 0 ? 1 : 3);
+    }
+    const check = (10 - (sum % 10)) % 10;
+    return check === Number(isbn[12]);
+  }
+  if (isbn.length === 10) {
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += Number(isbn[i]) * (10 - i);
+    }
+    const last = isbn[9] === 'X' ? 10 : Number(isbn[9]);
+    sum += last;
+    return sum % 11 === 0;
+  }
+  return false;
+}
 
 @Component({
   selector: 'app-sell',
@@ -220,7 +248,7 @@ export class Sell implements OnInit, OnDestroy {
 
   handleScanResult(decodedText: string): boolean {
     const validIsbn = cleanAndValidateIsbn(decodedText);
-    if (!validIsbn) {
+    if (!validIsbn || !isValidIsbnChecksum(validIsbn)) {
       const errorMsg = this.i18n.t('sell.invalidBarcodeScanned');
       if (this.cameraError !== errorMsg) {
         this.cameraError = errorMsg;
@@ -244,10 +272,28 @@ export class Sell implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     try {
-      this.html5QrCode = new Html5Qrcode("reader");
+      if (this.html5QrCode && this.html5QrCode.isScanning) {
+        await this.stopScanner();
+      }
+      this.html5QrCode = new Html5Qrcode("reader", {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        verbose: false
+      });
       await this.html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
+        {
+          fps: 10,
+          qrbox: { width: 280, height: 120 },
+          videoConstraints: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        },
         (decodedText) => {
           this.handleScanResult(decodedText);
         },
