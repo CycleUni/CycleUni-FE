@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiButton } from './button.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { PricePipe } from '../pipes/price.pipe';
 
 @Component({
   selector: 'ui-listing-card',
   standalone: true,
-  imports: [CommonModule, UiButton, TPipe],
+  imports: [CommonModule, UiButton, TPipe, PricePipe],
   template: `
     <div class="listing-card" (click)="onClickCard.emit(item.id)">
       <div class="listing-content">
@@ -15,7 +16,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
           <span *ngIf="!item.photo_url && !item.photos?.length || imageBroken">{{ 'book.noPhoto' | t }}</span>
         </div>
         <div class="listing-header">
-          <span class="price">NT$ {{ item.price }}</span>
+          <span class="price">{{ item.price | price }}</span>
           <span class="condition-badge" [ngClass]="item.condition">{{ getConditionLabel(item.condition) }}</span>
         </div>
         <div class="seller-info">

@@ -19,11 +19,12 @@ import { TPipe, I18nService } from '../../core/i18n.service';
 import { Subscription } from 'rxjs';
 import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKEN } from './message-formatting.util';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList],
+  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe],
   templateUrl: './messages.html',
   styleUrls: ['./messages.css']
 })

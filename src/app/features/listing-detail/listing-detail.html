@@ -48,7 +48,7 @@
           </a>
 
           <div class="price-condition-row">
-            <div class="price">NT$ {{ listing.price }}</div>
+            <div class="price">{{ listing.price | price }}</div>
             <div class="condition-badge" [ngClass]="listing.condition">
               {{ ('cond.' + listing.condition) | t }}
             </div>

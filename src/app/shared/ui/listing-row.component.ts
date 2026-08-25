@@ -5,11 +5,12 @@ import { UiButton } from './button.component';
 import { UiBookCover } from './book-cover.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { CountCapPipe } from '../pipes/count-cap.pipe';
+import { PricePipe } from '../pipes/price.pipe';
 
 @Component({
   selector: 'ui-listing-row',
   standalone: true,
-  imports: [CommonModule, UiBadge, UiButton, UiBookCover, TPipe, CountCapPipe],
+  imports: [CommonModule, UiBadge, UiButton, UiBookCover, TPipe, CountCapPipe, PricePipe],
   template: `
     <div class="listing-row">
       <div class="cover">
@@ -34,7 +35,7 @@ import { CountCapPipe } from '../pipes/count-cap.pipe';
         <p class="note" *ngIf="noteInfo">{{ noteInfo }}</p>
       </div>
       <div class="actions">
-        <div class="price" [class.aggregate]="variant === 'aggregate'" *ngIf="price !== undefined && price !== null">{{ pricePrefix }}{{ price }}</div>
+        <div class="price" [class.aggregate]="variant === 'aggregate'" *ngIf="price !== undefined && price !== null">{{ price | price: pricePrefix }}</div>
         
         <!-- badges -->
         <ui-badge *ngIf="status === 'active'" type="waitlist">{{ 'row.active' | t }}</ui-badge>

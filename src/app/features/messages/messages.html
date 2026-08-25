@@ -36,7 +36,7 @@
                 <div class="listing-details">
                   <div class="listing-title">{{ activeChat.listing_title }}</div>
                   <div class="listing-meta">
-                    <span class="price">NT$ {{ activeChat.listing_price }}</span>
+                    <span class="price">{{ activeChat.listing_price | price }}</span>
                     <span class="condition badge">{{ ('cond.' + activeChat.listing_condition) | t }}</span>
                     <span class="course" *ngIf="activeChat.listing_course">{{ activeChat.listing_course }}</span>
                   </div>

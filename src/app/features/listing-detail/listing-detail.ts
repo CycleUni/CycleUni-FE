@@ -9,6 +9,7 @@ import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AuthStore } from '../../core/auth.store';
 import { BookCoverPipe } from '../../shared/pipes/book-cover.pipe';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 import { AccountService } from '../../core/services/account.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ReportModalComponent } from './report-modal.component';
@@ -16,7 +17,7 @@ import { ReportModalComponent } from './report-modal.component';
 @Component({
   selector: 'app-listing-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, ReportModalComponent],
+  imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent],
   templateUrl: './listing-detail.html',
   styleUrls: ['./listing-detail.css']
 })

@@ -6,11 +6,12 @@ import { AdminService, AdminListing } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiSelect } from '../../shared/ui/select.component';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 
 @Component({
   selector: 'app-admin-listing-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiSelect],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiSelect, PricePipe],
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
@@ -22,7 +23,7 @@ import { UiSelect } from '../../shared/ui/select.component';
       <div class="field-grid">
         <div class="field"><label>{{ 'admin.colSeller' | t }}</label><span>{{ listing.seller?.email }}</span></div>
         <div class="field"><label>{{ 'admin.colSchool' | t }}</label><span>{{ listing.school?.name || '—' }}</span></div>
-        <div class="field"><label>{{ 'admin.colPrice' | t }}</label><span>NT$ {{ listing.price }}</span></div>
+        <div class="field"><label>{{ 'admin.colPrice' | t }}</label><span>{{ listing.price | price }}</span></div>
         <div class="field"><label>{{ 'admin.colCondition' | t }}</label><span>{{ ('cond.' + listing.condition) | t }}</span></div>
       </div>
 

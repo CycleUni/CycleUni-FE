@@ -11,12 +11,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ReviewModalComponent } from './review-modal.component';
 import { MeetupModalComponent } from './meetup-modal.component';
 import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, UiSearchBarComponent],
+  imports: [CommonModule, RouterModule, TPipe, UiButton, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, PricePipe, UiSearchBarComponent],
   template: `
     <h2 class="section-heading">{{ 'acct.myOrders' | t }}</h2>
 
@@ -56,7 +57,7 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
                 <p *ngIf="order.meetup_location" class="meetup-detail">{{ 'order.meetupLocation' | t:{location: order.meetup_location} }}</p>
               </div>
               <div class="price">
-                NT$ {{ order.total_amount }}
+                {{ order.total_amount | price }}
               </div>
             </div>
             <div class="order-actions" *ngIf="hasActions(order, 'buyer')">
@@ -84,7 +85,7 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
                 <p *ngIf="order.meetup_location" class="meetup-detail">{{ 'order.meetupLocation' | t:{location: order.meetup_location} }}</p>
               </div>
               <div class="price">
-                NT$ {{ order.total_amount }}
+                {{ order.total_amount | price }}
               </div>
             </div>
             <div class="order-actions" *ngIf="hasActions(order, 'seller')">

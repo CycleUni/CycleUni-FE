@@ -7,11 +7,12 @@ import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { UiSelect } from '../../shared/ui/select.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 
 @Component({
   selector: 'app-admin-orders-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiSelect, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiSelect, UiPagination, PricePipe],
   template: `
     <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchOrders' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
@@ -38,7 +39,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           <td>{{ order.listing?.book_title }}</td>
           <td>{{ order.buyer?.email }}</td>
           <td>{{ order.seller?.email }}</td>
-          <td>NT$ {{ order.total_amount }}</td>
+          <td>{{ order.total_amount | price }}</td>
           <td><span class="admin-status-badge">{{ ('order.status.' + order.status) | t }}</span></td>
         </tr>
         <tr *ngIf="orders.length === 0">

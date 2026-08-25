@@ -5,11 +5,12 @@ import { AdminService, AdminOrder } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { ForceCancelModalComponent } from './force-cancel-modal.component';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 
 @Component({
   selector: 'app-admin-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton, ForceCancelModalComponent],
+  imports: [CommonModule, RouterModule, TPipe, UiButton, ForceCancelModalComponent, PricePipe],
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
@@ -21,7 +22,7 @@ import { ForceCancelModalComponent } from './force-cancel-modal.component';
       <div class="field-grid">
         <div class="field"><label>{{ 'order.buyer' | t }}</label><span>{{ order.buyer?.email }}</span></div>
         <div class="field"><label>{{ 'order.seller' | t }}</label><span>{{ order.seller?.email }}</span></div>
-        <div class="field"><label>{{ 'admin.colPrice' | t }}</label><span>NT$ {{ order.total_amount }}</span></div>
+        <div class="field"><label>{{ 'admin.colPrice' | t }}</label><span>{{ order.total_amount | price }}</span></div>
         <div class="field"><label>{{ 'admin.colStatus' | t }}</label><span class="admin-status-badge">{{ ('order.status.' + order.status) | t }}</span></div>
       </div>
 

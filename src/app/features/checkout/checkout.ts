@@ -11,11 +11,12 @@ import { OrderService } from '../../core/services/order.service';
 import { MessageService } from '../../core/services/message.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { PricePipe } from '../../shared/pipes/price.pipe';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiBookCover, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiBookCover, TPipe, PricePipe],
   template: `
       <main class="container">
         <h2>{{ 'checkout.title' | t }}</h2>
@@ -38,7 +39,7 @@ import { TPipe, I18nService } from '../../core/i18n.service';
               <div>
                 <h4 class="book-title-serif">{{ listing.book_title }}</h4>
                 <p class="muted">{{ listing.book_authors }}</p>
-                <div class="price">NT$ {{ listing.price }}</div>
+                <div class="price">{{ listing.price | price }}</div>
               </div>
             </div>
           </div>
