@@ -28,6 +28,7 @@ export const routes: Routes = [
       { path: 'listings', canActivate: [authGuard], loadComponent: () => import('./features/account/listings').then(m => m.ListingsComponent) },
       { path: 'subscriptions', canActivate: [authGuard], loadComponent: () => import('./features/account/subscriptions').then(m => m.SubscriptionsComponent) },
       { path: 'orders', canActivate: [authGuard], loadComponent: () => import('./features/account/orders').then(m => m.OrdersComponent) },
+      { path: 'reports', canActivate: [authGuard], loadComponent: () => import('./features/account/reports').then(m => m.ReportsComponent) },
       { path: 'settings', canActivate: [authGuard], loadComponent: () => import('./features/account/settings').then(m => m.SettingsComponent) }
     ]
   },

@@ -5,6 +5,50 @@ import { I18nService } from '../i18n.service';
 import { AuthStore } from '../auth.store';
 import { SKIP_AUTH } from '../auth.interceptor';
 
+export interface ChatReportItem {
+  id: string;
+  conversation?: {
+    id: string;
+    listing_title?: string;
+  };
+  reporter?: {
+    id: string;
+    email: string;
+  };
+  reported_party?: {
+    id: string;
+    email: string;
+  };
+  reason: string;
+  detail?: string;
+  flagged_message_ids?: string[];
+  status: 'open' | 'actioned' | 'dismissed';
+  created_at: string;
+}
+
+export interface ListingReportItem {
+  id: string;
+  listing?: {
+    id: string;
+    title?: string;
+  };
+  reporter?: {
+    id: string;
+    email: string;
+  };
+  reason: string;
+  detail?: string;
+  status: 'open' | 'actioned' | 'dismissed';
+  created_at: string;
+}
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface UserProfile {
   id: string | number;
   email: string;
@@ -167,6 +211,16 @@ export class AccountService {
 
   getMySubscriptions(): Observable<any[]> {
     return this.http.get<any[]>('/subscriptions/');
+  }
+
+  getMyListingReports(page: number = 1): Observable<PaginatedResponse<ListingReportItem>> {
+    const params = new HttpParams().set('page', page.toString());
+    return this.http.get<PaginatedResponse<ListingReportItem>>('/moderation/mine/', { params });
+  }
+
+  getMyChatReports(page: number = 1): Observable<PaginatedResponse<ChatReportItem>> {
+    const params = new HttpParams().set('page', page.toString());
+    return this.http.get<PaginatedResponse<ChatReportItem>>('/moderation/chat-reports/mine/', { params });
   }
 
   deleteAccount(): Observable<any> {
