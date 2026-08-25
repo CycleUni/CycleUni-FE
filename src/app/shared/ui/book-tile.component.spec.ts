@@ -56,6 +56,18 @@ describe('UiBookTile', () => {
     expect(sellers.nativeElement.textContent).toContain('n=4');
   });
 
+  it('sellers mode: caps sellerCount at 9999+ when it exceeds threshold', () => {
+    component.mode = 'sellers';
+    component.sellerCount = 10000;
+    component.minPrice = 250;
+    fixture.detectChanges();
+
+    const sellers = fixture.debugElement.query(By.css('.tile-sellers'));
+    expect(sellers).toBeTruthy();
+    expect(sellers.nativeElement.textContent).toContain('bookTile.sellerCount');
+    expect(sellers.nativeElement.textContent).toContain('n=9999+');
+  });
+
   it('sellers mode: uses the approximate-price key when isAveragePrice is set', () => {
     component.mode = 'sellers';
     component.minPrice = 300;
@@ -78,6 +90,17 @@ describe('UiBookTile', () => {
 
     const sellers = fixture.debugElement.query(By.css('.tile-sellers'));
     expect(sellers).toBeNull();
+  });
+
+  it('waitlist mode: caps waitingCount at 9999+ when it exceeds threshold', () => {
+    component.mode = 'waitlist';
+    component.waitingCount = 12500;
+    fixture.detectChanges();
+
+    const priceTag = fixture.debugElement.query(By.css('.price-tag.waitlist'));
+    expect(priceTag).toBeTruthy();
+    expect(priceTag.nativeElement.textContent).toContain('home.waitingCount');
+    expect(priceTag.nativeElement.textContent).toContain('n=9999+');
   });
 
   it('emits tileClick when the tile is clicked', () => {

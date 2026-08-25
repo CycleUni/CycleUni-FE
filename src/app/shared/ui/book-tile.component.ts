@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TPipe } from '../../core/i18n.service';
+import { CountCapPipe } from '../pipes/count-cap.pipe';
 import { UiBookCover } from './book-cover.component';
 
 /**
@@ -31,7 +32,7 @@ import { UiBookCover } from './book-cover.component';
 @Component({
   selector: 'ui-book-tile',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiBookCover],
+  imports: [CommonModule, RouterModule, TPipe, UiBookCover, CountCapPipe],
   template: `
     <div class="book-tile" [class.feature]="feature">
       <a
@@ -72,7 +73,7 @@ import { UiBookCover } from './book-cover.component';
                it were a metric — the same trap as printing NT$ 0 for a book
                with no price. -->
           <span class="price-tag stamp-tag waitlist" *ngIf="mode === 'waitlist' && hasWaiting">
-            {{ 'home.waitingCount' | t:{n: waitingValue } }}
+            {{ 'home.waitingCount' | t:{n: waitingValue | countCap} }}
           </span>
         </span>
 
@@ -82,7 +83,7 @@ import { UiBookCover } from './book-cover.component';
         </span>
 
         <span class="tile-sellers card-subtext" *ngIf="mode === 'sellers'">
-          {{ (sellerCount === 1 ? 'bookTile.sellerCountOne' : 'bookTile.sellerCount') | t:{n: sellerCount ?? 0} }}
+          {{ (sellerCount === 1 ? 'bookTile.sellerCountOne' : 'bookTile.sellerCount') | t:{n: (sellerCount ?? 0) | countCap} }}
         </span>
         <!-- Condition is the single fact a used-book buyer decides on, and it
              was only visible after opening the detail page — the tile read as
@@ -112,6 +113,7 @@ import { UiBookCover } from './book-cover.component';
       display: flex;
       flex-direction: column;
       height: 100%;
+      min-width: 0;
     }
     /* Resets so the anchor/button carrying the tile keeps looking like the
        old div: both ship UA styles (button centres text, adds a border and
@@ -122,6 +124,7 @@ import { UiBookCover } from './book-cover.component';
       align-items: stretch;
       text-align: left;
       width: 100%;
+      min-width: 0;
       padding: 0;
       border: none;
       background: none;
@@ -161,11 +164,16 @@ import { UiBookCover } from './book-cover.component';
       color: var(--flag);
     }
     .tile-title {
-      display: block;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
       margin: 0 0 var(--space-1);
       font-size: var(--text-base);
       font-weight: 700;
       line-height: 1.3;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     /* Deliberately stays below --text-xl (.section-heading's size, 20px):
        a feature-tile title that size would tie visually with the section
@@ -178,6 +186,8 @@ import { UiBookCover } from './book-cover.component';
       margin: 0 0 var(--space-1);
       font-size: var(--text-sm);
       color: var(--muted);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .tile-actions:empty {
