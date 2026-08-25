@@ -153,9 +153,13 @@
          token pair is theme-resolved and clears 4.5:1 in both. */
       background-color: var(--btn-primary-bg);
       color: var(--btn-primary-ink);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       font-size: 11px;
       font-weight: 700;
       line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: normal;
+      transform: translateY(-1px);
     }
     .theme-icon-wrap {
       display: inline-flex;
@@ -363,7 +367,7 @@
         position: absolute;
         top: 4px;
         left: 50%;
-        transform: translateX(6px);
+        transform: translate(6px, -1px);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -373,9 +377,12 @@
         border-radius: 8px;
         background-color: var(--btn-primary-bg);
         color: var(--btn-primary-ink);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         font-size: 10px;
         font-weight: 700;
         line-height: 1;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: normal;
       }
       .app-footer {
         padding: 16px 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
