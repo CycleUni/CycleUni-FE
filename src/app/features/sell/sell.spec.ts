@@ -37,20 +37,20 @@ describe('selectBestRearCamera', () => {
     expect(selectBestRearCamera(devices)).toBe('cam3');
   });
 
-  it('falls back to the first non-front camera if labels are unspecific', () => {
+  it('returns null if labels are unspecific (falls back to facingMode: environment)', () => {
     const devices = [
       { id: 'cam1', label: 'camera2 0, facing back' },
       { id: 'cam2', label: 'camera2 1, facing front' }
     ];
-    expect(selectBestRearCamera(devices)).toBe('cam1');
+    expect(selectBestRearCamera(devices)).toBeNull();
   });
 
-  it('falls back to first candidate if labels are empty/opaque', () => {
+  it('returns null if labels are empty/opaque (falls back to facingMode: environment)', () => {
     const devices = [
       { id: 'cam1', label: '' },
       { id: 'cam2', label: '' }
     ];
-    expect(selectBestRearCamera(devices)).toBe('cam1');
+    expect(selectBestRearCamera(devices)).toBeNull();
   });
 });
 

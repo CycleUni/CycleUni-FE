@@ -70,8 +70,12 @@ export function isValidIsbnChecksum(isbn: string): boolean {
 }
 
 /**
- * Selects the most appropriate rear camera from available video devices,
- * avoiding ultra-wide and telephoto lenses which suffer from poor close-up focus on iOS.
+ * Selects the most appropriate rear camera from available video devices only when
+ * there is high confidence from device labels (e.g. avoiding explicitly labeled
+ * ultra-wide or telephoto lenses on multi-lens iOS devices).
+ *
+ * If labels are generic, uninformative (e.g. Android "camera2 0"), or ambiguous,
+ * returns null to let the browser choose naturally via { facingMode: "environment" }.
  */
 export function selectBestRearCamera(devices: { id: string; label: string }[] | null | undefined): string | null {
   if (!devices || devices.length === 0) return null;
@@ -79,25 +83,39 @@ export function selectBestRearCamera(devices: { id: string; label: string }[] | 
   // Filter out front-facing cameras
   const frontRegex = /front|user|前置|前相機|前鏡頭|facetime|selfie/i;
   const backDevices = devices.filter(d => !frontRegex.test(d.label || ''));
-  const candidates = backDevices.length > 0 ? backDevices : devices;
+  if (backDevices.length <= 1) {
+    // If only 0 or 1 back camera candidate, let browser handle facingMode natively
+    return null;
+  }
 
   // Avoid ultra-wide and telephoto lenses
   const ultraWideRegex = /ultra[\s-]?wide|0\.5x|超廣角/i;
   const telephotoRegex = /telephoto|望遠|長焦|[2-9]x/i;
 
-  const normalBackCameras = candidates.filter(d =>
+  const hasSpecialtyLens = backDevices.some(d =>
+    ultraWideRegex.test(d.label || '') || telephotoRegex.test(d.label || '')
+  );
+
+  // If none of the devices have explicit ultra-wide or telephoto labels,
+  // we do not have high confidence in the label scheme — fall back to browser facingMode.
+  if (!hasSpecialtyLens) {
+    return null;
+  }
+
+  const normalBackCameras = backDevices.filter(d =>
     !ultraWideRegex.test(d.label || '') && !telephotoRegex.test(d.label || '')
   );
 
-  if (normalBackCameras.length > 0) {
-    // If there is one explicitly labeled as main / wide / back camera, prefer it
-    const preferred = normalBackCameras.find(d =>
-      /back camera|main|廣角|後置|後相機/i.test(d.label || '')
-    );
-    return preferred ? preferred.id : normalBackCameras[0].id;
+  if (normalBackCameras.length === 0) {
+    return null;
   }
 
-  return candidates[0]?.id || null;
+  // If there is one explicitly labeled as main / wide / back camera, prefer it
+  const preferred = normalBackCameras.find(d =>
+    /back camera|main|廣角|後置|後相機/i.test(d.label || '')
+  );
+
+  return preferred ? preferred.id : normalBackCameras[0].id;
 }
 
 @Component({
@@ -318,7 +336,7 @@ export class Sell implements OnInit, OnDestroy {
         }
       });
 
-      // Try camera enumeration to pick standard wide rear camera if available
+      // Try camera enumeration to pick standard wide rear camera if high-confidence labels exist (e.g. multi-lens iOS)
       let selectedDeviceId: string | null = null;
       try {
         const devices = await Html5Qrcode.getCameras();
@@ -328,67 +346,23 @@ export class Sell implements OnInit, OnDestroy {
         console.warn('Camera enumeration fallback to facingMode', e);
       }
 
-      const qrboxFn = (viewfinderWidth: number, viewfinderHeight: number) => {
-        const width = Math.max(Math.floor(viewfinderWidth * 0.9), 250);
-        const height = Math.min(
-          Math.max(Math.floor(viewfinderHeight * 0.6), 160),
-          Math.max(viewfinderHeight - 20, 50)
-        );
-        return {
-          width: Math.min(width, viewfinderWidth),
-          height: Math.min(height, viewfinderHeight)
-        };
-      };
-
-      const primaryConfig = {
-        fps: 10,
-        qrbox: qrboxFn,
-        videoConstraints: selectedDeviceId
-          ? {
-              deviceId: { exact: selectedDeviceId },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            }
-          : {
-              facingMode: "environment",
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            }
-      };
-
       const cameraIdOrConfig = selectedDeviceId
         ? { deviceId: { exact: selectedDeviceId } }
         : { facingMode: "environment" };
 
-      try {
-        await this.html5QrCode.start(
-          cameraIdOrConfig,
-          primaryConfig,
-          (decodedText) => {
-            this.handleScanResult(decodedText);
-          },
-          (errorMessage) => {
-            // ignore scan errors, they happen continuously when no code is visible
-          }
-        );
-      } catch (startErr) {
-        console.warn('Initial camera start failed, retrying with fallback constraints', startErr);
-        // Fallback retry with simplest constraints in case resolution negotiation fails
-        await this.html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: qrboxFn,
-            videoConstraints: { facingMode: "environment" }
-          },
-          (decodedText) => {
-            this.handleScanResult(decodedText);
-          },
-          (errorMessage) => {
-            // ignore scan errors
-          }
-        );
-      }
+      await this.html5QrCode.start(
+        cameraIdOrConfig,
+        {
+          fps: 10,
+          qrbox: { width: 280, height: 120 }
+        },
+        (decodedText) => {
+          this.handleScanResult(decodedText);
+        },
+        (errorMessage) => {
+          // ignore scan errors, they happen continuously when no code is visible
+        }
+      );
     } catch (err) {
       console.error('Scanner error', err);
       this.cameraError = this.i18n.t('sell.cameraPermission');
