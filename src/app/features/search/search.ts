@@ -101,6 +101,7 @@ import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
               [appendToBody]="true"
               style="width: 100%; display: block;"
             ></ui-dropdown>
+            <p class="engine-hint" *ngIf="engine === 'isbnnet'">{{ 'search.isbnNetHint' | t }}</p>
             <p class="engine-hint" *ngIf="googleUnavailable">{{ 'search.googleUnavailable' | t }}</p>
           </div>
         </aside>
@@ -274,7 +275,7 @@ import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
 })
 export class Search implements OnInit {
   searchQuery = ''; activeQuery = ''; category = ''; course = '';
-  engine: 'googlebooks' | 'openlibrary' = 'googlebooks';
+  engine: 'googlebooks' | 'openlibrary' | 'isbnnet' = 'googlebooks';
   googleUnavailable = false;
   loading = true; fetchError = false;
   filtersOpen = false;
@@ -403,7 +404,7 @@ export class Search implements OnInit {
       this.searchQuery = params['q'] || ''; this.activeQuery = this.searchQuery;
       this.category = params['category'] || '';
       this.course = params['course'] || '';
-      this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : 'googlebooks';
+      this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : params['engine'] === 'isbnnet' ? 'isbnnet' : 'googlebooks';
       this.currentPage = parseInt(params['page'] || '1', 10);
 
       if (this.activeQuery || this.category || this.course) {

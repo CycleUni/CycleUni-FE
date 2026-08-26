@@ -69,7 +69,8 @@ export class BookService {
   getEngineOptions(i18n: I18nService) {
     return [
       { label: i18n.t('search.engineGoogle'), value: 'googlebooks' },
-      { label: i18n.t('search.engineOpenLibrary'), value: 'openlibrary' }
+      { label: i18n.t('search.engineOpenLibrary'), value: 'openlibrary' },
+      { label: i18n.t('search.engineIsbnNet'), value: 'isbnnet' }
     ];
   }
 }

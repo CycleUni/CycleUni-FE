@@ -106,6 +106,8 @@ export const en: Record<string, string> = {
   'search.engineTitle': 'Data Source',
   'search.engineGoogle': 'Google Books',
   'search.engineOpenLibrary': 'Open Library',
+  'search.engineIsbnNet': 'National Library ISBN',
+  'search.isbnNetHint': 'This source only supports exact ISBN lookup; keyword searches automatically fall back to Google Books.',
   'search.googleUnavailable': 'Google is temporarily unavailable — showing Open Library results instead.',
   'search.resultsFor': 'Search results for "{q}"',
   'search.categoryResults': 'Category search results',

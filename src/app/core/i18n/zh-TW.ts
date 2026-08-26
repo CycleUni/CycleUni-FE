@@ -106,6 +106,8 @@ export const zhTW: Record<string, string> = {
   'search.engineTitle': '資料來源',
   'search.engineGoogle': 'Google 圖書',
   'search.engineOpenLibrary': 'Open Library',
+  'search.engineIsbnNet': '國家圖書館 ISBN',
+  'search.isbnNetHint': '國家圖書館資料來源僅支援輸入完整 ISBN 查詢，關鍵字搜尋將自動改用 Google 圖書。',
   'search.googleUnavailable': 'Google 暫不可用,已改用 Open Library 的搜尋結果。',
   'search.resultsFor': '「{q}」的搜尋結果',
   'search.categoryResults': '學院搜尋結果',
