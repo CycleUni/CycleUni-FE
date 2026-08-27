@@ -58,14 +58,14 @@ export class UiLayout implements OnDestroy {
    */
   private static readonly FULL_BLEED_ROUTES = ['/messages'];
 
-  /** Routes on which the footer brand tagline is displayed. */
-  private static readonly TAGLINE_ROUTES = ['/', '/search'];
+  /** Routes on which the site footer bar is shown at all. */
+  private static readonly FOOTER_ROUTES = ['/', '/search'];
 
   /** True while a full-bleed route is active; suppresses the footer. */
   fullBleed = false;
 
-  /** True when on routes that show the footer tagline (home and search). */
-  showFooterTagline = false;
+  /** True on routes that show the footer bar (home and search). */
+  showFooter = false;
 
   private unreadCountSubscription: Subscription;
   private routerSubscription?: Subscription;
@@ -94,11 +94,11 @@ export class UiLayout implements OnDestroy {
     // Set for the initial URL as well as every later navigation: NavigationEnd
     // does not fire for the route the app boots on.
     this.applyFullBleed();
-    this.applyFooterTagline();
+    this.applyFooterVisibility();
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.applyFullBleed();
-        this.applyFooterTagline();
+        this.applyFooterVisibility();
         this.mobileLayout.setHideBottomNav(false);
         this.cdr.markForCheck();
       }
@@ -153,9 +153,9 @@ export class UiLayout implements OnDestroy {
     this.fullBleed = UiLayout.FULL_BLEED_ROUTES.some(r => url === r || url.startsWith(r + '/'));
   }
 
-  private applyFooterTagline() {
+  private applyFooterVisibility() {
     const url = this.router.url.split('?')[0];
-    this.showFooterTagline = UiLayout.TAGLINE_ROUTES.some(r => url === r || (r !== '/' && url.startsWith(r + '/')));
+    this.showFooter = UiLayout.FOOTER_ROUTES.some(r => url === r || (r !== '/' && url.startsWith(r + '/')));
   }
 
   ngOnDestroy() {

@@ -50,56 +50,47 @@ describe('UiLayout', () => {
     fixture.detectChanges();
   });
 
-  it('shows footer tagline on home route ("/")', async () => {
+  it('shows the footer on home route ("/")', async () => {
     await router.navigateByUrl('/');
     fixture.detectChanges();
 
-    expect(component.showFooterTagline).toBe(true);
-    const tagline = fixture.nativeElement.querySelector('.footer-tagline');
-    expect(tagline).toBeTruthy();
+    expect(component.showFooter).toBe(true);
+    expect(fixture.nativeElement.querySelector('.app-footer')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.footer-tagline')).toBeTruthy();
   });
 
-  it('shows footer tagline on search route ("/search")', async () => {
+  it('shows the footer on search route ("/search")', async () => {
     await router.navigateByUrl('/search');
     fixture.detectChanges();
 
-    expect(component.showFooterTagline).toBe(true);
-    const tagline = fixture.nativeElement.querySelector('.footer-tagline');
-    expect(tagline).toBeTruthy();
+    expect(component.showFooter).toBe(true);
+    expect(fixture.nativeElement.querySelector('.app-footer')).toBeTruthy();
   });
 
-  it('shows footer tagline on search with query params ("/search?q=biology")', async () => {
+  it('shows the footer on search with query params ("/search?q=biology")', async () => {
     await router.navigateByUrl('/search?q=biology');
     fixture.detectChanges();
 
-    expect(component.showFooterTagline).toBe(true);
-    const tagline = fixture.nativeElement.querySelector('.footer-tagline');
-    expect(tagline).toBeTruthy();
+    expect(component.showFooter).toBe(true);
+    expect(fixture.nativeElement.querySelector('.app-footer')).toBeTruthy();
   });
 
-  it('hides footer tagline on other routes while keeping brand and links visible', async () => {
+  it('hides the entire footer bar on other routes', async () => {
     await router.navigateByUrl('/sell');
     fixture.detectChanges();
 
-    expect(component.showFooterTagline).toBe(false);
-    let tagline = fixture.nativeElement.querySelector('.footer-tagline');
-    expect(tagline).toBeNull();
-
-    // Verify footer brand and links are still visible
-    const brand = fixture.nativeElement.querySelector('.footer-brand');
-    expect(brand).toBeTruthy();
-    const links = fixture.nativeElement.querySelector('.footer-links');
-    expect(links).toBeTruthy();
+    expect(component.showFooter).toBe(false);
+    expect(fixture.nativeElement.querySelector('.app-footer')).toBeNull();
 
     await router.navigateByUrl('/account');
     fixture.detectChanges();
-    expect(component.showFooterTagline).toBe(false);
-    expect(fixture.nativeElement.querySelector('.footer-tagline')).toBeNull();
+    expect(component.showFooter).toBe(false);
+    expect(fixture.nativeElement.querySelector('.app-footer')).toBeNull();
 
     await router.navigateByUrl('/book/123');
     fixture.detectChanges();
-    expect(component.showFooterTagline).toBe(false);
-    expect(fixture.nativeElement.querySelector('.footer-tagline')).toBeNull();
+    expect(component.showFooter).toBe(false);
+    expect(fixture.nativeElement.querySelector('.app-footer')).toBeNull();
   });
 
   it('hides the entire footer on full-bleed routes like /messages', async () => {
