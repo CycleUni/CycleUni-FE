@@ -80,7 +80,10 @@
           <ui-image-lightbox [src]="selectedImageUrl" (close)="closeImageModal()"></ui-image-lightbox>
 
           <div class="message-history" #scrollMe (scroll)="onHistoryScroll()">
-            <div class="history-top-status" *ngIf="loadingOlder">{{ 'msg.loadingOlder' | t }}</div>
+            <!-- Held in the layout for as long as older pages exist, with only
+                 its text swapped, so starting a load never shifts the list
+                 under the reader. -->
+            <div class="history-top-status" *ngIf="hasMoreHistory">{{ loadingOlder ? ('msg.loadingOlder' | t) : '' }}</div>
             <div class="msg-bubble" *ngFor="let msg of messages" [class.self]="msg.is_mine" [class.failed]="msg.failed" [class.meetup-card]="isMeetupRequest(msg.body)" [class.image-msg]="msg.message_type === 'image'">
               <ng-container *ngIf="isMeetupRequest(msg.body); else normalMsg">
                 <ui-meetup-card

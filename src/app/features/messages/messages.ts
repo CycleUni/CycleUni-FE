@@ -211,11 +211,19 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
           this.cdr.markForCheck();
           return;
         }
-        this.messageService.getEdgeMessages(this.activeChat.id, this.chatToken, this.edgeChatUrl).subscribe({
-          next: (data) => {
-            this.setEdgeMessages(data || []);
+        // Same paginated call selectChat uses. Going through the unpaginated
+        // endpoint here instead raced with that initial fetch and whichever
+        // landed last won, so the list would sometimes end up holding the
+        // old default page size with no way to reach anything older.
+        this.messageService.getEdgeMessagePage(
+          this.activeChat.id, this.chatToken, this.edgeChatUrl, this.HISTORY_PAGE_SIZE
+        ).subscribe({
+          next: (page) => {
+            this.hasMoreHistory = !!page?.has_more;
+            this.setEdgeMessages(page?.messages || []);
           },
           error: () => {
+            this.hasMoreHistory = false;
             this.setEdgeMessages([]);
           }
         });
@@ -670,20 +678,26 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         this.hasMoreHistory = !!page?.has_more;
 
         if (older.length) {
-          // Prepending grows the scroll content upward, which would yank the
-          // viewport away from whatever the user was reading. Restore the
-          // distance from the BOTTOM instead of the top, so their position
-          // stays put regardless of how tall the new page turned out to be.
-          const prevBottomOffset = el ? el.scrollHeight - el.scrollTop : 0;
+          // Prepending grows the content upward, which would yank the viewport
+          // away from whatever the user was reading. Anchor on a real element
+          // — the message currently at the top — and shift the scroll by how
+          // far that exact node moved. Deriving it from scrollHeight instead
+          // drifts by the height of the "loading earlier" row, which is still
+          // in the layout when the offset is captured but gone by the time
+          // the correction lands (measured: a 51px jump).
+          const anchor: HTMLElement | null = el ? el.querySelector('.msg-bubble') : null;
+          const anchorTopBefore = anchor?.offsetTop ?? 0;
+
           const existing = new Set(this.messages.map(m => m.id));
           this.messages = [...older.filter(m => !existing.has(m.id)), ...this.messages];
           this.oldestTimestamp = this.earliestTimestamp();
-          this.cdr.markForCheck();
-          if (el) {
-            // After the DOM has grown, not before.
-            requestAnimationFrame(() => {
-              el.scrollTop = el.scrollHeight - prevBottomOffset;
-            });
+          this.loadingOlder = false;
+          // Render the new page and drop the loading row in one pass, so the
+          // anchor is re-measured against the DOM the user ends up seeing.
+          this.cdr.detectChanges();
+
+          if (el && anchor) {
+            el.scrollTop += anchor.offsetTop - anchorTopBefore;
           }
         }
 

@@ -256,7 +256,16 @@
 
     .history-top-status {
       text-align: center;
-      padding: 8px 0;
+      /* Fixed height, not padding around variable content: the row is present
+         whether or not it currently reads "loading", and it must occupy the
+         same space either way or the list jumps when a fetch starts.
+         flex-shrink:0 is what makes that hold — .message-history is a column
+         flex container whose content overflows, so without it the empty row
+         collapses to 0 and only springs to 32px once the text appears,
+         reintroducing exactly the shift this row exists to avoid. */
+      height: 32px;
+      flex-shrink: 0;
+      line-height: 32px;
       font-size: 13px;
       color: var(--muted);
     }
