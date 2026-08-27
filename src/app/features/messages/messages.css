@@ -471,7 +471,14 @@
            impossible (see .chat-top-fixed above). Still worth re-measuring
            against a real device when possible. */
         padding-top: calc(16px + 72px + env(safe-area-inset-top, 0px));
-        padding-bottom: calc(16px + 72px + env(safe-area-inset-bottom, 0px));
+        /* --input-area-height is the input's real measured height, published
+           by a ResizeObserver in messages.ts; the 72px is only the fallback
+           for the first frame before that lands. The guess alone was too
+           small: with the URL bar showing, this container's bottom edge
+           lines up with the input instead of sitting above it, so the
+           newest message rendered underneath. Its own safe-area padding is
+           already inside offsetHeight, so it isn't added again here. */
+        padding-bottom: calc(16px + var(--input-area-height, calc(72px + env(safe-area-inset-bottom, 0px))));
       }
       .chat-area:has(.listing-banner) .message-history {
         padding-top: calc(16px + 72px + 92px + env(safe-area-inset-top, 0px));

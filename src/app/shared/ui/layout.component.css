@@ -11,6 +11,16 @@
          the large/toolbar-collapsed size before a resize event corrects
          it. */
       height: 100svh;
+      /* min-height must be overridden too, not just height: the base
+         .layout-wrapper rule sets min-height:100vh, and min-height beats
+         height in the cascade, so the used height stayed 100vh (the
+         toolbar-collapsed size) and this whole svh fix was inert. With the
+         URL bar showing, the wrapper then ran taller than the visible area
+         and pushed .message-history's bottom — reserved padding and all —
+         off the bottom of the screen, hiding the newest message behind the
+         fixed input until the toolbar collapsed. */
+      min-height: 100vh;
+      min-height: 100svh;
       /* Deliberately NOT overflow:hidden. `.message-input-area` inside
          `/messages` is `position: fixed` (matching `.bottom-tab-bar`'s own
          positioning below) so it tracks the real viewport bottom edge

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild, ElementRef, computed } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, inject, ViewChild, ElementRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -29,7 +29,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
   templateUrl: './messages.html',
   styleUrls: ['./messages.css']
 })
-export class Messages implements OnInit, OnDestroy {
+export class Messages implements OnInit, AfterViewChecked, OnDestroy {
   chats: any[] = [];
   activeChat: any = null;
   messages: any[] = [];
@@ -53,6 +53,10 @@ export class Messages implements OnInit, OnDestroy {
   loadingChats = true;
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
   @ViewChild('fileInput') private fileInput!: HTMLInputElement;
+  @ViewChild('inputArea') private inputArea?: ElementRef<HTMLElement>;
+
+  private inputAreaResizeObserver?: ResizeObserver;
+  private observedInputArea?: HTMLElement;
 
   private messageService = inject(MessageService);
   private authStore = inject(AuthStore);
@@ -212,10 +216,39 @@ export class Messages implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewChecked() {
+    // The message history reserves space for the fixed input area with
+    // padding-bottom. That reserve used to be a hand-guessed 72px, which
+    // was too small once the URL bar was showing — the container's bottom
+    // edge then lines up with the input instead of sitting above it, so
+    // the newest message ended up underneath. Publish the input's real
+    // rendered height and let CSS reserve exactly that, the same
+    // let-the-browser-measure-it approach .chat-top-fixed uses up top.
+    const el = this.inputArea?.nativeElement;
+    // Re-observe when the element itself changes: .chat-area is behind an
+    // *ngIf, so switching conversations destroys and recreates this node.
+    if (el && el !== this.observedInputArea) {
+      this.inputAreaResizeObserver?.disconnect();
+      this.observedInputArea = el;
+      this.inputAreaResizeObserver = new ResizeObserver(() => {
+        // Set on the shared ancestor, not the input itself — custom
+        // properties inherit down, and .message-history is a sibling.
+        const target = el.parentElement ?? el;
+        target.style.setProperty('--input-area-height', `${el.offsetHeight}px`);
+        // The reserve just changed, so a view pinned to the bottom is now
+        // slightly off; re-pin it rather than leaving the last message
+        // half-covered until the next scroll.
+        this.scrollToBottom(false);
+      });
+      this.inputAreaResizeObserver.observe(el);
+    }
+  }
+
   ngOnDestroy() {
     if (this.activeChat?.id) {
       this.saveDraft(this.activeChat.id, this.newMessage);
     }
+    this.inputAreaResizeObserver?.disconnect();
     // The hub connection is owned by the app shell (ui-layout), not this
     // page, so it stays alive across navigation — only disconnectEdgeChat
     // (the per-room connection for whichever chat was open) belongs here.
