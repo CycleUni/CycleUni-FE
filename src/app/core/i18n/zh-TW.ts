@@ -284,6 +284,7 @@ export const zhTW: Record<string, string> = {
   'acct.uploadPhoto': '上傳圖片',
 
   // Messages page
+  'msg.loadingOlder': '載入較早的訊息…',
   'msg.inbox': '收件匣',
   'msg.bookPrefix': '書目：{title}',
   'msg.conversationWith': '與 {name} 的對話',

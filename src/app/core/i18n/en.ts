@@ -285,6 +285,7 @@ export const en: Record<string, string> = {
   'acct.uploadPhoto': 'Upload Photo',
 
   // Messages page
+  'msg.loadingOlder': 'Loading earlier messages…',
   'msg.inbox': 'Inbox',
   'msg.bookPrefix': 'Book: {title}',
   'msg.conversationWith': 'Conversation with {name}',

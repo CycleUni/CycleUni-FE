@@ -254,6 +254,12 @@
       100% { opacity: 1; }
     }
 
+    .history-top-status {
+      text-align: center;
+      padding: 8px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
     .message-history {
       /* min-height:0 is required here even though overflow-y:auto is set:
          per spec, a flex item's automatic minimum size should already

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, of, EMPTY } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Messages } from './messages';
 import { MessageService } from '../../core/services/message.service';
 import { AuthStore } from '../../core/auth.store';
@@ -34,6 +35,12 @@ describe('Messages.selectChat — out-of-order response race', () => {
     const mockMessageService: Partial<Record<keyof MessageService, unknown>> = {
       getChatToken: vi.fn((id: string) => tokenSubjects[id].asObservable()),
       getEdgeMessages: vi.fn((id: string) => historySubjects[id].asObservable()),
+      // Same per-conversation subjects, wrapped in the paginated envelope the
+      // component actually consumes, so these tests keep driving the race
+      // through `historySubjects[id].next([...])` as before.
+      getEdgeMessagePage: vi.fn((id: string) =>
+        historySubjects[id].asObservable().pipe(map(messages => ({ messages, has_more: false })))
+      ),
       markConversationReadCF: vi.fn(() => of(undefined)),
       connectEdgeChat,
       disconnectEdgeChat: vi.fn(),

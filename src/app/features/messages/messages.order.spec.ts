@@ -23,6 +23,7 @@ describe('Messages WebSocket ordering & temp-id reconciliation', () => {
       getConversations: vi.fn(() => of([])),
       getChatToken: vi.fn(() => of({ token: 'header.eyJ1c2VyX2lkIjoidXNlci0xIn0.sig', edge_chat_url: 'https://edge.example' })),
       getEdgeMessages: vi.fn(() => of([])),
+      getEdgeMessagePage: vi.fn(() => of({ messages: [], has_more: false })),
       markConversationReadCF: vi.fn(() => of(undefined)),
       connectEdgeChat: vi.fn(),
       disconnectEdgeChat: vi.fn(),

@@ -58,6 +58,15 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
   private inputAreaResizeObserver?: ResizeObserver;
   private observedInputArea?: HTMLElement;
 
+  // History is loaded a page at a time, newest first, and older pages are
+  // fetched as the user scrolls back up — a long-running conversation would
+  // otherwise ship its entire backlog on open.
+  private readonly HISTORY_PAGE_SIZE = 100;
+  hasMoreHistory = false;
+  loadingOlder = false;
+  /** Epoch ms cursor: the oldest message currently held. */
+  private oldestTimestamp: number | null = null;
+
   private messageService = inject(MessageService);
   private authStore = inject(AuthStore);
   private orderService = inject(OrderService);
@@ -349,6 +358,9 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
     this.pendingTempIds = [];
     this.messages = [];
     this.rawEdgeMsgs = [];
+    this.hasMoreHistory = false;
+    this.loadingOlder = false;
+    this.oldestTimestamp = null;
     chat._hubUnread = false;
     // Mark read is handled via CFEdgeChat after we fetch the room token
 
@@ -376,14 +388,18 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         // Fetch message history immediately via REST — don't wait for the
         // WebSocket connection to reach 'connected' (it may be delayed or
         // fail, leaving the message pane blank).
-        this.messageService.getEdgeMessages(chat.id, this.chatToken, this.edgeChatUrl).subscribe({
-          next: (data) => {
+        this.messageService.getEdgeMessagePage(
+          chat.id, this.chatToken, this.edgeChatUrl, this.HISTORY_PAGE_SIZE
+        ).subscribe({
+          next: (page) => {
             if (this.activeChat?.id !== chat.id) return;
-            this.setEdgeMessages(data || []);
+            this.hasMoreHistory = !!page?.has_more;
+            this.setEdgeMessages(page?.messages || []);
           },
           error: (err) => {
-            console.error('[selectChat] getEdgeMessages failed:', err);
+            console.error('[selectChat] getEdgeMessagePage failed:', err);
             if (this.activeChat?.id !== chat.id) return;
+            this.hasMoreHistory = false;
             this.setEdgeMessages([]);
           }
         });
@@ -603,6 +619,99 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
     return [];
   }
 
+  /** Maps one raw CFEdgeChat row to the shape the template renders. */
+  private toViewMessage(m: any) {
+    const bodyText = m.content || m.body || '';
+    const createdDate = m.timestamp ? new Date(m.timestamp).toISOString() : (m.created_at ? new Date(m.created_at).toISOString() : new Date().toISOString());
+    const isMine = m.user_id
+      ? String(m.user_id) === String(this.userId)
+      : (m.is_mine !== undefined ? Boolean(m.is_mine) : false);
+
+    return {
+      id: m.id || bodyText,
+      body: bodyText,
+      is_mine: isMine,
+      created_at: createdDate,
+      message_type: m.message_type || 'text'
+    };
+  }
+
+  /**
+   * Fires as the history scrolls. Once the user is within a screenful of the
+   * top, pull the next page of older messages so it arrives before they hit
+   * the actual edge.
+   */
+  onHistoryScroll(): void {
+    if (this.loadingOlder || !this.hasMoreHistory) return;
+    const el = this.myScrollContainer?.nativeElement;
+    if (!el) return;
+    if (el.scrollTop <= el.clientHeight) {
+      this.loadOlderMessages();
+    }
+  }
+
+  private loadOlderMessages(): void {
+    const chat = this.activeChat;
+    if (!chat || this.loadingOlder || !this.hasMoreHistory) return;
+    if (this.oldestTimestamp === null) return;
+
+    const el = this.myScrollContainer?.nativeElement;
+    this.loadingOlder = true;
+    this.cdr.markForCheck();
+
+    this.messageService.getEdgeMessagePage(
+      chat.id, this.chatToken, this.edgeChatUrl, this.HISTORY_PAGE_SIZE, this.oldestTimestamp
+    ).subscribe({
+      next: (page) => {
+        // The user may have switched conversations while this was in flight.
+        if (this.activeChat?.id !== chat.id) return;
+
+        const older = (page?.messages || []).map(m => this.toViewMessage(m));
+        this.hasMoreHistory = !!page?.has_more;
+
+        if (older.length) {
+          // Prepending grows the scroll content upward, which would yank the
+          // viewport away from whatever the user was reading. Restore the
+          // distance from the BOTTOM instead of the top, so their position
+          // stays put regardless of how tall the new page turned out to be.
+          const prevBottomOffset = el ? el.scrollHeight - el.scrollTop : 0;
+          const existing = new Set(this.messages.map(m => m.id));
+          this.messages = [...older.filter(m => !existing.has(m.id)), ...this.messages];
+          this.oldestTimestamp = this.earliestTimestamp();
+          this.cdr.markForCheck();
+          if (el) {
+            // After the DOM has grown, not before.
+            requestAnimationFrame(() => {
+              el.scrollTop = el.scrollHeight - prevBottomOffset;
+            });
+          }
+        }
+
+        this.loadingOlder = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        if (this.activeChat?.id !== chat.id) return;
+        this.loadingOlder = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  /** Epoch ms of the oldest message held, or null when there are none. */
+  private earliestTimestamp(): number | null {
+    let earliest: number | null = null;
+    for (const m of this.messages) {
+      // Optimistic sends carry a local timestamp that doesn't exist server
+      // side yet, so they must not become the pagination cursor.
+      if (m.id && String(m.id).startsWith('temp_')) continue;
+      const t = new Date(m.created_at).getTime();
+      if (!Number.isFinite(t)) continue;
+      if (earliest === null || t < earliest) earliest = t;
+    }
+    return earliest;
+  }
+
   private setEdgeMessages(edgeMsgsInput: any) {
     if (edgeMsgsInput !== undefined) {
       this.rawEdgeMsgs = this.extractArray(edgeMsgsInput);
@@ -610,21 +719,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         'first msg body:', this.rawEdgeMsgs[0]?.content?.substring(0, 80));
     }
 
-    const newMessages = this.rawEdgeMsgs.map(m => {
-      const bodyText = m.content || m.body || '';
-      const createdDate = m.timestamp ? new Date(m.timestamp).toISOString() : (m.created_at ? new Date(m.created_at).toISOString() : new Date().toISOString());
-      const isMine = m.user_id
-        ? String(m.user_id) === String(this.userId)
-        : (m.is_mine !== undefined ? Boolean(m.is_mine) : false);
-
-      return {
-        id: m.id || bodyText,
-        body: bodyText,
-        is_mine: isMine,
-        created_at: createdDate,
-        message_type: m.message_type || 'text'
-      };
-    });
+    const newMessages = this.rawEdgeMsgs.map(m => this.toViewMessage(m));
 
     // Preserve any pending optimistic messages that are currently in flight
     const pendingOptimistic = this.messages.filter(m => m.id && String(m.id).startsWith('temp_') && !newMessages.some(nm => nm.body === m.body && nm.is_mine));
@@ -632,6 +727,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
     this.messages = [...newMessages, ...pendingOptimistic].sort((a, b) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
+    this.oldestTimestamp = this.earliestTimestamp();
 
     this.cdr.markForCheck();
     setTimeout(() => this.scrollToBottom(true), 50);

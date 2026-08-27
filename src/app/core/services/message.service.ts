@@ -1,6 +1,6 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, BehaviorSubject, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -189,6 +189,39 @@ export class MessageService {
     return this.http.get<EdgeChatMessage[]>(`${edgeChatUrl}/api/cycleuni/${roomId}/messages`, {
       headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }
     });
+  }
+
+  /**
+   * One page of history, newest first, for the infinite scroll-back in the
+   * chat view. `before` is the timestamp (epoch ms) of the oldest message
+   * already held, so the next call returns the page immediately older than
+   * it; omit it for the initial page.
+   *
+   * This asks for the `paginated=1` envelope, which carries `has_more`
+   * alongside the rows — the plain endpoint returns a bare array with no way
+   * to tell "no older messages" from "exactly a full page left".
+   */
+  getEdgeMessagePage(
+    roomId: string,
+    token: string,
+    edgeChatUrl: string,
+    limit: number,
+    before?: number
+  ): Observable<{ messages: EdgeChatMessage[]; has_more: boolean }> {
+    let params = new HttpParams().set('paginated', '1').set('limit', String(limit));
+    if (before !== undefined) {
+      params = params.set('before', String(before));
+    }
+    return this.http.get<{ messages: EdgeChatMessage[]; has_more: boolean } | EdgeChatMessage[]>(
+      `${edgeChatUrl}/api/cycleuni/${roomId}/messages`,
+      { headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }, params }
+    ).pipe(
+      // A worker predating the envelope ignores `paginated` and still returns
+      // a bare array. Normalise it so the chat isn't blank if the frontend
+      // ships before the worker does; no older pages are offered in that
+      // case, which is exactly the pre-pagination behaviour.
+      map(res => Array.isArray(res) ? { messages: res, has_more: false } : res)
+    );
   }
 
   connectEdgeChat(roomId: string, token: string, userId: string, edgeChatUrl: string) {
