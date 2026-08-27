@@ -140,7 +140,7 @@
         <div class="footer-content">
           <div class="footer-brand-area">
             <span class="footer-brand">CycleUni</span>
-            <span class="footer-tagline">{{ 'footer.tagline' | t }}</span>
+            <span class="footer-tagline" *ngIf="showFooterTagline">{{ 'footer.tagline' | t }}</span>
           </div>
           <div class="footer-links">
             <a href="https://cycleuni.github.io/About/" target="_blank" rel="noopener noreferrer">{{ 'footer.about' | t }}</a>
