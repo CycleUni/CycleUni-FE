@@ -46,14 +46,18 @@ export const onRequestGet: PagesFunction = async (context) => {
     });
   }
 
-  if (srcUrl.hostname !== 'books.google.com' && srcUrl.hostname !== 'covers.openlibrary.org') {
+  if (
+    srcUrl.hostname !== 'books.google.com' &&
+    srcUrl.hostname !== 'covers.openlibrary.org' &&
+    srcUrl.hostname !== 'pdsapp.ncl.edu.tw'
+  ) {
     return new Response('Invalid "src" query parameter: unsupported host', {
       status: 400,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });
   }
 
-  if (srcUrl.hostname === 'covers.openlibrary.org') {
+  if (srcUrl.hostname === 'covers.openlibrary.org' || srcUrl.hostname === 'pdsapp.ncl.edu.tw') {
     try {
       const upstreamResponse = await fetch(srcUrl.toString());
       if (!upstreamResponse.ok) {
