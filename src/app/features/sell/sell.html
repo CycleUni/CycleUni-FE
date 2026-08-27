@@ -41,7 +41,7 @@
             </ui-button>
           </div>
 
-          <div id="reader" [hidden]="!isScanning" style="margin-top: 16px; width: 100%; max-width: 100%; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);"></div>
+          <div id="reader" [hidden]="!isScanning" style="margin-top: 16px; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);"></div>
           <div *ngIf="cameraError" class="inline-msg error" style="margin-top: 8px; font-size: 14px;">{{ cameraError }}</div>
           <!-- Search Results List -->
           <div *ngIf="searchResults.length > 0 && !bookPreview" class="results-container">
