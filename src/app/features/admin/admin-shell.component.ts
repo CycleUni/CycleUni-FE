@@ -5,6 +5,7 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
 import { TPipe } from '../../core/i18n.service';
+import { AuthStore } from '../../core/auth.store';
 
 @Component({
   selector: 'app-admin-shell',
@@ -25,6 +26,13 @@ import { TPipe } from '../../core/i18n.service';
               <ul>
                 <li><a regionLink="users" routerLinkActive="active">{{ 'admin.navUsers' | t }}</a></li>
                 <li><a regionLink="managers" routerLinkActive="active">{{ 'admin.navManagers' | t }}</a></li>
+              </ul>
+            </li>
+            <li class="nav-group" *ngIf="isSuperuser()">
+              <div class="group-title">System</div>
+              <ul>
+                <li><a regionLink="regions" routerLinkActive="active">{{ 'admin.navRegions' | t }}</a></li>
+                <li><a regionLink="currencies" routerLinkActive="active">{{ 'admin.navCurrencies' | t }}</a></li>
               </ul>
             </li>
             <li class="nav-group">
@@ -258,6 +266,9 @@ import { TPipe } from '../../core/i18n.service';
   `]
 })
 export class AdminShellComponent {
+  auth = inject(AuthStore);
+  isSuperuser() { return this.auth.user()?.is_superuser; }
+
   isDrawerOpen = false;
   isBrowser = false;
   

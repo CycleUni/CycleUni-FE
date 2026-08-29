@@ -10,6 +10,29 @@ export interface Paginated<T> {
   results: T[];
 }
 
+
+export interface AdminCurrency {
+  code: string;
+  symbol: string;
+  decimal_places: number;
+  symbol_position: 'prefix' | 'suffix';
+  is_active: boolean;
+}
+
+export interface AdminRegion {
+  code: string;
+  name: string;
+  translations: any;
+  currency: string;
+  default_language: string;
+  languages: string[];
+  timezone: string;
+  search_engines: string[];
+  edu_email_suffix: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
 export interface AdminUser {
   id: string | number;
   email: string;
@@ -157,6 +180,41 @@ function buildParams(query: Record<string, string | number | undefined | null>):
 })
 export class AdminService {
   private http = inject(HttpClient);
+
+  // Regions
+  getRegions(): Observable<Paginated<AdminRegion>> {
+    return this.http.get<Paginated<AdminRegion>>('/admin/regions/');
+  }
+  
+  getRegion(code: string): Observable<AdminRegion> {
+    return this.http.get<AdminRegion>(`/admin/regions/${code}/`);
+  }
+  
+  createRegion(data: Partial<AdminRegion>): Observable<AdminRegion> {
+    return this.http.post<AdminRegion>('/admin/regions/', data);
+  }
+  
+  updateRegion(code: string, data: Partial<AdminRegion>): Observable<AdminRegion> {
+    return this.http.patch<AdminRegion>(`/admin/regions/${code}/`, data);
+  }
+
+  // Currencies
+  getCurrencies(): Observable<Paginated<AdminCurrency>> {
+    return this.http.get<Paginated<AdminCurrency>>('/admin/currencies/');
+  }
+  
+  getCurrency(code: string): Observable<AdminCurrency> {
+    return this.http.get<AdminCurrency>(`/admin/currencies/${code}/`);
+  }
+  
+  createCurrency(data: Partial<AdminCurrency>): Observable<AdminCurrency> {
+    return this.http.post<AdminCurrency>('/admin/currencies/', data);
+  }
+  
+  updateCurrency(code: string, data: Partial<AdminCurrency>): Observable<AdminCurrency> {
+    return this.http.patch<AdminCurrency>(`/admin/currencies/${code}/`, data);
+  }
+
 
   getUsers(opts: { page?: number; q?: string; is_active?: string; school?: string; region?: string } = {}): Observable<Paginated<AdminUser>> {
     return this.http.get<Paginated<AdminUser>>('/admin/users/', { params: buildParams(opts) });

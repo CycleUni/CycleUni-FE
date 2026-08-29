@@ -1,3 +1,4 @@
+import { superuserGuard } from './features/admin/superuser.guard';
 import { Routes } from '@angular/router';
 import { authGuard, accountIndexGuard } from './core/auth.guard';
 import { adminGuard } from './features/admin/admin.guard';
@@ -55,6 +56,10 @@ const featureRoutes: Routes = [
     loadComponent: () => import('./features/admin/admin-shell.component').then((m) => m.AdminShellComponent),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'users' },
+      { path: 'regions', canActivate: [superuserGuard], loadComponent: () => import('./features/admin/regions-list.component').then(m => m.AdminRegionsListComponent) },
+      { path: 'regions/:id', canActivate: [superuserGuard], loadComponent: () => import('./features/admin/region-detail.component').then(m => m.AdminRegionDetailComponent) },
+      { path: 'currencies', canActivate: [superuserGuard], loadComponent: () => import('./features/admin/currencies-list.component').then(m => m.AdminCurrenciesListComponent) },
+      { path: 'currencies/:id', canActivate: [superuserGuard], loadComponent: () => import('./features/admin/currency-detail.component').then(m => m.AdminCurrencyDetailComponent) },
       { path: 'users', loadComponent: () => import('./features/admin/users-list.component').then(m => m.AdminUsersListComponent) },
       { path: 'users/:id', loadComponent: () => import('./features/admin/user-detail.component').then(m => m.AdminUserDetailComponent) },
       { path: 'schools', loadComponent: () => import('./features/admin/schools-list.component').then(m => m.AdminSchoolsListComponent) },
