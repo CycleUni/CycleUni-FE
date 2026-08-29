@@ -9,13 +9,14 @@ import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { TranslationEditorComponent, TranslationField } from './translation-editor.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
+import { UiTextarea } from '../../shared/ui/textarea.component';
 import { AuthStore } from '../../core/auth.store';
 import { RegionService } from '../../core/region.service';
 
 @Component({
   selector: 'app-admin-categories-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination, UiCheckbox],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination, UiCheckbox, UiTextarea],
   template: `
     <ng-container *ngIf="!showModal">
       <div class="header-actions">
@@ -89,7 +90,7 @@ import { RegionService } from '../../core/region.service';
 
           <div class="form-group">
             <label>{{ 'admin.catDesc' | t }}</label>
-            <textarea class="admin-form-control" [(ngModel)]="form.description"></textarea>
+            <ui-textarea [(ngModel)]="form.description"></ui-textarea>
           </div>
 
           <div class="form-group row-group">
@@ -133,7 +134,6 @@ import { RegionService } from '../../core/region.service';
 
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-    textarea.admin-form-control { min-height: 80px; resize: vertical; }
     .row-group { display: flex; gap: 16px; }
     .row-group .col { flex: 1; }
     .checkbox-col label { display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 32px; cursor: pointer; }

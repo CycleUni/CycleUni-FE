@@ -18,6 +18,7 @@ import { UiRecentListings } from '../../shared/ui/recent-listings.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiBookTile } from '../../shared/ui/book-tile.component';
+import { UiRadioGroup } from '../../shared/ui/radio-group.component';
 import { UiFacetList, FacetOption } from '../../shared/ui/facet-list.component';
 import { combineLatest, Subscription } from 'rxjs';
 import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -27,7 +28,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiDropdown, UiPagination, UiBookTile, UiFacetList, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiDropdown, UiPagination, UiBookTile, UiFacetList, UiRadioGroup, TPipe],
   template: `
       <div class="search-header">
         <div class="header-inner">
@@ -83,8 +84,7 @@ import { RegionLinkService } from '../../core/region-link.service';
           </div>
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.stockTitle' | t }}</h4>
-            <label class="filter-label"><input type="radio" name="stock" value="all" [(ngModel)]="stockFilter">{{ 'search.all' | t }}</label>
-            <label class="filter-label"><input type="radio" name="stock" value="inStock" [(ngModel)]="stockFilter">{{ 'search.inStockOnly' | t }}</label>
+            <ui-radio-group [options]="stockOptions" [(ngModel)]="stockFilter"></ui-radio-group>
           </div>
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.priceTitle' | t }}</h4>
@@ -306,6 +306,13 @@ export class Search implements OnInit {
   conditionFilters = { new: true, like_new: true, noted: true, damaged: true };
   stockFilter: 'all' | 'inStock' = 'all';
   priceMin = ''; priceMax = '';
+
+  get stockOptions() {
+    return [
+      { label: this.i18n.t('search.all'), value: 'all' },
+      { label: this.i18n.t('search.inStockOnly'), value: 'inStock' }
+    ];
+  }
 
   get conditionFacetOptions(): FacetOption[] {
     return [

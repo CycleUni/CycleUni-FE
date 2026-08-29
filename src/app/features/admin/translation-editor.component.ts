@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TPipe } from '../../core/i18n.service';
+import { UiTextarea } from '../../shared/ui/textarea.component';
 
 export interface TranslationField {
   key: string;
@@ -12,7 +13,7 @@ export interface TranslationField {
 @Component({
   selector: 'app-translation-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, TPipe],
+  imports: [CommonModule, FormsModule, UiTextarea, TPipe],
   template: `
     <div class="translation-item" *ngFor="let t of translationsList; let i = index">
       <div class="translation-header">
@@ -21,7 +22,7 @@ export interface TranslationField {
       </div>
       <div class="translation-row" *ngFor="let field of fields">
         <input *ngIf="field.type === 'text'" type="text" class="input" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t">
-        <textarea *ngIf="field.type === 'textarea'" class="input" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t"></textarea>
+        <ui-textarea *ngIf="field.type === 'textarea'" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t"></ui-textarea>
       </div>
     </div>
     <button class="admin-btn admin-btn-sm admin-btn-outline mt-2" (click)="addTranslation()">+ Add Language</button>
@@ -34,7 +35,6 @@ export interface TranslationField {
     .lang-input { width: 150px; font-weight: 600; }
     .mt-2 { margin-top: 8px; }
     .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
-    textarea.input { min-height: 80px; resize: vertical; }
   `]
 })
 export class TranslationEditorComponent {

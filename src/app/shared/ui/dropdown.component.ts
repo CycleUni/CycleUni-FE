@@ -265,7 +265,7 @@ export class UiDropdown implements ControlValueAccessor, AfterViewInit, OnDestro
   open = false;
   searchQuery = '';
   value: string = '';
-  disabled = false;
+  @Input() disabled: boolean = false;
 
   panelStyle: Record<string, string> = {};
   private bodyPanelRef: EmbeddedViewRef<any> | null = null;
@@ -454,8 +454,8 @@ export class UiDropdown implements ControlValueAccessor, AfterViewInit, OnDestro
     this.close();
   }
 
-  writeValue(val: string): void {
-    this.value = val || '';
+  writeValue(val: any): void {
+    this.value = (val !== null && val !== undefined) ? String(val) : '';
   }
   registerOnChange(fn: any): void {
     this.onChange = fn;

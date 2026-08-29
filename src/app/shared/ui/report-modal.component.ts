@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { UiButton } from './button.component';
+import { UiRadioGroup } from './radio-group.component';
+import { UiTextarea } from './textarea.component';
 
 /**
  * "Report this conversation" dialog.
@@ -20,18 +22,15 @@ import { UiButton } from './button.component';
 @Component({
   selector: 'ui-report-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiRadioGroup, UiTextarea, TPipe],
   template: `
     <div class="report-overlay" (click)="close.emit()">
       <div class="report-modal" (click)="$event.stopPropagation()">
         <h4>{{ 'msg.reportTitle' | t }}</h4>
         <div class="report-reasons">
-          <label *ngFor="let r of reasons" class="report-reason">
-            <input type="radio" name="reportReason" [value]="r.value" [(ngModel)]="reason">
-            <span>{{ r.label }}</span>
-          </label>
+          <ui-radio-group [options]="reasons" [(ngModel)]="reason"></ui-radio-group>
         </div>
-        <textarea [(ngModel)]="detail" [placeholder]="'msg.reportDetail' | t" rows="3"></textarea>
+        <ui-textarea [(ngModel)]="detail" [placeholder]="'msg.reportDetail' | t"></ui-textarea>
         <div class="report-actions">
           <ui-button variant="ghost" (onClick)="close.emit()">{{ 'msg.reportCancel' | t }}</ui-button>
           <ui-button [disabled]="!reason || submitting" (onClick)="submit()">
@@ -49,7 +48,6 @@ import { UiButton } from './button.component';
     .report-modal h4 { margin-top: 0; margin-bottom: 16px; }
     .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
     .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
-    .report-modal textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 14px; resize: vertical; margin-bottom: 16px; box-sizing: border-box; font-family: inherit; }
     .report-actions { display: flex; gap: 8px; justify-content: flex-end; }
     .error-msg { color: var(--danger); font-size: 13px; margin-top: 8px; }
     .success-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }

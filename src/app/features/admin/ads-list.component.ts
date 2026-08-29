@@ -4,6 +4,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiCheckbox } from '../../shared/ui/checkbox.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminAd, AdminAdvertiser, Paginated } from '../../core/services/admin.service';
@@ -17,7 +18,7 @@ import { RegionService } from '../../core/region.service';
 @Component({
   selector: 'app-admin-ads-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox, UiDropdown],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navAds' | t }}</h2>
@@ -87,9 +88,7 @@ import { RegionService } from '../../core/region.service';
         <div class="app-modal-body">
           <div class="form-group">
             <label>{{ 'admin.adAdvertiser' | t }} *</label>
-            <select class="admin-form-control" [(ngModel)]="formData.advertiser" [disabled]="!!editingId">
-              <option *ngFor="let adv of advertisers" [value]="adv.id">{{ adv.company_name }}</option>
-            </select>
+            <ui-dropdown [(ngModel)]="formData.advertiser" [disabled]="!!editingId" [options]="advertiserOptions"></ui-dropdown>
           </div>
 
           <div class="form-group">
@@ -207,6 +206,10 @@ export class AdminAdsListComponent implements OnInit {
     show_in_hero: false
   };
   labelsInput = '';
+
+  get advertiserOptions() {
+    return this.advertisers.map(a => ({ value: a.id.toString(), label: a.company_name }));
+  }
 
   getRegionName(code?: string): string {
     if (!code) return '';

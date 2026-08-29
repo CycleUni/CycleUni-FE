@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiTextarea } from '../../shared/ui/textarea.component';
 import { ListingService } from '../../core/services/listing.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
@@ -13,7 +14,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'app-report-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiDropdown, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiDropdown, UiTextarea, TPipe],
   template: `
     <div class="modal-overlay" (click)="close()"></div>
     <div class="modal-content">
@@ -27,11 +28,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 
       <div class="textarea-wrapper">
         <label>{{ 'moderation.detailLabel' | t }}</label>
-        <textarea
-          [(ngModel)]="detail"
-          [placeholder]="'moderation.detailPlaceholder' | t"
-          rows="3"
-        ></textarea>
+        <ui-textarea [(ngModel)]="detail" [placeholder]="'moderation.detailPlaceholder' | t"></ui-textarea>
       </div>
 
       <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
@@ -81,21 +78,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       font-size: 14px;
       font-weight: 500;
       color: var(--ink);
-    }
-    .textarea-wrapper textarea {
-      padding: 8px 12px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--ink);
-      background-color: var(--paper);
-      resize: vertical;
-    }
-    /* No outline reset: the global :focus-visible ring is the indicator;
-       the border colour change is only a secondary cue. */
-    .textarea-wrapper textarea:focus-visible {
-      border-color: var(--accent);
     }
   `]
 })

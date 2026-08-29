@@ -5,12 +5,13 @@ import { HttpClient } from '@angular/common/http';
 import { AdminService } from '../../core/services/admin.service';
 import { RegionService } from '../../core/region.service';
 import { TPipe } from '../../core/i18n.service';
+import { UiTextarea } from '../../shared/ui/textarea.component';
 
 @Component({
   selector: 'app-bulk-import-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, TPipe],
+  imports: [CommonModule, FormsModule, UiTextarea, TPipe],
   template: `
     <div class="app-modal-overlay" *ngIf="show" (click)="close.emit()">
       <div class="app-modal import-modal" (click)="$event.stopPropagation()">
@@ -29,7 +30,7 @@ import { TPipe } from '../../core/i18n.service';
             </div>
             <div class="form-group">
               <label>Or Paste JSON</label>
-              <textarea class="input json-textarea" [(ngModel)]="jsonText" [placeholder]="sampleFormat"></textarea>
+              <ui-textarea class="json-textarea" [(ngModel)]="jsonText" [placeholder]="sampleFormat" [monospace]="true" [rows]="12"></ui-textarea>
             </div>
             <div class="diff-section" *ngIf="diff.forbidden?.length">
               <h4>{{ 'admin.importForbiddenSection' | t }} ({{ diff.forbidden.length }})</h4>
@@ -113,7 +114,7 @@ import { TPipe } from '../../core/i18n.service';
       outline: 2px solid transparent;
     }
     .url-input-row { display: flex; gap: 8px; }
-    .json-textarea { min-height: 250px; font-family: monospace; font-size: 13px; }
+    ui-textarea.json-textarea { display: block; margin-bottom: 0; }
     .loading-note { margin-top: 8px; font-size: 13px; color: var(--muted); text-align: right; }
     .error { color: var(--danger); margin-bottom: 16px; font-size: 14px; }
     .warning { color: var(--ink); margin-bottom: 16px; font-size: 14px; }
