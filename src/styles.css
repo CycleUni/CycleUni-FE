@@ -160,18 +160,6 @@
     --special-bg:   #3B0764;
     --special-ink:  #D8B4FE;
     --star:         #FBBF24;
-  --special-bg:   #F3E8FF;
-  --special-ink:  #7E22CE;
-  --star:         #F59E0B;
-    --info-bg:      #172554;
-    --info-ink:     #93C5FD;
-    --info-border:  #1E3A8A;
-    --special-bg:   #3B0764;
-    --special-ink:  #D8B4FE;
-    --star:         #FBBF24;
-  --special-bg:   #F3E8FF;
-  --special-ink:  #7E22CE;
-  --star:         #F59E0B;
 
     --btn-primary-bg:       #2F7A5C;
     --btn-primary-ink:      #F2F7F4;
@@ -216,9 +204,6 @@
     --special-bg:   #3B0764;
     --special-ink:  #D8B4FE;
     --star:         #FBBF24;
-  --special-bg:   #F3E8FF;
-  --special-ink:  #7E22CE;
-  --star:         #F59E0B;
 
   --btn-primary-bg:       #2F7A5C;
   --btn-primary-ink:      #F2F7F4;
@@ -652,18 +637,12 @@ body {
   :root:not([data-theme="light"]) .admin-status-badge.active,
   :root:not([data-theme="light"]) .admin-status-badge.ok {
     background: var(--info-border);
-  --special-bg:   #F3E8FF;
-  --special-ink:  #7E22CE;
-  --star:         #F59E0B;
     color: var(--info-ink);
   }
 }
 :root[data-theme="dark"] .admin-status-badge.active,
 :root[data-theme="dark"] .admin-status-badge.ok {
   background: var(--info-border);
-  --special-bg:   #F3E8FF;
-  --special-ink:  #7E22CE;
-  --star:         #F59E0B;
   color: var(--info-ink);
 }
 
