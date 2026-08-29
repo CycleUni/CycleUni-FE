@@ -577,6 +577,8 @@ body {
   background: var(--paper-warm);
 }
 
+.back-link { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+.back-link:hover { color: var(--accent); }
 
 /* Admin shared styles from Work 2 and 3 */
 .admin-btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }

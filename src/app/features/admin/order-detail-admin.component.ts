@@ -45,8 +45,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
     ></app-force-cancel-modal>
   `,
   styles: [`
-    .back-link { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
-    .back-link:hover { color: var(--accent); }
+
     .detail-card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 24px; max-width: 520px; box-shadow: var(--shadow-card-lg); }
     .detail-card h2 { margin-top: 0; }
     .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }

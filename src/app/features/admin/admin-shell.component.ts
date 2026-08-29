@@ -29,7 +29,7 @@ import { AuthStore } from '../../core/auth.store';
               </ul>
             </li>
             <li class="nav-group" *ngIf="isSuperuser()">
-              <div class="group-title">System</div>
+              <div class="group-title">{{ 'admin.groupSystem' | t }}</div>
               <ul>
                 <li><a regionLink="regions" routerLinkActive="active">{{ 'admin.navRegions' | t }}</a></li>
                 <li><a regionLink="currencies" routerLinkActive="active">{{ 'admin.navCurrencies' | t }}</a></li>

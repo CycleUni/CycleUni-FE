@@ -1,6 +1,9 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiInput } from '../../shared/ui/input.component';
+import { UiButton } from '../../shared/ui/button.component';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCurrency, Paginated } from '../../core/services/admin.service';
@@ -10,11 +13,11 @@ import { parseAdminError } from '../../core/admin-error.util';
 @Component({
   selector: 'app-admin-currencies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navCurrencies' | t }}</h2>
-      <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addCurrency' | t }}</button>
+      <ui-button (onClick)="openCreateModal()">{{ 'admin.addCurrency' | t }}</ui-button>
     </div>
 
     <div class="table-container" *ngIf="data">
@@ -48,35 +51,24 @@ import { parseAdminError } from '../../core/admin-error.util';
       <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()">
         <h3 class="app-modal-title">{{ 'admin.addCurrency' | t }}</h3>
         <div class="app-modal-body">
-          <div class="form-group">
-            <label>{{ 'admin.currencyCode' | t }}</label>
-            <input type="text" class="admin-form-control" [(ngModel)]="newItem.code">
-          </div>
-          <div class="form-group">
-            <label>{{ 'admin.currencySymbol' | t }}</label>
-            <input type="text" class="admin-form-control" [(ngModel)]="newItem.symbol">
-          </div>
-          <div class="form-group">
-            <label>{{ 'admin.currencyDecimals' | t }}</label>
-            <input type="number" class="admin-form-control" [(ngModel)]="newItem.decimal_places">
-          </div>
-          <div class="form-group">
-            <label>{{ 'admin.currencySymbolPos' | t }}</label>
-            <select class="admin-form-control" [(ngModel)]="newItem.symbol_position">
-              <option value="prefix">prefix</option>
-              <option value="suffix">suffix</option>
-            </select>
-          </div>
+          <ui-input [label]="'admin.currencyCode' | t" [(ngModel)]="newItem.code"></ui-input>
+          <ui-input [label]="'admin.currencySymbol' | t" [(ngModel)]="newItem.symbol"></ui-input>
+          <ui-input [label]="'admin.currencyDecimals' | t" type="number" [(ngModel)]="newItem.decimal_places"></ui-input>
+          
+          <ui-dropdown [label]="'admin.currencySymbolPos' | t" [options]="symbolPosOptions" [(ngModel)]="newItem.symbol_position"></ui-dropdown>
+
           <div class="form-group">
             <label style="display: flex; align-items: center; gap: 8px;">
               <input type="checkbox" [(ngModel)]="newItem.is_active">
               {{ 'admin.regionIsActive' | t }}
             </label>
           </div>
+          
+          <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
         </div>
-        <div class="app-modal-actions">
-          <button class="admin-btn admin-btn-secondary" (click)="showCreateModal = false">{{ 'common.cancel' | t }}</button>
-          <button class="admin-btn admin-btn-primary" (click)="create()">{{ 'admin.save' | t }}</button>
+        <div class="app-modal-actions" style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
+          <ui-button variant="ghost" (onClick)="showCreateModal = false" [disabled]="saving">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button (onClick)="create()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
         </div>
       </div>
     </div>
@@ -84,7 +76,9 @@ import { parseAdminError } from '../../core/admin-error.util';
   styles: [`
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .inline-msg { margin: 12px 0; font-size: 14px; }
+    .inline-msg.error { color: var(--danger); }
   `]
 })
 export class AdminCurrenciesListComponent implements OnInit {
@@ -99,6 +93,13 @@ export class AdminCurrenciesListComponent implements OnInit {
 
   showCreateModal = false;
   newItem: Partial<AdminCurrency> = { code: '', symbol: '', decimal_places: 0, symbol_position: 'prefix', is_active: true };
+  errorMsg = '';
+  saving = false;
+  
+  symbolPosOptions = [
+    { value: 'prefix', label: 'prefix' },
+    { value: 'suffix', label: 'suffix' }
+  ];
 
   ngOnInit() {
     this.loadPage(1);
@@ -108,7 +109,6 @@ export class AdminCurrenciesListComponent implements OnInit {
     this.currentPage = page;
     this.adminService.getCurrencies().subscribe({
       next: (res) => {
-        // Handle both paginated and non-paginated arrays defensively
         if (Array.isArray(res)) {
            this.data = { count: res.length, results: res, next: null, previous: null } as any;
            this.total = res.length;
@@ -123,17 +123,25 @@ export class AdminCurrenciesListComponent implements OnInit {
 
   openCreateModal() {
     this.newItem = { code: '', symbol: '', decimal_places: 0, symbol_position: 'prefix', is_active: true };
+    this.errorMsg = '';
+    this.saving = false;
     this.showCreateModal = true;
   }
 
   create() {
-    if (!this.newItem.code || !this.newItem.symbol) return;
+    this.errorMsg = '';
+    this.saving = true;
     this.adminService.createCurrency(this.newItem).subscribe({
       next: () => {
+        this.saving = false;
         this.showCreateModal = false;
         this.loadPage(1);
       },
-      error: (err) => alert(parseAdminError(err, this.i18n))
+      error: (err) => {
+        this.saving = false;
+        this.errorMsg = parseAdminError(err, this.i18n);
+        this.cdr.markForCheck();
+      }
     });
   }
 }

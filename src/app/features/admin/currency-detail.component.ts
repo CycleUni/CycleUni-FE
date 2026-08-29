@@ -5,55 +5,75 @@ import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCurrency } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { parseAdminError } from '../../core/admin-error.util';
+import { RegionLinkDirective } from '../../core/region-link.directive';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiInput } from '../../shared/ui/input.component';
+import { UiButton } from '../../shared/ui/button.component';
 
 @Component({
   selector: 'app-admin-currency-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, RegionLinkDirective, UiDropdown, UiInput, UiButton],
   template: `
     <div class="admin-detail-header" *ngIf="item">
-      <a routerLink=".." class="admin-back-link">&larr; {{ 'common.back' | t }}</a>
+      <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
       <h2>{{ 'admin.editCurrency' | t }} - {{ item.code }}</h2>
     </div>
 
-    <div class="admin-card" *ngIf="item">
+    <div class="detail-card" *ngIf="item">
       <div class="form-group">
         <label>{{ 'admin.currencyCode' | t }}</label>
-        <input type="text" class="admin-form-control" [value]="item.code" disabled>
+        <ui-input [value]="item.code" [disabled]="true"></ui-input>
       </div>
-      <div class="form-group">
-        <label>{{ 'admin.currencySymbol' | t }}</label>
-        <input type="text" class="admin-form-control" [(ngModel)]="item.symbol">
-      </div>
+      <ui-input [label]="'admin.currencySymbol' | t" [(ngModel)]="item.symbol"></ui-input>
       <div class="form-group">
         <label>{{ 'admin.currencyDecimals' | t }}</label>
         <p class="text-hint">{{ 'admin.decimalsWarning' | t }}</p>
-        <input type="number" class="admin-form-control" [(ngModel)]="item.decimal_places" disabled>
+        <ui-input type="number" [value]="item.decimal_places" [disabled]="true"></ui-input>
       </div>
-      <div class="form-group">
-        <label>{{ 'admin.currencySymbolPos' | t }}</label>
-        <select class="admin-form-control" [(ngModel)]="item.symbol_position">
-          <option value="prefix">prefix</option>
-          <option value="suffix">suffix</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label style="display: flex; align-items: center; gap: 8px;">
+      
+      <ui-dropdown [label]="'admin.currencySymbolPos' | t" [options]="symbolPosOptions" [(ngModel)]="item.symbol_position"></ui-dropdown>
+
+      <div class="toggle-row">
+        <label class="toggle">
           <input type="checkbox" [(ngModel)]="item.is_active">
           {{ 'admin.regionIsActive' | t }}
         </label>
       </div>
       
-      <button class="admin-btn admin-btn-primary mt-3" [disabled]="saving" (click)="save()">
-        {{ saving ? ('admin.saving' | t) : ('admin.save' | t) }}
-      </button>
+      <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
+      <div *ngIf="savedMsg" class="inline-msg ok">{{ savedMsg }}</div>
+
+      <ui-button (onClick)="save()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
     </div>
   `,
   styles: [`
+    .detail-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 520px;
+      box-shadow: var(--shadow-card-lg);
+    }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-    .mt-3 { margin-top: 24px; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
     .text-hint { font-size: 13px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
+    .toggle-row {
+      display: flex;
+      gap: 24px;
+      margin: 16px 0;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .inline-msg { margin: 12px 0; font-size: 14px; }
+    .inline-msg.error { color: var(--danger); }
+    .inline-msg.ok { color: var(--success); }
   `]
 })
 export class AdminCurrencyDetailComponent implements OnInit {
@@ -65,6 +85,13 @@ export class AdminCurrencyDetailComponent implements OnInit {
 
   item?: AdminCurrency;
   saving = false;
+  errorMsg = '';
+  savedMsg = '';
+
+  symbolPosOptions = [
+    { value: 'prefix', label: 'prefix' },
+    { value: 'suffix', label: 'suffix' }
+  ];
 
   ngOnInit() {
     const code = this.route.snapshot.paramMap.get('id');
@@ -82,8 +109,10 @@ export class AdminCurrencyDetailComponent implements OnInit {
   save() {
     if (!this.item) return;
     this.saving = true;
+    this.errorMsg = '';
+    this.savedMsg = '';
     this.cdr.markForCheck();
-    
+
     // Create a copy and remove immutable fields just in case
     const payload = { ...this.item };
     delete (payload as any).code;
@@ -92,12 +121,12 @@ export class AdminCurrencyDetailComponent implements OnInit {
     this.adminService.updateCurrency(this.item.code, payload).subscribe({
       next: () => {
         this.saving = false;
-        alert(this.i18n.t('admin.saved'));
+        this.savedMsg = this.i18n.t('admin.saved');
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.saving = false;
-        alert(parseAdminError(err, this.i18n));
+        this.errorMsg = parseAdminError(err, this.i18n);
         this.cdr.markForCheck();
       }
     });

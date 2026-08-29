@@ -6,96 +6,107 @@ import { AdminService, AdminRegion, AdminCurrency } from '../../core/services/ad
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { Lang } from '../../core/i18n';
+import { RegionLinkDirective } from '../../core/region-link.directive';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiInput } from '../../shared/ui/input.component';
+import { UiButton } from '../../shared/ui/button.component';
 
 @Component({
   selector: 'app-admin-region-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, RegionLinkDirective, UiDropdown, UiInput, UiButton],
   template: `
     <div class="admin-detail-header" *ngIf="item">
-      <a routerLink=".." class="admin-back-link">&larr; {{ 'common.back' | t }}</a>
+      <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
       <h2>{{ 'admin.editRegion' | t }} - {{ item.code }}</h2>
     </div>
 
-    <div class="admin-card" *ngIf="item">
+    <div class="detail-card" *ngIf="item">
       <div class="form-group">
         <label>{{ 'admin.regionCode' | t }}</label>
-        <input type="text" class="admin-form-control" [value]="item.code" disabled>
+        <ui-input [value]="item.code" [disabled]="true"></ui-input>
       </div>
-      <div class="form-group">
-        <label>{{ 'admin.regionName' | t }}</label>
-        <input type="text" class="admin-form-control" [(ngModel)]="item.name">
-      </div>
-      <div class="form-group">
-        <label>{{ 'admin.regionCurrency' | t }}</label>
-        <select class="admin-form-control" [(ngModel)]="item.currency">
-          <option *ngFor="let c of currencies" [value]="c.code">{{ c.code }} ({{ c.symbol }})</option>
-        </select>
-      </div>
+      <ui-input [label]="'admin.regionName' | t" [(ngModel)]="item.name"></ui-input>
+      
+      <ui-dropdown [label]="'admin.regionCurrency' | t" [options]="currencyOptions" [(ngModel)]="item.currency"></ui-dropdown>
+
       <div class="form-group">
         <label>{{ 'admin.regionLanguages' | t }}</label>
         <p class="text-hint">{{ 'admin.langNotice' | t }}</p>
         <div class="checkbox-group">
           <label *ngFor="let lang of availableLangs"><input type="checkbox" [checked]="hasLang(lang)" (change)="toggleLang(lang)"> {{ lang }}</label>
         </div>
-        <div *ngIf="langError" class="text-danger mt-1">{{ langError | t }}</div>
+        <div *ngIf="langError" class="inline-msg error">{{ langError | t }}</div>
       </div>
-      <div class="form-group">
-        <label>{{ 'admin.regionDefaultLang' | t }}</label>
-        <select class="admin-form-control" [(ngModel)]="item.default_language">
-          <option *ngFor="let lang of item.languages" [value]="lang">{{ lang }}</option>
-        </select>
-        <div *ngIf="defaultLangError" class="text-danger mt-1">{{ defaultLangError | t }}</div>
-      </div>
+
+      <ui-dropdown [label]="'admin.regionDefaultLang' | t" [options]="languageOptions" [(ngModel)]="item.default_language"></ui-dropdown>
+      <div *ngIf="defaultLangError" class="inline-msg error">{{ defaultLangError | t }}</div>
+
       <div class="form-group">
         <label>{{ 'admin.translationsSection' | t }}</label>
         <div *ngFor="let lang of item.languages" class="translation-row">
           <span class="lang-tag">{{ lang }}</span>
-          <input type="text" class="admin-form-control" [placeholder]="'admin.regionName' | t" [(ngModel)]="translations[lang]">
+          <input type="text" class="admin-form-control" [placeholder]="'admin.regionName' | t" [(ngModel)]="item.translations[lang].name">
         </div>
-        <div *ngIf="transError" class="text-danger mt-1">{{ transError | t }}</div>
+        <div *ngIf="transError" class="inline-msg error">{{ transError | t }}</div>
       </div>
-      <div class="form-group">
-        <label>{{ 'admin.regionTimezone' | t }}</label>
-        <input type="text" class="admin-form-control" [(ngModel)]="item.timezone" placeholder="Asia/Taipei">
-      </div>
-      <div class="form-group">
-        <label>{{ 'admin.regionEduSuffix' | t }}</label>
-        <input type="text" class="admin-form-control" [(ngModel)]="item.edu_email_suffix" placeholder=".edu.tw">
-      </div>
+
+      <ui-input [label]="'admin.regionTimezone' | t" [(ngModel)]="item.timezone" placeholder="Asia/Taipei"></ui-input>
+      <ui-input [label]="'admin.regionEduSuffix' | t" [(ngModel)]="item.edu_email_suffix" placeholder=".edu.tw"></ui-input>
+
       <div class="form-group">
         <label>{{ 'admin.regionSearchEngines' | t }}</label>
         <div class="checkbox-group">
           <label *ngFor="let se of allSearchEngines"><input type="checkbox" [checked]="hasSearchEngine(se)" (change)="toggleSearchEngine(se)"> {{ se }}</label>
         </div>
       </div>
-      <div class="form-group">
-        <label>{{ 'admin.regionSortOrder' | t }}</label>
-        <input type="number" class="admin-form-control" [(ngModel)]="item.sort_order">
-      </div>
-      <div class="form-group">
-        <label style="display: flex; align-items: center; gap: 8px;">
+
+      <ui-input [label]="'admin.regionSortOrder' | t" type="number" [(ngModel)]="item.sort_order"></ui-input>
+
+      <div class="toggle-row">
+        <label class="toggle">
           <input type="checkbox" [(ngModel)]="item.is_active">
           {{ 'admin.regionIsActive' | t }}
         </label>
       </div>
-      
-      <button class="admin-btn admin-btn-primary mt-3" [disabled]="saving" (click)="save()">
-        {{ saving ? ('admin.saving' | t) : ('admin.save' | t) }}
-      </button>
+
+      <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
+      <div *ngIf="savedMsg" class="inline-msg ok">{{ savedMsg }}</div>
+
+      <ui-button (onClick)="save()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
     </div>
   `,
   styles: [`
+    .detail-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 520px;
+      box-shadow: var(--shadow-card-lg);
+    }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
     .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
     .checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; margin-bottom: 0; }
     .text-hint { font-size: 13px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
-    .text-danger { font-size: 13px; color: #dc3545; }
-    .mt-1 { margin-top: 4px; }
-    .mt-3 { margin-top: 24px; }
     .translation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; width: 60px; text-align: center; }
+    .toggle-row {
+      display: flex;
+      gap: 24px;
+      margin: 16px 0;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .inline-msg { margin: 12px 0; font-size: 14px; }
+    .inline-msg.error { color: var(--danger); }
+    .inline-msg.ok { color: var(--success); }
   `]
 })
 export class AdminRegionDetailComponent implements OnInit {
@@ -112,6 +123,16 @@ export class AdminRegionDetailComponent implements OnInit {
   availableLangs: string[] = ['en', 'zh-TW', 'zh-HK'];
   allSearchEngines = ['googlebooks', 'openlibrary', 'isbnnet'];
   translations: Record<string, string> = {};
+  errorMsg = '';
+  savedMsg = '';
+
+  get currencyOptions() {
+    return this.currencies.map(c => ({ value: c.code, label: `${c.code} (${c.symbol})` }));
+  }
+
+  get languageOptions() {
+    return (this.item?.languages || []).map(l => ({ value: l, label: l }));
+  }
 
   langError = '';
   defaultLangError = '';

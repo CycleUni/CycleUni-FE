@@ -99,9 +99,28 @@ export class UiInput implements ControlValueAccessor {
   @Input() type: string = 'text';
   @Input() error: string = '';
   @Input() noMargin: boolean = false;
-  
+  // The template already binds this and `input:disabled` is already styled;
+  // it just was not reachable from a template. Without it a read-only field
+  // had to fall back to a bare <input>, which inherits none of this — the
+  // region form ended up with a 33.5px/13.3px native box beside a 40px/15px
+  // ui-input, two fields from visibly different designs sitting one above
+  // the other.
+  //
+  // Angular Forms writes the same field through setDisabledState() below, so
+  // a control disabled by a form and one disabled by this input converge.
+  @Input() disabled: boolean = false;
+
   value: string = '';
-  disabled: boolean = false;
+
+  // Seeds the displayed text without a form control. `value` itself stays a
+  // plain field because ControlValueAccessor owns it — writeValue() below is
+  // how Angular Forms sets it, and exposing that same field as an @Input
+  // would leave two writers with no defined order. A read-only field that
+  // only ever displays a value has no form control to write it, hence this
+  // separate, one-way entry point.
+  @Input('value') set inputValue(val: any) {
+    this.value = (val !== null && val !== undefined) ? String(val) : '';
+  }
 
   onChange = (val: string) => {};
   onTouched = () => {};

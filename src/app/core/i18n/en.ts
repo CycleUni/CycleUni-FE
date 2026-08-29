@@ -558,6 +558,7 @@ export const en: Record<string, string> = {
   'admin.groupModeration': 'Moderation',
   'admin.groupSettings': 'Platform Settings',
   'admin.groupAds': 'Advertising',
+  'admin.groupSystem': 'System',
   'admin.ariaNav': 'Admin Navigation',
   'admin.ariaCloseDrawer': 'Close admin menu',
   'admin.navUsers': 'Users',

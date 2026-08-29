@@ -1,6 +1,9 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiInput } from '../../shared/ui/input.component';
+import { UiButton } from '../../shared/ui/button.component';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminRegion, Paginated, AdminCurrency } from '../../core/services/admin.service';
@@ -11,11 +14,11 @@ import { Lang } from '../../core/i18n';
 @Component({
   selector: 'app-admin-regions-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navRegions' | t }}</h2>
-      <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addRegion' | t }}</button>
+      <ui-button (onClick)="openCreateModal()">{{ 'admin.addRegion' | t }}</ui-button>
     </div>
 
     <div class="table-container" *ngIf="data">
@@ -48,71 +51,56 @@ import { Lang } from '../../core/i18n';
       <div class="app-modal" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
         <h3 class="app-modal-title">{{ 'admin.addRegion' | t }}</h3>
         <div class="app-modal-body">
-          <div class="form-group">
-            <label>{{ 'admin.regionCode' | t }} (ISO 3166-1 alpha-2)</label>
-            <input type="text" class="admin-form-control" [(ngModel)]="newItem.code">
-          </div>
-          <div class="form-group">
-            <label>{{ 'admin.regionName' | t }}</label>
-            <input type="text" class="admin-form-control" [(ngModel)]="newItem.name">
-          </div>
-          <div class="form-group">
-            <label>{{ 'admin.regionCurrency' | t }}</label>
-            <select class="admin-form-control" [(ngModel)]="newItem.currency">
-              <option *ngFor="let c of currencies" [value]="c.code">{{ c.code }} ({{ c.symbol }})</option>
-            </select>
-          </div>
+          <ui-input [label]="'admin.regionCode' | t" [(ngModel)]="newItem.code"></ui-input>
+          <ui-input [label]="'admin.regionName' | t" [(ngModel)]="newItem.name"></ui-input>
+          
+          <ui-dropdown [label]="'admin.regionCurrency' | t" [options]="currencyOptions" [(ngModel)]="newItem.currency"></ui-dropdown>
+
           <div class="form-group">
             <label>{{ 'admin.regionLanguages' | t }}</label>
             <p class="text-hint">{{ 'admin.langNotice' | t }}</p>
             <div class="checkbox-group">
               <label *ngFor="let lang of availableLangs"><input type="checkbox" [checked]="hasLang(lang)" (change)="toggleLang(lang)"> {{ lang }}</label>
             </div>
-            <div *ngIf="langError" class="text-danger mt-1">{{ langError | t }}</div>
+            <div *ngIf="langError" class="inline-msg error">{{ langError | t }}</div>
           </div>
-          <div class="form-group">
-            <label>{{ 'admin.regionDefaultLang' | t }}</label>
-            <select class="admin-form-control" [(ngModel)]="newItem.default_language">
-              <option *ngFor="let lang of newItem.languages" [value]="lang">{{ lang }}</option>
-            </select>
-            <div *ngIf="defaultLangError" class="text-danger mt-1">{{ defaultLangError | t }}</div>
-          </div>
+          
+          <ui-dropdown [label]="'admin.regionDefaultLang' | t" [options]="languageOptions" [(ngModel)]="newItem.default_language"></ui-dropdown>
+          <div *ngIf="defaultLangError" class="inline-msg error">{{ defaultLangError | t }}</div>
+
           <div class="form-group">
             <label>{{ 'admin.translationsSection' | t }}</label>
             <div *ngFor="let lang of newItem.languages" class="translation-row">
               <span class="lang-tag">{{ lang }}</span>
               <input type="text" class="admin-form-control" [placeholder]="'admin.regionName' | t" [(ngModel)]="newTranslations[lang]">
             </div>
-            <div *ngIf="transError" class="text-danger mt-1">{{ transError | t }}</div>
+            <div *ngIf="transError" class="inline-msg error">{{ transError | t }}</div>
           </div>
-          <div class="form-group">
-            <label>{{ 'admin.regionTimezone' | t }}</label>
-            <input type="text" class="admin-form-control" [(ngModel)]="newItem.timezone" placeholder="Asia/Taipei">
-          </div>
-          <div class="form-group">
-            <label>{{ 'admin.regionEduSuffix' | t }}</label>
-            <input type="text" class="admin-form-control" [(ngModel)]="newItem.edu_email_suffix" placeholder=".edu.tw">
-          </div>
+
+          <ui-input [label]="'admin.regionTimezone' | t" [(ngModel)]="newItem.timezone" placeholder="Asia/Taipei"></ui-input>
+          <ui-input [label]="'admin.regionEduSuffix' | t" [(ngModel)]="newItem.edu_email_suffix" placeholder=".edu.tw"></ui-input>
+
           <div class="form-group">
             <label>{{ 'admin.regionSearchEngines' | t }}</label>
             <div class="checkbox-group">
               <label *ngFor="let se of allSearchEngines"><input type="checkbox" [checked]="hasSearchEngine(se)" (change)="toggleSearchEngine(se)"> {{ se }}</label>
             </div>
           </div>
-          <div class="form-group">
-            <label>{{ 'admin.regionSortOrder' | t }}</label>
-            <input type="number" class="admin-form-control" [(ngModel)]="newItem.sort_order">
-          </div>
+
+          <ui-input [label]="'admin.regionSortOrder' | t" type="number" [(ngModel)]="newItem.sort_order"></ui-input>
+
           <div class="form-group">
             <label style="display: flex; align-items: center; gap: 8px;">
               <input type="checkbox" [(ngModel)]="newItem.is_active">
               {{ 'admin.regionIsActive' | t }}
             </label>
           </div>
+          
+          <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
         </div>
-        <div class="app-modal-actions">
-          <button class="admin-btn admin-btn-secondary" (click)="showCreateModal = false">{{ 'common.cancel' | t }}</button>
-          <button class="admin-btn admin-btn-primary" (click)="create()">{{ 'admin.save' | t }}</button>
+        <div class="app-modal-actions" style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
+          <ui-button variant="ghost" (onClick)="showCreateModal = false" [disabled]="saving">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button (onClick)="create()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
         </div>
       </div>
     </div>
@@ -120,14 +108,14 @@ import { Lang } from '../../core/i18n';
   styles: [`
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
     .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
     .checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; margin-bottom: 0; }
     .text-hint { font-size: 13px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
-    .text-danger { font-size: 13px; color: #dc3545; }
-    .mt-1 { margin-top: 4px; }
     .translation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; width: 60px; text-align: center; }
+    .inline-msg { margin: 12px 0; font-size: 14px; }
+    .inline-msg.error { color: var(--danger); }
   `]
 })
 export class AdminRegionsListComponent implements OnInit {
@@ -148,10 +136,20 @@ export class AdminRegionsListComponent implements OnInit {
   // Available langs from frontend dictionary constraint
   availableLangs: string[] = ['en', 'zh-TW', 'zh-HK'];
   allSearchEngines = ['googlebooks', 'openlibrary', 'isbnnet'];
+
+  get currencyOptions() {
+    return this.currencies.map(c => ({ value: c.code, label: `${c.code} (${c.symbol})` }));
+  }
+
+  get languageOptions() {
+    return (this.newItem.languages || []).map(l => ({ value: l, label: l }));
+  }
   
   langError = '';
   defaultLangError = '';
   transError = '';
+  errorMsg = '';
+  saving = false;
 
   ngOnInit() {
     this.loadPage(1);
@@ -191,6 +189,8 @@ export class AdminRegionsListComponent implements OnInit {
     this.langError = '';
     this.transError = '';
     this.defaultLangError = '';
+    this.errorMsg = '';
+    this.saving = false;
     this.showCreateModal = true;
   }
 
@@ -217,6 +217,7 @@ export class AdminRegionsListComponent implements OnInit {
     this.langError = '';
     this.transError = '';
     this.defaultLangError = '';
+    this.errorMsg = '';
     
     if (!this.newItem.languages || this.newItem.languages.length === 0) {
       this.langError = 'admin.languagesRequired';
@@ -241,12 +242,18 @@ export class AdminRegionsListComponent implements OnInit {
     }
     this.newItem.translations = transData;
     
+    this.saving = true;
     this.adminService.createRegion(this.newItem).subscribe({
       next: () => {
+        this.saving = false;
         this.showCreateModal = false;
         this.loadPage(1);
       },
-      error: (err) => alert(parseAdminError(err, this.i18n))
+      error: (err) => {
+        this.saving = false;
+        this.errorMsg = parseAdminError(err, this.i18n);
+        this.cdr.markForCheck();
+      }
     });
   }
 }

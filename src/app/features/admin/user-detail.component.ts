@@ -83,14 +83,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
   `,
   styles: [`
     .admin-status-badge { width: fit-content; }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 16px;
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .back-link:hover { color: var(--accent); }
+
     .detail-card {
       background: var(--paper);
       border: 1px solid var(--line);

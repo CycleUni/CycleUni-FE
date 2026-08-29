@@ -563,6 +563,7 @@ export const zhHK: Record<string, string> = {
   'admin.groupModeration': '審核',
   'admin.groupSettings': '平台設定',
   'admin.groupAds': '廣告',
+  'admin.groupSystem': '系統',
   'admin.ariaNav': '後台管理導覽',
   'admin.ariaCloseDrawer': '關閉選單',
   'admin.navUsers': '用戶',
