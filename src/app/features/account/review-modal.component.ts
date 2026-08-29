@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output, inject, ChangeDetectorRef } from '@angular/core';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { TPipe } from '../../core/i18n.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,7 @@ import { OrderService } from '../../core/services/order.service';
 @Component({
   selector: 'app-review-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe, UiCheckbox],
   template: `
     <div class="app-modal-overlay" (click)="close()">
       <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()">
@@ -21,10 +22,7 @@ import { OrderService } from '../../core/services/order.service';
           </p>
 
           <div class="checkbox-group" style="margin-bottom: 24px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--flag); font-weight: 500;">
-              <input type="checkbox" [(ngModel)]="isNoShow" (change)="onNoShowChange()">
-              {{ 'order.noShowReport' | t }}
-            </label>
+            <ui-checkbox [(ngModel)]="isNoShow" (change)="onNoShowChange()" [label]="'order.noShowReport' | t" class="no-show-checkbox"></ui-checkbox>
           </div>
 
           <div *ngIf="!isNoShow" style="margin-bottom: 16px;">

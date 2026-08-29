@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
@@ -13,7 +14,7 @@ import { parseAdminError } from '../../core/admin-error.util';
 @Component({
   selector: 'app-admin-currencies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton, UiCheckbox],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navCurrencies' | t }}</h2>
@@ -58,10 +59,7 @@ import { parseAdminError } from '../../core/admin-error.util';
           <ui-dropdown [label]="'admin.currencySymbolPos' | t" [options]="symbolPosOptions" [(ngModel)]="newItem.symbol_position"></ui-dropdown>
 
           <div class="form-group">
-            <label style="display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" [(ngModel)]="newItem.is_active">
-              {{ 'admin.regionIsActive' | t }}
-            </label>
+            <ui-checkbox [(ngModel)]="newItem.is_active" [label]="'admin.regionIsActive' | t"></ui-checkbox>
           </div>
           
           <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>

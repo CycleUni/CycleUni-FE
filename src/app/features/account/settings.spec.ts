@@ -26,7 +26,7 @@ describe('SettingsComponent', () => {
   describe('autoVerifyRegion', () => {
     it('should return region if verified_at is null', () => {
       // Mock regions and verifications
-      const mockRegion = { code: 'TW', edu_email_suffix: 'edu.tw' };
+      const mockRegion = { code: 'TW', edu_email_suffix: ['edu.tw'] };
       (component as any).regionService = {
         currentRegionObj: () => mockRegion
       };
@@ -41,7 +41,7 @@ describe('SettingsComponent', () => {
     });
 
     it('should return null if region is verified', () => {
-      const mockRegion = { code: 'TW', edu_email_suffix: 'edu.tw' };
+      const mockRegion = { code: 'TW', edu_email_suffix: ['edu.tw'] };
       (component as any).regionService = {
         currentRegionObj: () => mockRegion
       };
@@ -56,7 +56,7 @@ describe('SettingsComponent', () => {
     });
     
     it('should handle region codes ignoring case', () => {
-      const mockRegion = { code: 'TW', edu_email_suffix: 'edu.tw' };
+      const mockRegion = { code: 'TW', edu_email_suffix: ['edu.tw'] };
       (component as any).regionService = {
         currentRegionObj: () => mockRegion
       };

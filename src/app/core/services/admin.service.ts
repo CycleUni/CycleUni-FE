@@ -22,13 +22,14 @@ export interface AdminCurrency {
 export interface AdminRegion {
   code: string;
   name: string;
+  display_name: string;
   translations: any;
   currency: string;
   default_language: string;
   languages: string[];
   timezone: string;
   search_engines: string[];
-  edu_email_suffix: string;
+  edu_email_suffix: string[];
   is_active: boolean;
   sort_order: number;
 }

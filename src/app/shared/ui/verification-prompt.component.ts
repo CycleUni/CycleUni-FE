@@ -21,7 +21,7 @@ import { RegionService } from '../../core/region.service';
       </div>
       <div class="prompt-content">
         <h4 class="prompt-title">{{ title || ('acct.unverifiedTitle' | t) }}</h4>
-        <p class="prompt-desc">{{ message || ('acct.unverifiedDesc' | t:{suffix: regionService.currentRegionObj()?.edu_email_suffix || '.edu'}) }}</p>
+        <p class="prompt-desc">{{ message || ('acct.unverifiedDesc' | t:{suffix: (regionService.currentRegionObj()?.edu_email_suffix?.join(', ') || '.edu')}) }}</p>
         <div class="prompt-actions">
           <a regionLink="/account/settings" class="verify-link">
             <ui-button variant="primary">{{ 'sell.goVerify' | t }}</ui-button>

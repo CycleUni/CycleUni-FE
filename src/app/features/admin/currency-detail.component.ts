@@ -7,13 +7,14 @@ import { TPipe, I18nService } from '../../core/i18n.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { RegionLinkDirective } from '../../core/region-link.directive';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
 
 @Component({
   selector: 'app-admin-currency-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, RegionLinkDirective, UiDropdown, UiInput, UiButton],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, RegionLinkDirective, UiDropdown, UiInput, UiButton, UiCheckbox],
   template: `
     <div class="admin-detail-header" *ngIf="item">
       <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
@@ -35,10 +36,7 @@ import { UiButton } from '../../shared/ui/button.component';
       <ui-dropdown [label]="'admin.currencySymbolPos' | t" [options]="symbolPosOptions" [(ngModel)]="item.symbol_position"></ui-dropdown>
 
       <div class="toggle-row">
-        <label class="toggle">
-          <input type="checkbox" [(ngModel)]="item.is_active">
-          {{ 'admin.regionIsActive' | t }}
-        </label>
+        <ui-checkbox [(ngModel)]="item.is_active" [label]="'admin.regionIsActive' | t"></ui-checkbox>
       </div>
       
       <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>

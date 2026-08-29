@@ -13,12 +13,13 @@ import { AuthStore } from '../../core/auth.store';
 import { RegionService } from '../../core/region.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown, UiCheckbox],
   template: `
     <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
@@ -34,10 +35,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
       </div>
 
       <div class="toggle-row">
-        <label class="toggle">
-          <input type="checkbox" [(ngModel)]="isActive" />
-          {{ 'admin.colActive' | t }}
-        </label>
+        <ui-checkbox [(ngModel)]="isActive" [label]="'admin.colActive' | t"></ui-checkbox>
       </div>
 
       <div class="field-grid" style="grid-template-columns: 1fr; margin-top: 16px;">
@@ -49,10 +47,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
               <span style="color: var(--muted); font-size: 12px; margin-left: 8px;" *ngIf="v.verified_at">({{ v.verified_at | date:'yyyy/MM/dd HH:mm' }})</span>
             </div>
             <div style="margin-bottom: 8px;">
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="verificationStates[v.region].verified" />
-                {{ 'admin.colVerified' | t }}
-              </label>
+              <ui-checkbox [(ngModel)]="verificationStates[v.region].verified" [label]="'admin.colVerified' | t"></ui-checkbox>
             </div>
             <ui-dropdown [label]="'admin.colSchool' | t" [options]="getSchoolOptionsForRegion(v.region)" [(ngModel)]="verificationStates[v.region].school"></ui-dropdown>
           </div>

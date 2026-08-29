@@ -3,6 +3,7 @@ import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminAd, AdminAdvertiser, Paginated } from '../../core/services/admin.service';
@@ -16,7 +17,7 @@ import { RegionService } from '../../core/region.service';
 @Component({
   selector: 'app-admin-ads-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navAds' | t }}</h2>
@@ -149,14 +150,12 @@ import { RegionService } from '../../core/region.service';
             <input type="text" class="admin-form-control" [(ngModel)]="labelsInput" placeholder="New, Sale">
           </div>
           
-          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="adIsActive" [(ngModel)]="formData.is_active">
-            <label for="adIsActive" style="margin: 0; font-weight: normal;">{{ 'admin.advertiserActive' | t }}</label>
+          <div class="form-group">
+            <ui-checkbox [(ngModel)]="formData.is_active" [label]="'admin.advertiserActive' | t"></ui-checkbox>
           </div>
 
-          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="adShowInHero" [(ngModel)]="formData.show_in_hero">
-            <label for="adShowInHero" style="margin: 0; font-weight: normal;">{{ 'admin.adShowInHero' | t }}</label>
+          <div class="form-group">
+            <ui-checkbox [(ngModel)]="formData.show_in_hero" [label]="'admin.adShowInHero' | t"></ui-checkbox>
           </div>
         </div>
         

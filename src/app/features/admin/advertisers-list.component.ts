@@ -2,6 +2,7 @@ import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminAdvertiser, Paginated } from '../../core/services/admin.service';
@@ -12,7 +13,7 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 @Component({
   selector: 'app-admin-advertisers-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navAdvertisers' | t }}</h2>
@@ -80,23 +81,18 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
             <label>{{ 'admin.advertiserPhone' | t }}</label>
             <input type="text" class="admin-form-control" [(ngModel)]="formData.contact_phone">
           </div>
-          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="isActive" [(ngModel)]="formData.is_active">
-            <label for="isActive" style="margin: 0; font-weight: normal;">{{ 'admin.advertiserActive' | t }}</label>
+          <div class="form-group">
+            <ui-checkbox [(ngModel)]="formData.is_active" [label]="'admin.advertiserActive' | t"></ui-checkbox>
           </div>
-          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="allSchools" [(ngModel)]="formData.all_schools">
-            <label for="allSchools" style="margin: 0; font-weight: normal;">{{ 'admin.allSchools' | t }}</label>
+          <div class="form-group">
+            <ui-checkbox [(ngModel)]="formData.all_schools" [label]="'admin.allSchools' | t"></ui-checkbox>
           </div>
           <div class="form-group" *ngIf="!formData.all_schools">
             <label>{{ 'admin.selectSpecificSchool' | t }}</label>
             <input type="text" class="admin-form-control" [placeholder]="'admin.searchSchool' | t" [(ngModel)]="schoolSearchQuery" style="margin-bottom: 8px;">
             <div class="school-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
               <div *ngFor="let school of filteredSchools" style="display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" [id]="'school_' + school.id" 
-                       [checked]="formData.schools?.includes(school.id)" 
-                       (change)="toggleSchool(school.id)">
-                <label [for]="'school_' + school.id" style="margin: 0; font-weight: normal; cursor: pointer;">{{ school.display_name || school.name }}</label>
+                <ui-checkbox [checked]="formData.schools?.includes(school.id)" (change)="toggleSchool(school.id)" [label]="school.display_name || school.name"></ui-checkbox>
               </div>
               <div *ngIf="filteredSchools.length === 0" style="color: var(--muted); text-align: center; padding: 12px;">找不到符合的學校</div>
             </div>

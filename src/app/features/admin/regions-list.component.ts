@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
@@ -14,7 +15,7 @@ import { Lang } from '../../core/i18n';
 @Component({
   selector: 'app-admin-regions-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton, UiCheckbox],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navRegions' | t }}</h2>
@@ -35,7 +36,7 @@ import { Lang } from '../../core/i18n';
         <tbody>
           <tr *ngFor="let item of data.results">
             <td>{{ item.code }}</td>
-            <td>{{ item.name }}</td>
+            <td>{{ item.display_name }}</td>
             <td>{{ item.currency }}</td>
             <td>{{ item.is_active ? ('admin.yes' | t) : ('admin.no' | t) }}</td>
             <td>
@@ -60,7 +61,7 @@ import { Lang } from '../../core/i18n';
             <label>{{ 'admin.regionLanguages' | t }}</label>
             <p class="text-hint">{{ 'admin.langNotice' | t }}</p>
             <div class="checkbox-group">
-              <label *ngFor="let lang of availableLangs"><input type="checkbox" [checked]="hasLang(lang)" (change)="toggleLang(lang)"> {{ lang }}</label>
+              <ui-checkbox *ngFor="let lang of availableLangs" [checked]="hasLang(lang)" (change)="toggleLang(lang)" [label]="lang"></ui-checkbox>
             </div>
             <div *ngIf="langError" class="inline-msg error">{{ langError | t }}</div>
           </div>
@@ -78,22 +79,19 @@ import { Lang } from '../../core/i18n';
           </div>
 
           <ui-input [label]="'admin.regionTimezone' | t" [(ngModel)]="newItem.timezone" placeholder="Asia/Taipei"></ui-input>
-          <ui-input [label]="'admin.regionEduSuffix' | t" [(ngModel)]="newItem.edu_email_suffix" placeholder=".edu.tw"></ui-input>
+          <ui-input [label]="'admin.regionEduSuffix' | t" [(ngModel)]="eduSuffixString" placeholder=".edu.hk, .edu, .hk"></ui-input>
 
           <div class="form-group">
             <label>{{ 'admin.regionSearchEngines' | t }}</label>
             <div class="checkbox-group">
-              <label *ngFor="let se of allSearchEngines"><input type="checkbox" [checked]="hasSearchEngine(se)" (change)="toggleSearchEngine(se)"> {{ se }}</label>
+              <ui-checkbox *ngFor="let se of allSearchEngines" [checked]="hasSearchEngine(se)" (change)="toggleSearchEngine(se)" [label]="se"></ui-checkbox>
             </div>
           </div>
 
           <ui-input [label]="'admin.regionSortOrder' | t" type="number" [(ngModel)]="newItem.sort_order"></ui-input>
 
           <div class="form-group">
-            <label style="display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" [(ngModel)]="newItem.is_active">
-              {{ 'admin.regionIsActive' | t }}
-            </label>
+            <ui-checkbox [(ngModel)]="newItem.is_active" [label]="'admin.regionIsActive' | t"></ui-checkbox>
           </div>
           
           <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
@@ -159,11 +157,20 @@ export class AdminRegionsListComponent implements OnInit {
     });
   }
 
+  get eduSuffixString() {
+    return (this.newItem?.edu_email_suffix || []).join(', ');
+  }
+  set eduSuffixString(val: string) {
+    if (this.newItem) {
+      this.newItem.edu_email_suffix = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+  }
+
   getEmptyItem(): Partial<AdminRegion> {
     return { 
       code: '', name: '', currency: '', default_language: 'en', 
       languages: ['en'], timezone: 'Asia/Taipei', search_engines: ['openlibrary'],
-      edu_email_suffix: '', is_active: true, sort_order: 0 
+      edu_email_suffix: [], is_active: true, sort_order: 0 
     };
   }
 

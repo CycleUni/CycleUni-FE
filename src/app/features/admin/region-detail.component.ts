@@ -8,13 +8,14 @@ import { parseAdminError } from '../../core/admin-error.util';
 import { Lang } from '../../core/i18n';
 import { RegionLinkDirective } from '../../core/region-link.directive';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
 
 @Component({
   selector: 'app-admin-region-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, RegionLinkDirective, UiDropdown, UiInput, UiButton],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, RegionLinkDirective, UiDropdown, UiInput, UiButton, UiCheckbox],
   template: `
     <div class="admin-detail-header" *ngIf="item">
       <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
@@ -34,7 +35,7 @@ import { UiButton } from '../../shared/ui/button.component';
         <label>{{ 'admin.regionLanguages' | t }}</label>
         <p class="text-hint">{{ 'admin.langNotice' | t }}</p>
         <div class="checkbox-group">
-          <label *ngFor="let lang of availableLangs"><input type="checkbox" [checked]="hasLang(lang)" (change)="toggleLang(lang)"> {{ lang }}</label>
+          <ui-checkbox *ngFor="let lang of availableLangs" [checked]="hasLang(lang)" (change)="toggleLang(lang)" [label]="lang"></ui-checkbox>
         </div>
         <div *ngIf="langError" class="inline-msg error">{{ langError | t }}</div>
       </div>
@@ -52,22 +53,19 @@ import { UiButton } from '../../shared/ui/button.component';
       </div>
 
       <ui-input [label]="'admin.regionTimezone' | t" [(ngModel)]="item.timezone" placeholder="Asia/Taipei"></ui-input>
-      <ui-input [label]="'admin.regionEduSuffix' | t" [(ngModel)]="item.edu_email_suffix" placeholder=".edu.tw"></ui-input>
+      <ui-input [label]="'admin.regionEduSuffix' | t" [(ngModel)]="eduSuffixString" placeholder=".edu.hk, .edu, .hk"></ui-input>
 
       <div class="form-group">
         <label>{{ 'admin.regionSearchEngines' | t }}</label>
         <div class="checkbox-group">
-          <label *ngFor="let se of allSearchEngines"><input type="checkbox" [checked]="hasSearchEngine(se)" (change)="toggleSearchEngine(se)"> {{ se }}</label>
+          <ui-checkbox *ngFor="let se of allSearchEngines" [checked]="hasSearchEngine(se)" (change)="toggleSearchEngine(se)" [label]="se"></ui-checkbox>
         </div>
       </div>
 
       <ui-input [label]="'admin.regionSortOrder' | t" type="number" [(ngModel)]="item.sort_order"></ui-input>
 
       <div class="toggle-row">
-        <label class="toggle">
-          <input type="checkbox" [(ngModel)]="item.is_active">
-          {{ 'admin.regionIsActive' | t }}
-        </label>
+        <ui-checkbox [(ngModel)]="item.is_active" [label]="'admin.regionIsActive' | t"></ui-checkbox>
       </div>
 
       <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
@@ -137,6 +135,15 @@ export class AdminRegionDetailComponent implements OnInit {
   langError = '';
   defaultLangError = '';
   transError = '';
+
+  get eduSuffixString() {
+    return (this.item?.edu_email_suffix || []).join(', ');
+  }
+  set eduSuffixString(val: string) {
+    if (this.item) {
+      this.item.edu_email_suffix = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    }
+  }
 
   ngOnInit() {
     this.adminService.getCurrencies().subscribe(res => {

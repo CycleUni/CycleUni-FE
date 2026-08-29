@@ -14,7 +14,7 @@
           *ngIf="showUnverifiedPrompt"
           (onDismiss)="showUnverifiedPrompt = false"
           storageKey="cycleuni.verification_prompt.sell"
-          [message]="'sell.unverifiedDesc' | t:{suffix: regionService.currentRegionObj()?.edu_email_suffix || '.edu'}">
+          [message]="'sell.unverifiedDesc' | t:{suffix: (regionService.currentRegionObj()?.edu_email_suffix?.join(', ') || '.edu')}">
         </ui-verification-prompt>
 
         <div class="stepper">

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCategory, Paginated } from '../../core/services/admin.service';
@@ -14,7 +15,7 @@ import { RegionService } from '../../core/region.service';
 @Component({
   selector: 'app-admin-categories-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination, UiCheckbox],
   template: `
     <ng-container *ngIf="!showModal">
       <div class="header-actions">
@@ -97,10 +98,7 @@ import { RegionService } from '../../core/region.service';
               <input type="number" class="admin-form-control" [(ngModel)]="form.sort_order">
             </div>
             <div class="col checkbox-col">
-              <label>
-                <input type="checkbox" [(ngModel)]="form.is_active">
-                {{ 'admin.colActive' | t }}
-              </label>
+              <ui-checkbox [(ngModel)]="form.is_active" [label]="'admin.colActive' | t"></ui-checkbox>
             </div>
           </div>
 

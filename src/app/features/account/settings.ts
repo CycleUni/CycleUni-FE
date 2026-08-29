@@ -127,10 +127,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (parts.length !== 2) return null;
     const loginDomain = parts[1].toLowerCase();
     
-    const suffix = this.currentRegion.edu_email_suffix.toLowerCase();
-    const normalizedSuffix = suffix.startsWith('.') ? suffix : '.' + suffix;
+    const suffixes = this.currentRegion.edu_email_suffix.map(s => {
+      const lower = s.toLowerCase();
+      return lower.startsWith('.') ? lower : '.' + lower;
+    });
     
-    if (loginDomain.endsWith(normalizedSuffix)) {
+    if (suffixes.some(s => loginDomain.endsWith(s))) {
       return this.currentRegion;
     }
     return null;
@@ -191,9 +193,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     
     const regions = this.regionService.regions();
     const matchedRegion = regions.find(r => {
-      const suffix = r.edu_email_suffix.toLowerCase();
-      const normalizedSuffix = suffix.startsWith('.') ? suffix : '.' + suffix;
-      return loginDomain.endsWith(normalizedSuffix);
+      const suffixes = r.edu_email_suffix.map(s => {
+        const lower = s.toLowerCase();
+        return lower.startsWith('.') ? lower : '.' + lower;
+      });
+      return suffixes.some(s => loginDomain.endsWith(s));
     });
     
     if (matchedRegion) {

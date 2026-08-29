@@ -24,7 +24,7 @@ export interface Region {
   default_language: string;
   timezone: string;
   search_engines: string[];
-  edu_email_suffix: string;
+  edu_email_suffix: string[];
 }
 
 const STORAGE_KEY = 'region';
