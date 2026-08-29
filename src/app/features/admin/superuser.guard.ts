@@ -1,14 +1,38 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { map, catchError, of } from 'rxjs';
 import { AuthStore } from '../../core/auth.store';
+import { AccountService } from '../../core/services/account.service';
+import { RegionService } from '../../core/region.service';
+import { regionUrlTree } from '../../core/region-path';
 
+// Same shape as adminGuard, and for the same reason: `is_superuser` only
+// exists client-side in AccountService.profileCache (GET /auth/me/). AuthStore
+// holds what login returned and is not rehydrated on page load, so reading
+// `auth.user()?.is_superuser` synchronously sends a genuine superuser away on
+// any direct navigation or refresh — the cache is still empty at that point.
+//
+// Redirects through regionUrlTree rather than parseUrl('/'), so the bounce
+// keeps the region prefix instead of dropping the user at a region-less root.
 export const superuserGuard: CanActivateFn = () => {
   const auth = inject(AuthStore);
+  const accountService = inject(AccountService);
   const router = inject(Router);
+  const regionService = inject(RegionService);
 
-  if (auth.user()?.is_superuser) {
-    return true;
+  const deny = () => regionUrlTree(router, regionService, ['/']);
+
+  if (!auth.isLoggedIn()) {
+    return deny();
   }
 
-  return router.parseUrl('/');
+  const cached = accountService.profileCache();
+  if (cached) {
+    return cached.is_superuser === true ? true : deny();
+  }
+
+  return accountService.getMyProfile().pipe(
+    map(profile => (profile?.is_superuser === true ? true : deny())),
+    catchError(() => of(deny()))
+  );
 };

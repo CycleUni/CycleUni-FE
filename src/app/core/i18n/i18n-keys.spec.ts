@@ -111,6 +111,52 @@ describe('i18n translation keys (en.ts / zh-TW.ts / zh-HK.ts)', () => {
     expect(unused).toEqual([]);
   });
 
+  it('should declare every key the app actually renders', () => {
+    // The orphan check above looks the other way: declared but unreferenced.
+    // Nothing caught a key that is *rendered but never declared*, so
+    // `admin.editRegion` shipped and the admin page displayed the raw key
+    // string as its heading. Unit tests cannot see that; only a browser or
+    // this check can.
+    const feFiles = walk(SRC_DIR, ['.ts', '.html'], ['i18n']).filter(f => !f.endsWith('.spec.ts'));
+
+    // A key built at runtime ('order.status.' + s) is declared under its
+    // concrete forms, so only the literal call sites can be checked.
+    const dynamicPrefixes = new Set<string>();
+    const dynamicPrefixPattern = /['"]([a-zA-Z0-9_.]+[._])['"]\s*\+/g;
+    const dynamicTemplatePattern = /`([a-zA-Z0-9_.]+[._])\$\{/g;
+
+    const rendered = new Map<string, string>();
+    // Only forms that reach the translator: the `| t` pipe in a template and
+    // i18n.t('...') in TypeScript. A bare string that merely looks like a key
+    // — a backend error code being compared, say — is not a render.
+    const pipePattern = /['"]([a-zA-Z0-9_]+\.[a-zA-Z0-9._]+)['"]\s*\|\s*t\b/g;
+    const callPattern = /\.t\(\s*['"]([a-zA-Z0-9_]+\.[a-zA-Z0-9._]+)['"]/g;
+
+    for (const file of feFiles) {
+      const source = fs.readFileSync(file, 'utf-8');
+      let match: RegExpExecArray | null;
+      for (const pattern of [dynamicPrefixPattern, dynamicTemplatePattern]) {
+        pattern.lastIndex = 0;
+        while ((match = pattern.exec(source)) !== null) dynamicPrefixes.add(match[1]);
+      }
+      for (const pattern of [pipePattern, callPattern]) {
+        pattern.lastIndex = 0;
+        while ((match = pattern.exec(source)) !== null) {
+          if (!rendered.has(match[1])) rendered.set(match[1], path.relative(SRC_DIR, file));
+        }
+      }
+    }
+
+    const prefixes = [...dynamicPrefixes];
+    const undeclared = [...rendered.entries()]
+      .filter(([key]) => !prefixes.some(prefix => key.startsWith(prefix)))
+      .filter(([key]) => !(key in en))
+      .map(([key, file]) => `${key} (${file})`)
+      .sort();
+
+    expect(undeclared).toEqual([]);
+  });
+
   it('should resolve the image-preview token CFEdgeChat writes', () => {
     const key = IMAGE_PREVIEW_TOKEN.replace(/^\[SYSTEM:/, '').replace(/\]$/, '');
 
