@@ -1,3 +1,4 @@
+import { parseAdminError } from '../../core/admin-error.util';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -5,13 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { AdminService, AdminListing } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
-import { UiSelect } from '../../shared/ui/select.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { PricePipe } from '../../shared/pipes/price.pipe';
 
 @Component({
   selector: 'app-admin-listing-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiSelect, PricePipe],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown, PricePipe],
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
@@ -27,7 +28,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
         <div class="field"><label>{{ 'admin.colCondition' | t }}</label><span>{{ ('cond.' + listing.condition) | t }}</span></div>
       </div>
 
-      <ui-select [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="status"></ui-select>
+      <ui-dropdown [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="status"></ui-dropdown>
 
       <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
       <div *ngIf="savedMsg" class="inline-msg ok">{{ savedMsg }}</div>
@@ -80,7 +81,7 @@ export class AdminListingDetailComponent implements OnInit {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -100,9 +101,9 @@ export class AdminListingDetailComponent implements OnInit {
         this.savedMsg = this.i18n.t('admin.saved');
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
-        this.errorMsg = this.i18n.t('admin.errGeneric');
+        this.errorMsg = parseAdminError(err, this.i18n, 'admin.errGeneric');
         this.cdr.markForCheck();
       }
     });

@@ -3,6 +3,8 @@ import { of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
 import { AdminService } from '../../core/services/admin.service';
+import { RegionService } from '../../core/region.service';
+
 
 describe('BulkImportModalComponent', () => {
   let fixture: ComponentFixture<BulkImportModalComponent>;
@@ -17,6 +19,7 @@ describe('BulkImportModalComponent', () => {
     TestBed.configureTestingModule({
       imports: [BulkImportModalComponent],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         { provide: AdminService, useValue: mockAdminService },
         { provide: HttpClient, useValue: { get: vi.fn() } },
       ],

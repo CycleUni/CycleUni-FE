@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { RegionService, Region } from '../../core/region.service';
 import { AccountService } from '../../core/services/account.service';
 import { AuthStore } from '../../core/auth.store';
+import { isSameRegion } from '../../core/region-path';
 
 @Component({
   selector: 'app-account-settings',
@@ -15,6 +17,15 @@ import { AuthStore } from '../../core/auth.store';
   styleUrls: ['./settings.css']
 })
 export class SettingsComponent implements OnInit, OnDestroy {
+  get currentRegion(): Region | null {
+    return this.regionService.currentRegionObj();
+  }
+
+  get currentVerification(): any | null {
+    if (!this.currentRegion) return null;
+    return (this.verifications || []).find(v => isSameRegion(v.region, this.currentRegion!.code) && !!v.verified_at) || null;
+  }
+
   private readonly verifyPendingEmailStorageKeyLegacy = 'cycleuni.account.eduVerification.pendingEmail';
   private readonly verifyCooldownUntilStorageKeyLegacy = 'cycleuni.account.eduVerification.cooldownUntil';
 
@@ -22,7 +33,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   firstName = '';
   lastName = '';
   eduEmail = '';
-  verifiedAt: string | null = null;
+  verifications: any[] = [];
   pendingEduEmail: string | null = null;
   resendCooldownSeconds = 0;
   isEditingPendingEmail = false;
@@ -73,8 +84,22 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return err.error?.old_password?.[0] || err.error?.detail || this.i18n.t('acct.updateFailed');
   }
 
+  removePasswordInput = '';
+  clientRemovePwdMsg = '';
+  lastRemovePwdError: any = null;
+  removePwdIsError = false;
+  get removePwdMessage(): string {
+    if (this.clientRemovePwdMsg) return this.i18n.t(this.clientRemovePwdMsg);
+    if (!this.lastRemovePwdError) return '';
+    const err = this.lastRemovePwdError;
+    const code = err.error?.error?.code;
+    if (code) return this.i18n.t(code);
+    return err.error?.password?.[0] || err.error?.detail || this.i18n.t('acct.updateFailed');
+  }
+
   private authStore = inject(AuthStore);
   private accountService = inject(AccountService);
+  public regionService = inject(RegionService);
   private cdr = inject(ChangeDetectorRef);
   readonly i18n = inject(I18nService);
   private resendCountdownTimer: ReturnType<typeof setInterval> | null = null;
@@ -96,6 +121,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return this.pendingEduEmail || '';
   }
 
+  get autoVerifyRegion(): Region | null {
+    if (!this.email || this.currentVerification || !this.currentRegion) return null;
+    const parts = this.email.split('@');
+    if (parts.length !== 2) return null;
+    const loginDomain = parts[1].toLowerCase();
+    
+    const suffix = this.currentRegion.edu_email_suffix.toLowerCase();
+    const normalizedSuffix = suffix.startsWith('.') ? suffix : '.' + suffix;
+    
+    if (loginDomain.endsWith(normalizedSuffix)) {
+      return this.currentRegion;
+    }
+    return null;
+  }
+
   ngOnInit() {
     this.clearLegacyPendingVerificationState();
     this.loadProfile();
@@ -113,11 +153,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.firstName = data.first_name || '';
         this.lastName = data.last_name || '';
         this.eduEmail = data.edu_email || '';
-        this.verifiedAt = data.verified_at || null;
+        this.verifications = data.verifications || [];
         this.hasPassword = data.has_password ?? true;
         this.isGoogleLinked = data.is_google_linked ?? false;
         this.restorePendingVerificationState();
-        if (this.verifiedAt) {
+        if (this.verifications.length > 0) {
           this.clearPendingVerificationState();
         } else if (this.pendingEduEmail && !this.isEditingPendingEmail) {
           this.eduEmail = this.pendingEduEmail;
@@ -134,7 +174,35 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   onRequestVerification() {
+    const verifiedRegion = this.getVerifiedRegionForEmail(this.eduEmail);
+    if (verifiedRegion) {
+      if (!confirm(this.i18n.t('acct.regionAlreadyVerifiedConfirm', { region: verifiedRegion.localized_name }))) {
+        return;
+      }
+    }
     this.submitEduVerification(this.eduEmail);
+  }
+
+  private getVerifiedRegionForEmail(emailInput: string): Region | null {
+    if (!emailInput) return null;
+    const parts = emailInput.trim().split('@');
+    if (parts.length !== 2) return null;
+    const loginDomain = parts[1].toLowerCase();
+    
+    const regions = this.regionService.regions();
+    const matchedRegion = regions.find(r => {
+      const suffix = r.edu_email_suffix.toLowerCase();
+      const normalizedSuffix = suffix.startsWith('.') ? suffix : '.' + suffix;
+      return loginDomain.endsWith(normalizedSuffix);
+    });
+    
+    if (matchedRegion) {
+      const isVerified = (this.verifications || []).some(v => isSameRegion(v.region, matchedRegion.code) && !!v.verified_at);
+      if (isVerified) {
+        return matchedRegion;
+      }
+    }
+    return null;
   }
 
   onResendVerification() {
@@ -205,7 +273,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         // The panel hides once verified, so no need to keep a success message
         // around (it would otherwise reappear if the user unbinds later).
         this.autoVerifyMessage = '';
-        this.verifiedAt = new Date().toISOString();
+        this.loadProfile();
         this.eduEmail = this.email;
         this.clearPendingVerificationState();
         this.cdr.markForCheck();
@@ -277,6 +345,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.newPassword = '';
         this.confirmPassword = '';
         this.hasPassword = true; // They now have a password
+        this.authStore.updateUser(u => ({ ...u, has_password: true }));
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -288,17 +357,52 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  onUnbindEduEmail() {
+  onRemovePassword() {
+    this.clientRemovePwdMsg = '';
+    this.lastRemovePwdError = null;
+
+    if (!this.removePasswordInput) {
+      this.removePwdIsError = true;
+      this.clientRemovePwdMsg = 'auth.errFillAll';
+      return;
+    }
+
+    this.isLoading = true;
+    this.removePwdIsError = false;
+    this.cdr.markForCheck();
+
+    this.accountService.removePassword({ password: this.removePasswordInput }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.removePwdIsError = false;
+        this.clientRemovePwdMsg = 'acct.passwordRemoved';
+        this.removePasswordInput = '';
+        this.hasPassword = false; // Immediately reflect in UI
+        this.authStore.updateUser(u => ({ ...u, has_password: false })); // Sync AuthStore
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.removePwdIsError = true;
+        this.lastRemovePwdError = err;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onUnbindEduEmail(regionCode: string) {
     if (!confirm(this.i18n.t('acct.unbindConfirm'))) {
       return;
     }
     
     this.isLoading = true;
-    this.accountService.unbindEduEmail().subscribe({
+    this.accountService.unbindEduEmail(regionCode).subscribe({
       next: () => {
         this.isLoading = false;
-        this.eduEmail = '';
-        this.verifiedAt = null;
+        this.verifications = this.verifications.filter(v => !isSameRegion(v.region, regionCode));
+        if (this.verifications.length === 0) {
+          this.eduEmail = '';
+        }
         this.clearPendingVerificationState();
         this.autoVerifyMessage = '';
         this.clientVerifyMsg = '';

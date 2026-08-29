@@ -1,9 +1,16 @@
+
+import { parseAdminError } from '../../core/admin-error.util';
+import { forkJoin, Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminUser } from '../../core/services/admin.service';
 import { MetadataService } from '../../core/services/metadata.service';
+import { AuthStore } from '../../core/auth.store';
+import { RegionService } from '../../core/region.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
@@ -11,9 +18,9 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown],
   template: `
-    <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
+    <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
     <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
@@ -22,22 +29,50 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
 
       <div class="field-grid">
         <div class="field"><label>{{ 'admin.colEmail' | t }}</label><span>{{ user.email }}</span></div>
-        <div class="field"><label>{{ 'admin.colEduEmail' | t }}</label><span>{{ user.edu_email || '—' }}</span></div>
         <div class="field"><label>{{ 'admin.colName' | t }}</label><span>{{ user.first_name }} {{ user.last_name }}</span></div>
         <div class="field"><label>{{ 'admin.staffBadge' | t }}</label><span class="admin-status-badge" [class.ok]="user.is_staff">{{ (user.is_staff ? 'admin.yes' : 'admin.no') | t }}</span></div>
       </div>
-
-      <ui-dropdown [label]="'admin.colSchool' | t" [options]="schoolOptions" [(ngModel)]="schoolId"></ui-dropdown>
 
       <div class="toggle-row">
         <label class="toggle">
           <input type="checkbox" [(ngModel)]="isActive" />
           {{ 'admin.colActive' | t }}
         </label>
-        <label class="toggle">
-          <input type="checkbox" [(ngModel)]="isVerified" />
-          {{ 'admin.colVerified' | t }}
-        </label>
+      </div>
+
+      <div class="field-grid" style="grid-template-columns: 1fr; margin-top: 16px;">
+        <label>{{ 'admin.colVerified' | t }}</label>
+        <div *ngIf="user.verifications?.length; else noVerifications">
+          <div *ngFor="let v of user.verifications" style="padding: 8px; border: 1px solid var(--line); border-radius: 4px; margin-bottom: 8px;">
+            <div style="margin-bottom: 8px;">
+              <span style="font-weight: bold;">{{ v.region }}</span>: {{ v.edu_email || '-' }}
+              <span style="color: var(--muted); font-size: 12px; margin-left: 8px;" *ngIf="v.verified_at">({{ v.verified_at | date:'yyyy/MM/dd HH:mm' }})</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="verificationStates[v.region].verified" />
+                {{ 'admin.colVerified' | t }}
+              </label>
+            </div>
+            <ui-dropdown [label]="'admin.colSchool' | t" [options]="getSchoolOptionsForRegion(v.region)" [(ngModel)]="verificationStates[v.region].school"></ui-dropdown>
+          </div>
+        </div>
+        <ng-template #noVerifications>
+          <span class="muted">{{ 'admin.no' | t }}</span>
+        </ng-template>
+
+        <div *ngIf="newRegionOptions.length > 1" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line);">
+          <div style="margin-bottom: 8px; font-weight: bold;">{{ 'admin.addVerificationRegion' | t }}</div>
+          <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <div style="flex: 1;">
+              <ui-dropdown [label]="'admin.colRegion' | t" [options]="newRegionOptions" [(ngModel)]="newRegion" (ngModelChange)="onNewRegionChange()"></ui-dropdown>
+            </div>
+            <div style="flex: 2;" *ngIf="newRegion">
+              <ui-dropdown [label]="'admin.colSchool' | t" [options]="getSchoolOptionsForRegion(newRegion)" [(ngModel)]="newRegionSchool"></ui-dropdown>
+            </div>
+            <ui-button *ngIf="newRegion" [disabled]="!newRegionSchool" (onClick)="addNewRegion()">{{ 'common.create' | t }}</ui-button>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
@@ -100,6 +135,8 @@ export class AdminUserDetailComponent implements OnInit {
   private metadataService = inject(MetadataService);
   private i18n = inject(I18nService);
   private cdr = inject(ChangeDetectorRef);
+  private authStore = inject(AuthStore);
+  private regionService = inject(RegionService);
 
   user: AdminUser | null = null;
   loading = true;
@@ -108,29 +145,87 @@ export class AdminUserDetailComponent implements OnInit {
   savedMsg = '';
 
   isActive = false;
-  isVerified = false;
-  schoolId: string | number | '' = '';
-  schools: { id: string | number; name: string; display_name?: string }[] = [];
+  schoolsByRegion: Record<string, { value: string; label: string }[]> = {};
+  verificationStates: Record<string, { school: string | number | ''; verified: boolean }> = {};
 
-  get schoolOptions() {
+  newRegion = '';
+  newRegionSchool: string | number | '' = '';
+
+  get availableRegions() {
+    const user = this.authStore.user() as any;
+    const allRegions = this.regionService.regions();
+    if (user?.is_superuser) return allRegions;
+    if (Array.isArray(user?.managed_regions)) {
+      return allRegions.filter((r: any) => user.managed_regions.includes(r.code));
+    }
+    return allRegions;
+  }
+
+  get newRegionOptions() {
+    const existingRegions = this.user?.verifications?.map(v => v.region) || [];
     return [
-      { value: '', label: this.i18n.t('admin.noSchool') },
-      ...this.schools.map(s => ({ value: String(s.id), label: s.display_name || s.name })),
+      { value: '', label: '---' },
+      ...this.availableRegions
+        .filter((r: any) => !existingRegions.includes(r.code))
+        .map((r: any) => ({ value: r.code, label: r.localized_name }))
     ];
   }
 
+  onNewRegionChange() {
+    this.newRegionSchool = '';
+    if (this.newRegion) {
+      this.loadSchoolsForRegion(this.newRegion);
+    }
+  }
+
+  addNewRegion() {
+    if (!this.newRegion || !this.newRegionSchool || !this.user) return;
+    this.saving = true;
+    this.errorMsg = '';
+    this.savedMsg = '';
+
+    this.adminService.updateUser(this.user.id, {
+      region: this.newRegion,
+      school: this.newRegionSchool,
+      verified: true
+    }).pipe(
+      // eslint-disable-next-line rxjs/no-nested-subscribe
+      switchMap(() => this.adminService.getUser(this.user!.id))
+    ).subscribe({
+      next: (updatedUser) => {
+        this.user = updatedUser;
+        this.isActive = updatedUser.is_active;
+        if (this.user?.verifications) {
+           this.user.verifications.forEach(v => {
+             this.verificationStates[v.region] = { 
+               school: v.school != null ? String(v.school) : '',
+               verified: !!v.verified_at
+             };
+             this.loadSchoolsForRegion(v.region);
+           });
+        }
+        this.newRegion = '';
+        this.newRegionSchool = '';
+        this.saving = false;
+        this.savedMsg = this.i18n.t('admin.saved');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.saving = false;
+        this.errorMsg = parseAdminError(err, this.i18n, 'admin.errGeneric');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   constructor() {
-    // School display_name is localized server-side (School.localized_name),
-    // so it has to be re-fetched on language switch — same pattern as the
-    // header's school selector (layout.component.ts) — otherwise the school
-    // list keeps showing whatever language was active when this page first
-    // loaded.
     effect(() => {
       this.i18n.lang();
-      this.metadataService.getMetadata().subscribe({
-        next: (meta) => { this.schools = meta?.schools || []; this.cdr.markForCheck(); },
-        error: () => {}
-      });
+      if (this.user?.verifications) {
+        this.user.verifications.forEach(v => {
+          this.loadSchoolsForRegion(v.region, true);
+        });
+      }
     });
   }
 
@@ -141,38 +236,139 @@ export class AdminUserDetailComponent implements OnInit {
       next: (user) => {
         this.user = user;
         this.isActive = user.is_active;
-        this.isVerified = user.is_verified;
-        this.schoolId = user.school ? String(user.school) : '';
+        if (user.verifications) {
+          user.verifications.forEach(v => {
+            this.verificationStates[v.region] = { 
+              school: v.school != null ? String(v.school) : '',
+              verified: !!v.verified_at
+            };
+            this.loadSchoolsForRegion(v.region);
+          });
+        }
+        
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        this.errorMsg = parseAdminError(err, this.i18n, 'admin.errLoadFailed');
         this.loading = false;
         this.cdr.markForCheck();
       }
     });
   }
 
+  loadSchoolsForRegion(region: string, force = false) {
+    if (!force && this.schoolsByRegion[region]) return;
+    this.fetchSchoolPage(region, 1, []);
+  }
+
+  private fetchSchoolPage(
+    region: string,
+    page: number,
+    accumulated: { value: string; label: string }[],
+  ) {
+    this.adminService.getSchools({ region, page, page_size: 100 }).subscribe({
+      next: (res) => {
+        const merged = [
+          ...accumulated,
+          ...res.results.map(s => ({ value: String(s.id), label: s.display_name })),
+        ];
+
+        if (res.next && res.results.length > 0) {
+          this.fetchSchoolPage(region, page + 1, merged);
+          return;
+        }
+
+        this.schoolsByRegion[region] = [
+          { value: '', label: this.i18n.t('admin.noSchool') },
+          ...merged,
+        ];
+        this.cdr.markForCheck();
+      },
+      // Deliberately swallows the error and leaves `schoolsByRegion[region]`
+      // unset. `undefined` and `[]` are not interchangeable here: the getter
+      // below falls back to the "no school" option only when the key is
+      // absent, and the save guard skips the school-update branch entirely
+      // when `options` is falsy. An empty array instead renders a blank
+      // dropdown that reads as "cleared" — that is how a user's school was
+      // once wiped to null on save.
+      error: () => {},
+    });
+  }
+
+  getSchoolOptionsForRegion(region: string) {
+    return this.schoolsByRegion[region] || [{ value: '', label: this.i18n.t('admin.noSchool') }];
+  }
+
   save() {
-    if (!this.user) return;
+    const user = this.user;
+    if (!user) return;
     this.saving = true;
     this.errorMsg = '';
     this.savedMsg = '';
 
-    this.adminService.updateUser(this.user.id, {
-      is_active: this.isActive,
-      verified: this.isVerified,
-      school: this.schoolId === '' ? null : this.schoolId,
-    }).subscribe({
-      next: (updated) => {
-        this.user = updated;
+    const reqs: Observable<any>[] = [];
+    
+    reqs.push(this.adminService.updateUser(user.id, { is_active: this.isActive }));
+
+    if (user.verifications) {
+      user.verifications.forEach(v => {
+        const newState = this.verificationStates[v.region];
+        if (!newState) return;
+        
+        let shouldUpdateSchool = false;
+        if (String(newState.school) !== String(v.school || '')) {
+            const options = this.schoolsByRegion[v.region];
+            if (options) {
+                if (newState.school === '') {
+                    if (v.school != null && !options.some(opt => opt.value === String(v.school))) {
+                         shouldUpdateSchool = false;
+                    } else {
+                         shouldUpdateSchool = true;
+                    }
+                } else if (options.some(opt => opt.value === String(newState.school))) {
+                    shouldUpdateSchool = true;
+                }
+            }
+        }
+        
+        const shouldUpdateVerified = newState.verified !== !!v.verified_at;
+        
+        if (shouldUpdateSchool || shouldUpdateVerified) {
+          const payload: any = { region: v.region };
+          if (shouldUpdateSchool) {
+             payload.school = newState.school === '' ? null : newState.school;
+          }
+          if (shouldUpdateVerified) {
+             payload.verified = newState.verified;
+          }
+          reqs.push(this.adminService.updateUser(user.id, payload));
+        }
+      });
+    }
+
+    forkJoin(reqs).pipe(
+      switchMap(() => this.adminService.getUser(user.id))
+    ).subscribe({
+      next: (updatedUser) => {
+        this.user = updatedUser;
+        this.isActive = updatedUser.is_active;
+        if (this.user?.verifications) {
+           this.user.verifications.forEach(v => {
+             this.verificationStates[v.region] = { 
+                 school: v.school != null ? String(v.school) : '',
+                 verified: !!v.verified_at
+             };
+           });
+        }
+        
         this.saving = false;
         this.savedMsg = this.i18n.t('admin.saved');
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
-        this.errorMsg = this.i18n.t('admin.errGeneric');
+        this.errorMsg = parseAdminError(err, this.i18n, 'admin.errGeneric');
         this.cdr.markForCheck();
       }
     });

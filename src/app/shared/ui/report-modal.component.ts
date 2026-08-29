@@ -45,7 +45,7 @@ import { UiButton } from './button.component';
   `,
   styles: [`
     .report-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .report-modal { background: var(--paper); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .report-modal { background: var(--surface-raised); border: 1px solid var(--surface-raised-border); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; }
     .report-modal h4 { margin-top: 0; margin-bottom: 16px; }
     .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
     .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }

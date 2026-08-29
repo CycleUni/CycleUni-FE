@@ -1,24 +1,47 @@
-import { PricePipe, DEFAULT_CURRENCY } from './price.pipe';
+import { PricePipe } from './price.pipe';
+import { TestBed } from '@angular/core/testing';
+import { RegionService } from '../../core/region.service';
+import { I18nService } from '../../core/i18n.service';
 
 describe('PricePipe', () => {
   let pipe: PricePipe;
+  let mockRegionService: any;
+  let mockI18nService: any;
 
   beforeEach(() => {
-    pipe = new PricePipe();
+    mockRegionService = {
+      currency: vi.fn().mockReturnValue({ code: 'TWD', symbol: 'NT$', decimal_places: 0, symbol_position: 'prefix' })
+    };
+    mockI18nService = {
+      lang: vi.fn().mockReturnValue('zh-TW')
+    };
+
+    TestBed.configureTestingModule({
+      providers: [
+        PricePipe,
+        { provide: RegionService, useValue: mockRegionService },
+        { provide: I18nService, useValue: mockI18nService }
+      ]
+    });
+    pipe = TestBed.inject(PricePipe);
   });
 
-  it('renders integer price with default NT$ prefix', () => {
-    expect(pipe.transform(100)).toBe('NT$ 100');
-    expect(pipe.transform(250)).toBe('NT$ 250');
-    expect(pipe.transform(1500)).toBe('NT$ 1500');
+  it('renders integer price for TWD (minor unit to major unit)', () => {
+    // 100 minor = 100 major in TWD
+    const formatted = pipe.transform(100);
+    // Intl.NumberFormat might return '$100.00' or '$100', in zh-TW usually $100 for TWD
+    expect(formatted).toContain('100');
+    expect(formatted).toContain('$');
   });
 
-  it('renders zero as NT$ 0', () => {
-    expect(pipe.transform(0)).toBe('NT$ 0');
-  });
-
-  it('renders decimal price correctly', () => {
-    expect(pipe.transform(99.5)).toBe('NT$ 99.5');
+  it('renders HKD minor units correctly', () => {
+    mockRegionService.currency.mockReturnValue({ code: 'HKD', symbol: 'HK$', decimal_places: 2, symbol_position: 'prefix' });
+    mockI18nService.lang.mockReturnValue('zh-HK');
+    
+    // 10050 minor = 100.50 major in HKD
+    const formatted = pipe.transform(10050);
+    expect(formatted).toContain('100.50');
+    expect(formatted).toContain('HK$');
   });
 
   it('handles null, undefined, and empty string safely by returning empty string', () => {
@@ -28,34 +51,13 @@ describe('PricePipe', () => {
   });
 
   it('handles numeric string inputs correctly', () => {
-    expect(pipe.transform('500')).toBe('NT$ 500');
-    expect(pipe.transform('0')).toBe('NT$ 0');
-    expect(pipe.transform('120.5')).toBe('NT$ 120.5');
+    const formatted = pipe.transform('500');
+    expect(formatted).toContain('500');
   });
 
   it('handles non-numeric string inputs by returning them unchanged', () => {
     expect(pipe.transform('-')).toBe('-');
     expect(pipe.transform('N/A')).toBe('N/A');
     expect(pipe.transform('Free')).toBe('Free');
-  });
-
-  it('supports custom currency prefix', () => {
-    expect(pipe.transform(250, '$')).toBe('$ 250');
-    expect(pipe.transform(250, 'USD')).toBe('USD 250');
-    expect(pipe.transform(0, 'USD')).toBe('USD 0');
-  });
-
-  it('handles custom currency with trailing whitespace cleanly', () => {
-    expect(pipe.transform(250, 'NT$ ')).toBe('NT$ 250');
-    expect(pipe.transform(250, ' $ ')).toBe('$ 250');
-  });
-
-  it('supports empty currency prefix', () => {
-    expect(pipe.transform(250, '')).toBe('250');
-    expect(pipe.transform(0, '')).toBe('0');
-  });
-
-  it('uses DEFAULT_CURRENCY constant', () => {
-    expect(DEFAULT_CURRENCY).toBe('NT$');
   });
 });

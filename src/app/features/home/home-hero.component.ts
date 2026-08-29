@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +9,8 @@ import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { CountCapPipe } from '../../shared/pipes/count-cap.pipe';
 import { PublicAd } from '../../core/services/metadata.service';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 /** One book or ad in the hero's tilted cover stack. */
 export interface HeroCover {
@@ -36,7 +39,7 @@ export interface HeroCover {
 @Component({
   selector: 'app-home-hero',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, TPipe, UiBookCover, CountCapPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, UiInput, UiButton, TPipe, UiBookCover, CountCapPipe],
   template: `
       <section class="hero-search" aria-labelledby="hero-title">
         <div class="hero-inner container">
@@ -74,7 +77,7 @@ export interface HeroCover {
                  gets a peer slot to search instead. -->
             <p class="hero-sell">
               <span>{{ 'home.sellPrompt' | t }}</span>
-              <a routerLink="/sell" class="hero-sell-link">{{ 'home.sellCtaHero' | t }}<span aria-hidden="true"> &#8594;</span></a>
+              <a regionLink="/sell" class="hero-sell-link">{{ 'home.sellCtaHero' | t }}<span aria-hidden="true"> &#8594;</span></a>
             </p>
 
             <ul class="hero-trust">
@@ -124,7 +127,7 @@ export interface HeroCover {
                 [style.--r]="heroCoverRotations(i)"
                 [style.--x]="heroCoverOffsets(i)"
                 [style.--hover-dir]="heroCoverHoverDir(i)"
-                [routerLink]="['/book']"
+                [regionLink]="['/book']"
                 [queryParams]="heroBookParams(cover)"
                 (click)="cacheHeroBook(cover)"
               >
@@ -411,11 +414,12 @@ export class HomeHero {
   searchQuery = '';
 
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private i18n = inject(I18nService);
 
   onSearch() {
     if (this.searchQuery.trim()) {
-      this.router.navigate(['/search'], {
+      this.router.navigate(this.regionLink.path(['/search']), {
         queryParams: { q: this.searchQuery.trim() },
         replaceUrl: true
       });

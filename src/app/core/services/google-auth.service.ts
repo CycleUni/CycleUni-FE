@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { AuthStore } from '../auth.store';
 import { I18nService } from '../i18n.service';
 import { ThemeService } from './theme.service';
+import { RegionLinkService } from '../region-link.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +15,7 @@ export class GoogleAuthService {
   private i18n = inject(I18nService);
   private themeService = inject(ThemeService);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private platformId = inject(PLATFORM_ID);
   
   private googleClientId = '';
@@ -198,7 +201,7 @@ export class GoogleAuthService {
           // If already on /account, maybe redirect to /account/listings
           const currentUrl = this.router.url;
           if (currentUrl === '/account') {
-            this.router.navigate(['/account/listings']);
+            this.router.navigate(this.regionLink.path(['/account/listings']));
           }
         },
         error: (err) => {

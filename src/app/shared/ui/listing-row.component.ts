@@ -35,7 +35,7 @@ import { PricePipe } from '../pipes/price.pipe';
         <p class="note" *ngIf="noteInfo">{{ noteInfo }}</p>
       </div>
       <div class="actions">
-        <div class="price" [class.aggregate]="variant === 'aggregate'" *ngIf="price !== undefined && price !== null">{{ price | price: pricePrefix }}</div>
+        <div class="price" [class.aggregate]="variant === 'aggregate'" *ngIf="price !== undefined && price !== null">{{ price | price }}</div>
         
         <!-- badges -->
         <ui-badge *ngIf="status === 'active'" type="waitlist">{{ 'row.active' | t }}</ui-badge>
@@ -197,7 +197,6 @@ export class UiListingRow implements OnChanges {
   @Input() courseInfo?: string;
   @Input() noteInfo?: string;
   @Input() price?: number;
-  @Input() pricePrefix: string = 'NT$ ';
   @Input() condition?: 'new' | 'like_new' | 'noted' | 'damaged';
   @Input() conditionSummary?: string;
   @Input() status?: string;

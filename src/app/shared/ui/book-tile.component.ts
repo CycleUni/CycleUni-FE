@@ -1,8 +1,10 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TPipe } from '../../core/i18n.service';
 import { CountCapPipe } from '../pipes/count-cap.pipe';
+import { PricePipe } from '../pipes/price.pipe';
 import { UiBookCover } from './book-cover.component';
 
 /**
@@ -32,13 +34,13 @@ import { UiBookCover } from './book-cover.component';
 @Component({
   selector: 'ui-book-tile',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiBookCover, CountCapPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, TPipe, UiBookCover, CountCapPipe, PricePipe],
   template: `
     <div class="book-tile" [class.feature]="feature">
       <a
         *ngIf="link"
         class="tile-body hover-card"
-        [routerLink]="link"
+        [regionLink]="link"
         [queryParams]="linkParams"
         (click)="tileClick.emit()"
       >
@@ -61,7 +63,7 @@ import { UiBookCover } from './book-cover.component';
 
           <span class="price-tag stamp-tag" *ngIf="mode === 'sellers'" [class.unpriced]="!hasPrice">
             <ng-container *ngIf="hasPrice && !isFree">
-              {{ (isAveragePrice ? 'bookTile.priceApprox' : 'bookTile.price') | t:{price: priceValue} }}
+              {{ (isAveragePrice ? 'bookTile.priceApprox' : 'bookTile.price') | t:{price: (priceValue | price)} }}
             </ng-container>
             <ng-container *ngIf="hasPrice && isFree">
               {{ 'bookTile.priceFree' | t }}

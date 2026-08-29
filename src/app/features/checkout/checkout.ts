@@ -4,7 +4,6 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
-import { UiSelect } from '../../shared/ui/select.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { ListingService } from '../../core/services/listing.service';
 import { OrderService } from '../../core/services/order.service';
@@ -12,6 +11,8 @@ import { MessageService } from '../../core/services/message.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { PricePipe } from '../../shared/pipes/price.pipe';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-checkout',
@@ -133,6 +134,7 @@ export class CheckoutComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private listingService = inject(ListingService);
   private orderService = inject(OrderService);
   private messageService = inject(MessageService);
@@ -203,7 +205,7 @@ export class CheckoutComponent implements OnInit {
             listing_id: this.listing?.id
           }]
         );
-        this.router.navigate(['/checkout/success']);
+        this.router.navigate(this.regionLink.path(['/checkout/success']));
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -250,11 +252,11 @@ export class CheckoutComponent implements OnInit {
     this.ga.trackEvent('checkout_to_chat', { listing_id: this.listingId });
     this.messageService.startConversation(this.listingId).subscribe({
       next: (conv) => {
-        this.router.navigate(['/messages'], { queryParams: { conversation: conv.id } });
+        this.router.navigate(this.regionLink.path(['/messages']), { queryParams: { conversation: conv.id } });
       },
       error: () => {
         // Fallback: navigate to messages page without pre-selected conversation
-        this.router.navigate(['/messages']);
+        this.router.navigate(this.regionLink.path(['/messages']));
       }
     });
   }

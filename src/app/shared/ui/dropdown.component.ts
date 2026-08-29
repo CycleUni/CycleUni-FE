@@ -156,8 +156,8 @@ export interface DropdownOption {
       right: 0;
       min-width: 180px;
       padding: 4px;
-      background-color: var(--paper);
-      border: 1px solid var(--line);
+      background-color: var(--surface-raised);
+      border: 1px solid var(--surface-raised-border);
       border-radius: var(--radius-control);
       box-shadow: var(--shadow-card-lg);
       z-index: 200;

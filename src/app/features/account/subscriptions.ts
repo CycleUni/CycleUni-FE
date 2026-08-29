@@ -5,6 +5,8 @@ import { UiButton } from '../../shared/ui/button.component';
 import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-account-subscriptions',
@@ -76,6 +78,7 @@ export class SubscriptionsComponent implements OnInit {
   private accountService = inject(AccountService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   readonly i18n = inject(I18nService);
 
   ngOnInit() {
@@ -121,7 +124,7 @@ export class SubscriptionsComponent implements OnInit {
 
   viewBook(sub: any) {
     if (sub.isbn) {
-      this.router.navigate(['/search'], { queryParams: { q: sub.isbn } });
+      this.router.navigate(this.regionLink.path(['/search']), { queryParams: { q: sub.isbn } });
     }
   }
 }

@@ -237,13 +237,13 @@ export class GoogleAnalyticsService {
    */
   public setUserProperties(props: {
     school?: string | null;
-    is_verified?: boolean;
+    verified_region_count?: number;
     role?: 'buyer' | 'seller' | 'both' | null;
   }): void {
     if (!isPlatformBrowser(this.platformId) || !(window as any).gtag) return;
     (window as any).gtag('set', 'user_properties', {
       school:      props.school      ?? undefined,
-      is_verified: props.is_verified ?? undefined,
+      verified_region_count: props.verified_region_count ?? undefined,
       role:        props.role        ?? undefined
     });
   }
@@ -256,7 +256,7 @@ export class GoogleAnalyticsService {
     if (!isPlatformBrowser(this.platformId) || !(window as any).gtag) return;
     (window as any).gtag('set', 'user_properties', {
       school: null,
-      is_verified: null,
+      verified_region_count: null,
       role: null
     });
   }

@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, inject, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -11,12 +12,13 @@ import { OrderService } from '../../core/services/order.service';
 import { GoogleAuthService } from '../../core/services/google-auth.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { RegionService } from '../../core/region.service';
 
 import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, TPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, UiButton, UiInput, TPipe],
   templateUrl: './account.html',
   styleUrls: ['./account.css']
 })
@@ -93,6 +95,7 @@ export class Account {
   private googleAuth = inject(GoogleAuthService);
   private orderService = inject(OrderService);
   private router = inject(Router);
+  private regionService = inject(RegionService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
@@ -187,7 +190,7 @@ export class Account {
         this.isLoading = false;
         this.authIsError = false;
         this.loadProfile();
-        this.router.navigateByUrl(this.returnUrl || '/account/listings');
+        this.router.navigateByUrl(this.returnUrl || `/${this.regionService.region()}/account/listings`);
       },
       error: (err) => {
         this.isLoading = false;

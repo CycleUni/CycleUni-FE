@@ -7,6 +7,8 @@ import { UiInput } from '../../shared/ui/input.component';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../core/auth.store';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-verify',
@@ -95,6 +97,7 @@ export class VerifyEmail implements OnInit {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private auth = inject(AuthStore);
   private cdr = inject(ChangeDetectorRef);
   readonly i18n = inject(I18nService);
@@ -147,6 +150,6 @@ export class VerifyEmail implements OnInit {
     // Registration verification already logs the user in (see
     // AuthStore.verifyRegistration) — send them into the app rather than
     // back to a login form they no longer need.
-    this.router.navigate([this.type === 'register' ? '/' : '/account']);
+    this.router.navigate(this.regionLink.path([this.type === 'register' ? '/' : '/account']));
   }
 }

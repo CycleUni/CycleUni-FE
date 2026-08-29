@@ -14,7 +14,7 @@
           *ngIf="showUnverifiedPrompt"
           (onDismiss)="showUnverifiedPrompt = false"
           storageKey="cycleuni.verification_prompt.sell"
-          [message]="'sell.unverifiedDesc' | t">
+          [message]="'sell.unverifiedDesc' | t:{suffix: regionService.currentRegionObj()?.edu_email_suffix || '.edu'}">
         </ui-verification-prompt>
 
         <div class="stepper">
@@ -147,9 +147,9 @@
 
         <!-- Step 3 -->
         <div *ngIf="step === 3" class="step-content">
-          <label class="price-field-label">{{ 'acct.priceLabel' | t }}</label>
+          <label class="price-field-label">{{ 'acct.priceLabel' | t:{currency: regionService.currency().symbol} }}</label>
           <div class="price-field">
-            <span class="price-currency">NT$</span>
+            <span class="price-currency">{{ regionService.currency().symbol }}</span>
             <input class="price-input focus-no-ring" type="number" min="0" [(ngModel)]="price" name="price" />
           </div>
 

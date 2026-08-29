@@ -260,6 +260,12 @@
       flex-shrink: 0;
       display: block;
     }
+    /* The language trigger is a 文A lockup drawn as SVG text — 文 large in
+       --ink, A small and offset in --accent — restored from the original
+       footer design rather than re-invented as a plain text glyph. */
+    .lang-icon-wrap {
+      display: inline-flex;
+    }
     .footer-lang-dropdown ::ng-deep .dropdown-trigger {
       font-size: var(--text-sm);
       color: var(--ink-soft);
@@ -421,5 +427,19 @@
       .header-right {
         flex-wrap: wrap;
         gap: 8px;
+      }
+    }
+    .standalone-prefs-container {
+      width: 100%;
+      max-width: 1152px;
+      margin: 0 auto;
+      padding: var(--space-5) var(--space-4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .standalone-prefs-container {
+        padding: 16px 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
       }
     }

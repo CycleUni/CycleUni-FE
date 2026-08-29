@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UiBookCover } from './book-cover.component';
 import { I18nService } from '../../core/i18n.service';
 import { By } from '@angular/platform-browser';
+import { RegionService } from '../../core/region.service';
+
 
 describe('UiBookCover', () => {
   let component: UiBookCover;
@@ -10,12 +12,14 @@ describe('UiBookCover', () => {
 
   beforeEach(() => {
     mockI18n = {
+      lang: () => 'en',
       t: (key: string) => `Translated: ${key}`
     };
 
     TestBed.configureTestingModule({
       imports: [UiBookCover],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         { provide: I18nService, useValue: mockI18n }
       ]
     });

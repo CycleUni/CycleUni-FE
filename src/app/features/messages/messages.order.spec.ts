@@ -7,6 +7,7 @@ import { MessageService } from '../../core/services/message.service';
 import { AuthStore } from '../../core/auth.store';
 import { OrderService } from '../../core/services/order.service';
 import { I18nService } from '../../core/i18n.service';
+import { RegionService } from '../../core/region.service';
 
 describe('Messages WebSocket ordering & temp-id reconciliation', () => {
   let fixture: ComponentFixture<Messages>;
@@ -46,6 +47,7 @@ describe('Messages WebSocket ordering & temp-id reconciliation', () => {
         { provide: AuthStore, useValue: { user: () => ({ id: 'user-1' }) } },
         { provide: OrderService, useValue: {} },
         { provide: I18nService, useValue: { t: (k: string) => k, lang: () => 'zh-TW' } },
+        { provide: RegionService, useValue: { currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }), regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }] } },
         { provide: HttpClient, useValue: { get: vi.fn(), post: vi.fn() } },
       ],
     });

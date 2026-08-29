@@ -1,5 +1,5 @@
 import { Injectable, Pipe, PipeTransform, inject, signal, effect } from '@angular/core';
-import { Lang, TRANSLATIONS } from './i18n';
+import { Lang, TRANSLATIONS } from './i18n/index';
 
 const STORAGE_KEY = 'lang';
 
@@ -8,15 +8,9 @@ const STORAGE_KEY = 'lang';
 })
 export class I18nService {
   readonly lang = signal<Lang>(this.initialLang());
+  private loadPromises = new Map<Lang, Promise<void>>();
 
   constructor() {
-    // index.html ships a hardcoded lang="en". initialLang() may resolve to
-    // zh-TW from storage or navigator on the very first paint, and until now
-    // only setLang() synced the attribute — so a reader arriving with a
-    // Chinese browser got Traditional Chinese text inside a document still
-    // declaring English. That mis-declares the language to screen readers,
-    // and lets the browser pick Han glyph variants for the wrong locale
-    // (several codepoints render differently for zh-TW, zh-CN and ja).
     effect(() => this.syncDocumentLang(this.lang()));
   }
 
@@ -28,27 +22,52 @@ export class I18nService {
 
   private initialLang(): Lang {
     if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === 'en' || stored === 'zh-TW') {
+      const stored = localStorage.getItem(STORAGE_KEY) as Lang;
+      if (stored === 'en' || stored === 'zh-TW' || stored === 'zh-HK') {
         return stored;
       }
     }
-    if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('zh')) {
-      return 'zh-TW';
+    if (typeof navigator !== 'undefined') {
+      const lang = navigator.language?.toLowerCase() || '';
+      if (lang.includes('hk') || lang.includes('yue')) return 'zh-HK';
+      if (lang.startsWith('zh')) return 'zh-TW';
     }
     return 'en';
   }
 
-  setLang(lang: Lang) {
-    // The effect in the constructor propagates the change to <html lang>.
+  async loadLang(lang: Lang): Promise<void> {
+    if (lang === 'en' || TRANSLATIONS[lang]) return;
+
+    if (this.loadPromises.has(lang)) {
+      return this.loadPromises.get(lang)!;
+    }
+
+    const promise = (async () => {
+      try {
+        if (lang === 'zh-TW') {
+          const m = await import('./i18n/zh-TW');
+          TRANSLATIONS['zh-TW'] = m.zhTW;
+        } else if (lang === 'zh-HK') {
+          const m = await import('./i18n/zh-HK');
+          TRANSLATIONS['zh-HK'] = m.zhHK;
+        }
+      } catch (e) {
+        console.error('Failed to load i18n dict for', lang, e);
+      }
+    })();
+    
+    this.loadPromises.set(lang, promise);
+    await promise;
+  }
+
+  async setLang(lang: Lang) {
+    await this.loadLang(lang);
     this.lang.set(lang);
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, lang);
     }
   }
 
-  /** Translate a key with optional {param} interpolation. Unknown keys fall
-   * back to English, then to the key itself so gaps stay visible. */
   t(key: string, params?: Record<string, string | number>): string {
     const table = TRANSLATIONS[this.lang()] ?? TRANSLATIONS['en'];
     let text = table[key] ?? TRANSLATIONS['en'][key] ?? key;
@@ -61,8 +80,6 @@ export class I18nService {
   }
 }
 
-/** `{{ 'key' | t }}` / `{{ 'key' | t:{n: 3} }}` — impure so language switches
- * re-evaluate bindings; lookups are cheap dictionary reads. */
 @Pipe({
   name: 't',
   standalone: true,

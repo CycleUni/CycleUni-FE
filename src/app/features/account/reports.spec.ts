@@ -5,6 +5,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
 import { of } from 'rxjs';
+import { RegionService } from '../../core/region.service';
+
 
 describe('ReportsComponent', () => {
   let component: ReportsComponent;
@@ -61,6 +63,7 @@ describe('ReportsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ReportsComponent, HttpClientTestingModule],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         provideRouter([]),
         { provide: AccountService, useValue: mockAccountService },
       ]

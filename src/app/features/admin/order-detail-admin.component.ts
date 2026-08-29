@@ -1,7 +1,9 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { AdminService, AdminOrder } from '../../core/services/admin.service';
+import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { ForceCancelModalComponent } from './force-cancel-modal.component';
@@ -10,9 +12,9 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
 @Component({
   selector: 'app-admin-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton, ForceCancelModalComponent, PricePipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, TPipe, UiButton, ForceCancelModalComponent, PricePipe],
   template: `
-    <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
+    <a regionLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
     <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
 
@@ -22,7 +24,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
       <div class="field-grid">
         <div class="field"><label>{{ 'order.buyer' | t }}</label><span>{{ order.buyer?.email }}</span></div>
         <div class="field"><label>{{ 'order.seller' | t }}</label><span>{{ order.seller?.email }}</span></div>
-        <div class="field"><label>{{ 'admin.colPrice' | t }}</label><span>{{ order.total_amount | price }}</span></div>
+        <div class="field"><label>{{ 'admin.colPrice' | t }}</label><span>{{ order.total_amount | price: order.currency }}</span></div>
         <div class="field"><label>{{ 'admin.colStatus' | t }}</label><span class="admin-status-badge">{{ ('order.status.' + order.status) | t }}</span></div>
       </div>
 
@@ -79,7 +81,8 @@ export class AdminOrderDetailComponent implements OnInit {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }

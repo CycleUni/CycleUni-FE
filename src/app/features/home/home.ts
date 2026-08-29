@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -19,7 +20,7 @@ import { SchoolStateService } from '../../core/services/school-state.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, TPipe, CountCapPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, HomeHero, UiButton, UiRecentListings, UiCategoryRail, UiSkeleton, UiErrorState, TPipe, CountCapPipe],
   template: `
       <app-home-hero [covers]="heroCovers" (adClick)="onAdClick($event)"></app-home-hero>
 
@@ -45,7 +46,7 @@ import { SchoolStateService } from '../../core/services/school-state.service';
               <a
                 class="waitlist-row"
                 *ngFor="let wait of waitlist; trackBy: trackByTitle"
-                [routerLink]="['/book']"
+                [regionLink]="['/book']"
                 [queryParams]="waitlistParams(wait)"
               >
                 <span class="wcover" aria-hidden="true">

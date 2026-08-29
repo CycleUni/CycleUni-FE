@@ -21,6 +21,8 @@ import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { UiFacetList, FacetOption } from '../../shared/ui/facet-list.component';
 import { combineLatest, Subscription } from 'rxjs';
 import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-search',
@@ -299,7 +301,7 @@ export class Search implements OnInit {
       ...this.courses.map(c => ({ label: c, value: c }))
     ];
   }
-  get engineOptions() { return this.bookService.getEngineOptions(this.i18n); }
+  get engineOptions() { return this.bookService.getEngineOptions(); }
 
   conditionFilters = { new: true, like_new: true, noted: true, damaged: true };
   stockFilter: 'all' | 'inStock' = 'all';
@@ -363,6 +365,8 @@ export class Search implements OnInit {
   private schoolStateService = inject(SchoolStateService);
   private metadataService = inject(MetadataService);
   private ga = inject(GoogleAnalyticsService);
+
+  private regionLink = inject(RegionLinkService);
 
   constructor(private route: ActivatedRoute, private router: Router) {
     effect(() => { this.i18n.lang(); this.loadMetadata(); });
@@ -452,13 +456,13 @@ export class Search implements OnInit {
     if (this.course) params.course = this.course;
     params.engine = this.engine;
     params.page = page;
-    this.router.navigate(['/search'], { queryParams: params });
+    this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
   }
   onSearch() {
     if (this.searchQuery.trim()) {
       const params: any = { q: this.searchQuery.trim() };
       params.engine = this.engine;
-      this.router.navigate(['/search'], { queryParams: params });
+      this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
     }
   }
   onCategoryChange(cat: string) {
@@ -467,7 +471,7 @@ export class Search implements OnInit {
     if (cat) params.category = cat;
     // We intentionally drop this.course when category changes
     params.engine = this.engine;
-    this.router.navigate(['/search'], { queryParams: params });
+    this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
   }
 
   onCourseChange(course: string) {
@@ -476,7 +480,7 @@ export class Search implements OnInit {
     if (this.category) params.category = this.category;
     if (course) params.course = course;
     params.engine = this.engine;
-    this.router.navigate(['/search'], { queryParams: params });
+    this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
   }
 
   /** Route params for a result tile; the tile's own anchor does the navigating. */
@@ -503,7 +507,7 @@ export class Search implements OnInit {
 
   subscribeBook(item: any) {
     if (!this.auth.isLoggedIn()) {
-      alert(this.i18n.t('alert.loginToSubscribe')); this.router.navigate(['/account']); return;
+      alert(this.i18n.t('alert.loginToSubscribe')); this.router.navigate(this.regionLink.path(['/account'])); return;
     }
     const doSubscribe = (id: string) => {
       this.bookService.subscribe(id).subscribe({

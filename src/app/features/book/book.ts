@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiBackButton } from '../../shared/ui/back-button.component';
+import { RegionService } from '../../core/region.service';
 import { BookService } from '../../core/services/book.service';
 import { MessageService } from '../../core/services/message.service';
 import { AccountService } from '../../core/services/account.service';
@@ -14,6 +15,8 @@ import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-book',
@@ -25,8 +28,7 @@ import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.compon
 
         <ui-verification-prompt
           *ngIf="showUnverifiedPrompt"
-          (onDismiss)="showUnverifiedPrompt = false"
-          [message]="'acct.unverifiedDesc' | t">
+          (onDismiss)="showUnverifiedPrompt = false">
         </ui-verification-prompt>
 
         <div class="book-header">
@@ -268,11 +270,14 @@ export class Book implements OnInit {
   private messageService = inject(MessageService);
   private accountService = inject(AccountService);
   private auth = inject(AuthStore);
+  private regionService = inject(RegionService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
   private schoolStateService = inject(SchoolStateService);
 
   private isFirstSchoolEmission = true;
+
+  private regionLink = inject(RegionLinkService);
 
   constructor(private route: ActivatedRoute, private router: Router) {
     effect(() => {
@@ -359,7 +364,7 @@ export class Book implements OnInit {
     if (this.auth.isLoggedIn()) {
       this.accountService.getMyProfile().subscribe({
         next: (profile) => {
-          this.isVerified = !!profile.verified_at;
+          this.isVerified = this.auth.isVerifiedIn(this.book?.region || this.regionService.region());
           this.cdr.markForCheck();
         },
         error: () => {
@@ -441,7 +446,7 @@ export class Book implements OnInit {
 
   contactSeller(listingId: string) {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/account'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
 
@@ -455,7 +460,7 @@ export class Book implements OnInit {
     // real conversation id, not the listing id (they're different UUIDs).
     this.messageService.startConversation(listingId).subscribe({
       next: (conv) => {
-        this.router.navigate(['/messages'], { queryParams: { chat: conv.id } });
+        this.router.navigate(this.regionLink.path(['/messages']), { queryParams: { chat: conv.id } });
       },
       error: (err) => {
         if (err?.status === 403 || err?.error?.error?.code === 'auth.errNotVerified' || err?.error?.error?.code === 'acct.errUnverified') {
@@ -469,21 +474,21 @@ export class Book implements OnInit {
   }
 
   openListing(listingId: string) { // navigate to listing detail
-    this.router.navigate(['/listing', listingId]);
+    this.router.navigate(this.regionLink.path(['/listing', listingId]));
   }
 
   buyNow(listingId: string) {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/account'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
-    this.router.navigate(['/checkout', listingId]);
+    this.router.navigate(this.regionLink.path(['/checkout', listingId]));
   }
 
   subscribeBook() {
     if (!this.auth.isLoggedIn()) {
       alert(this.i18n.t('alert.loginToSubscribe'));
-      this.router.navigate(['/account']);
+      this.router.navigate(this.regionLink.path(['/account']));
       return;
     }
     if (this.bookId) {

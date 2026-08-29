@@ -44,7 +44,7 @@
           <h1 class="book-title-serif">{{ listing.book_title }}</h1>
           <p class="book-authors">{{ listing.book_authors }}</p>
           
-          <a [routerLink]="['/book']" [queryParams]="{ isbn: listing.isbn }" class="book-link" [innerHTML]="'sell.viewOtherListings' | t">
+          <a [regionLink]="['/book']" [queryParams]="{ isbn: listing.isbn }" class="book-link" [innerHTML]="'sell.viewOtherListings' | t">
           </a>
 
           <div class="price-condition-row">
@@ -54,7 +54,7 @@
             </div>
           </div>
 
-          <div class="seller-box clickable" [routerLink]="['/seller', listing.seller]">
+          <div class="seller-box clickable" [regionLink]="['/seller', listing.seller]">
             <div class="seller-header">
               <div class="seller-avatar" *ngIf="!listing.seller_avatar_url">{{ listing.seller_name.charAt(0) }}</div>
               <div class="seller-avatar-image-container" *ngIf="listing.seller_avatar_url">
@@ -88,8 +88,7 @@
 
           <ui-verification-prompt
             *ngIf="showUnverifiedPrompt"
-            (onDismiss)="showUnverifiedPrompt = false"
-            [message]="'acct.unverifiedDesc' | t">
+            (onDismiss)="showUnverifiedPrompt = false">
           </ui-verification-prompt>
 
           <div class="action-buttons">

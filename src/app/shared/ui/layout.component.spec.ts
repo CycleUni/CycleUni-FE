@@ -11,6 +11,8 @@ import { MessageService } from '../../core/services/message.service';
 import { I18nService } from '../../core/i18n.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { MobileLayoutService } from '../../core/services/mobile-layout.service';
+import { RegionService } from '../../core/region.service';
+
 
 @Component({ standalone: true, template: '' })
 class DummyRouteComponent {}
@@ -24,6 +26,7 @@ describe('UiLayout', () => {
     await TestBed.configureTestingModule({
       imports: [UiLayout],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         provideRouter([
           { path: '', component: DummyRouteComponent },
           { path: 'search', component: DummyRouteComponent },

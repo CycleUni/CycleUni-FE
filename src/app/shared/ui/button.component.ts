@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -5,12 +6,12 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'ui-button',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RegionLinkDirective, CommonModule, RouterModule],
   template: `
     <a
       *ngIf="link"
       [class]="'ui-btn ' + variant + ' ' + size"
-      [routerLink]="link"
+      [regionLink]="link"
       [queryParams]="linkParams"
       (click)="onClick.emit($event)"
     >

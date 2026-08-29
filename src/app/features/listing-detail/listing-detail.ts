@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, effect, ViewChild, ElementRef, PLATFORM_ID, NgZone } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -14,11 +15,13 @@ import { AccountService } from '../../core/services/account.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ReportModalComponent } from './report-modal.component';
 import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-listing-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
   templateUrl: './listing-detail.html',
   styleUrls: ['./listing-detail.css']
 })
@@ -46,6 +49,7 @@ export class ListingDetail implements OnInit, OnDestroy {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private listingService = inject(ListingService);
   private bookService = inject(BookService);
   private accountService = inject(AccountService);
@@ -182,37 +186,37 @@ export class ListingDetail implements OnInit, OnDestroy {
 
   buyNow() {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/account'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
     if (this.listing?.id) {
       this.ga.trackEvent('click_buy_now', { item_id: this.listing.id });
-      this.router.navigate(['/checkout', this.listing.id]);
+      this.router.navigate(this.regionLink.path(['/checkout', this.listing.id]));
     }
   }
 
   buyNowOther(id: string) {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/account'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
-    this.router.navigate(['/checkout', id]);
+    this.router.navigate(this.regionLink.path(['/checkout', id]));
   }
 
   contactSeller() {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/account'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
     const user = this.auth.getUser();
-    if (user && !user.verified_at) {
+    if (user && this.listing && !this.auth.isVerifiedIn(this.listing?.region)) {
       this.showUnverifiedPrompt = true;
       this.cdr.markForCheck();
       return;
     }
     if (this.listing?.id) {
       this.ga.trackContactSeller(this.listing.id);
-      this.router.navigate(['/messages'], { queryParams: { listing: this.listing.id } });
+      this.router.navigate(this.regionLink.path(['/messages']), { queryParams: { listing: this.listing.id } });
     }
   }
 
@@ -251,7 +255,7 @@ export class ListingDetail implements OnInit, OnDestroy {
   }
 
   goToListing(id: string) {
-    this.router.navigate(['/listing', id]);
+    this.router.navigate(this.regionLink.path(['/listing', id]));
   }
 
   // Only show the report button when logged in and the listing isn't the user's own.

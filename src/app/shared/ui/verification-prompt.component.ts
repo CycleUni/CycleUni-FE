@@ -1,13 +1,15 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { RegionLinkDirective } from '../../core/region-link.directive';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TPipe } from '../../core/i18n.service';
 import { UiButton } from './button.component';
+import { RegionService } from '../../core/region.service';
 
 @Component({
   selector: 'ui-verification-prompt',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, TPipe, UiButton],
   template: `
     <div class="verification-prompt-banner" *ngIf="!isDismissed">
       <div class="prompt-icon">
@@ -19,9 +21,9 @@ import { UiButton } from './button.component';
       </div>
       <div class="prompt-content">
         <h4 class="prompt-title">{{ title || ('acct.unverifiedTitle' | t) }}</h4>
-        <p class="prompt-desc">{{ message || ('acct.unverifiedDesc' | t) }}</p>
+        <p class="prompt-desc">{{ message || ('acct.unverifiedDesc' | t:{suffix: regionService.currentRegionObj()?.edu_email_suffix || '.edu'}) }}</p>
         <div class="prompt-actions">
-          <a routerLink="/account/settings" class="verify-link">
+          <a regionLink="/account/settings" class="verify-link">
             <ui-button variant="primary">{{ 'sell.goVerify' | t }}</ui-button>
           </a>
           <button type="button" class="dismiss-btn" (click)="dismiss()">
@@ -36,17 +38,17 @@ import { UiButton } from './button.component';
       display: flex;
       gap: 16px;
       padding: 16px 20px;
-      background-color: #fffbeb;
-      border: 1px solid #fde68a;
+      background-color: var(--flag-light);
+      border: 1px solid var(--flag-border);
       border-radius: 8px;
       margin-bottom: 20px;
       align-items: flex-start;
-      color: #92400e;
+      color: var(--ink);
     }
     .prompt-icon {
       flex-shrink: 0;
       margin-top: 2px;
-      color: #d97706;
+      color: var(--flag);
     }
     .prompt-content {
       flex: 1;
@@ -58,13 +60,13 @@ import { UiButton } from './button.component';
       margin: 0;
       font-size: 15px;
       font-weight: 600;
-      color: #92400e;
+      color: var(--flag);
     }
     .prompt-desc {
       margin: 0;
       font-size: 14px;
       line-height: 1.4;
-      color: #b45309;
+      color: var(--ink-soft);
     }
     .prompt-actions {
       display: flex;
@@ -78,7 +80,7 @@ import { UiButton } from './button.component';
     .dismiss-btn {
       background: none;
       border: none;
-      color: #92400e;
+      color: var(--flag);
       font-size: 13px;
       cursor: pointer;
       text-decoration: underline;
@@ -90,6 +92,8 @@ import { UiButton } from './button.component';
   `]
 })
 export class UiVerificationPrompt {
+  protected regionService = inject(RegionService);
+
   @Input() storageKey = 'cycleuni.verification_prompt.dismissed';
   @Input() title = '';
   @Input() message = '';

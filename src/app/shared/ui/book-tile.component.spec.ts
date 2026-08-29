@@ -3,6 +3,8 @@ import { UiBookTile } from './book-tile.component';
 import { I18nService } from '../../core/i18n.service';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
+import { RegionService } from '../../core/region.service';
+
 
 describe('UiBookTile', () => {
   let component: UiBookTile;
@@ -11,6 +13,7 @@ describe('UiBookTile', () => {
 
   beforeEach(() => {
     mockI18n = {
+      lang: () => 'en',
       t: (key: string, params?: Record<string, string | number>) => {
         let text = `Translated: ${key}`;
         if (params) {
@@ -25,6 +28,7 @@ describe('UiBookTile', () => {
     TestBed.configureTestingModule({
       imports: [UiBookTile],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         provideRouter([]),
         { provide: I18nService, useValue: mockI18n }
       ]

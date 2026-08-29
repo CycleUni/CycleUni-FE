@@ -1,21 +1,25 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminUser } from '../../core/services/admin.service';
+import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
-import { UiSelect } from '../../shared/ui/select.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { AuthStore } from '../../core/auth.store';
+import { RegionService } from '../../core/region.service';
 
 @Component({
   selector: 'app-admin-users-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiSelect, UiPagination],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiDropdown, UiPagination],
   template: `
     <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchUsers' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
-      <ui-select [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()"></ui-select>
+      <ui-dropdown [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
     <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
@@ -26,6 +30,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       <table class="admin-table admin-table-clickable" *ngIf="!loading">
       <thead>
         <tr>
+          <th>{{ 'admin.colRegion' | t }}</th>
           <th>{{ 'admin.colEmail' | t }}</th>
           <th>{{ 'admin.colName' | t }}</th>
           <th>{{ 'admin.colSchool' | t }}</th>
@@ -34,10 +39,11 @@ import { UiPagination } from '../../shared/ui/pagination.component';
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users" [routerLink]="[user.id]">
+        <tr *ngFor="let user of users" [regionLink]="[user.id]">
+          <td>{{ formatRegions(user.regions) }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.display_name || (user.first_name + ' ' + user.last_name) }}</td>
-          <td>{{ user.school_name }}</td>
+          <td>{{ formatSchools(user) }}</td>
           <td>
             <span class="admin-status-badge" [class.ok]="user.is_verified">{{ (user.is_verified ? 'admin.yes' : 'admin.no') | t }}</span>
           </td>
@@ -46,7 +52,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           </td>
         </tr>
         <tr *ngIf="users.length === 0">
-          <td colspan="5" class="empty-note">{{ 'common.noMatches' | t }}</td>
+          <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>
       </tbody>
     </table>
@@ -63,6 +69,8 @@ export class AdminUsersListComponent {
   private adminService = inject(AdminService);
   private i18n = inject(I18nService);
   private cdr = inject(ChangeDetectorRef);
+  private authStore = inject(AuthStore);
+  private regionService = inject(RegionService);
 
   users: AdminUser[] = [];
   total = 0;
@@ -71,6 +79,28 @@ export class AdminUsersListComponent {
   q = '';
   isActiveFilter = '';
   loading = true;
+
+  getRegionName(code?: string): string {
+    if (!code) return '';
+    const reg = this.regionService.regions().find(r => r.code === code);
+    return reg ? reg.localized_name : code;
+  }
+
+  formatRegions(regions?: string[]): string {
+    if (!regions || regions.length === 0) return this.i18n.t('admin.noRegion');
+    return regions.map(r => this.getRegionName(r)).join(', ');
+  }
+
+  formatSchools(user: AdminUser): string {
+    if (user.verifications && user.verifications.length > 0) {
+      if (user.verifications.length > 1) {
+        return user.verifications.map(v => `${this.getRegionName(v.region)}: ${v.school_name}`).join(', ');
+      }
+      return user.verifications[0].school_name;
+    }
+    return user.school_name || '';
+  }
+
 
   get activeOptions() {
     return [
@@ -106,14 +136,15 @@ export class AdminUsersListComponent {
 
   reload() {
     this.loading = true;
-    this.adminService.getUsers({ page: this.page, q: this.q, is_active: this.isActiveFilter }).subscribe({
+    this.adminService.getUsers({ page: this.page, q: this.q, is_active: this.isActiveFilter, region: this.regionService.region().toUpperCase() }).subscribe({
       next: (res) => {
         this.users = res.results;
         this.total = res.count;
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }

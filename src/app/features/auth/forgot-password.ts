@@ -6,6 +6,8 @@ import { UiInput } from '../../shared/ui/input.component';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../core/auth.store';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-forgot-password',
@@ -110,6 +112,7 @@ export class ForgotPassword implements OnInit {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private auth = inject(AuthStore);
   private cdr = inject(ChangeDetectorRef);
   readonly i18n = inject(I18nService);
@@ -173,6 +176,6 @@ export class ForgotPassword implements OnInit {
   }
 
   goToLogin() {
-    this.router.navigate(['/account']);
+    this.router.navigate(this.regionLink.path(['/account']));
   }
 }

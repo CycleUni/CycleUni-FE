@@ -4,9 +4,12 @@ import { UiPagination } from '../../shared/ui/pagination.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCategory, Paginated } from '../../core/services/admin.service';
+import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { TranslationEditorComponent, TranslationField } from './translation-editor.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
+import { AuthStore } from '../../core/auth.store';
+import { RegionService } from '../../core/region.service';
 
 @Component({
   selector: 'app-admin-categories-list',
@@ -22,11 +25,15 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
         </div>
       </div>
 
+      <div class="admin-filters">
+      </div>
+
       <div class="table-container" *ngIf="categoriesData">
         <table class="admin-table">
           <thead>
             <tr>
               <th>ID</th>
+              <th>{{ 'admin.colRegion' | t }}</th>
               <th>{{ 'admin.catSlug' | t }}</th>
               <th>{{ 'admin.catTitle' | t }}</th>
               <th>{{ 'admin.catSort' | t }}</th>
@@ -37,6 +44,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
           <tbody>
             <tr *ngFor="let cat of categoriesData.results">
               <td>{{ cat.id }}</td>
+              <td>{{ getRegionName(cat.region) }}</td>
               <td>{{ cat.slug }}</td>
               <td>{{ cat.title }}</td>
               <td>{{ cat.sort_order }}</td>
@@ -49,7 +57,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
               </td>
             </tr>
             <tr *ngIf="categoriesData.results.length === 0">
-              <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
+              <td colspan="7" class="empty-note">{{ 'common.noMatches' | t }}</td>
             </tr>
           </tbody>
         </table>
@@ -137,6 +145,8 @@ export class AdminCategoriesListComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private authStore = inject(AuthStore);
+  private regionService = inject(RegionService);
 
   categoriesData?: Paginated<AdminCategory>;
   currentPage = 1;
@@ -153,13 +163,19 @@ export class AdminCategoriesListComponent implements OnInit {
     { key: 'description', placeholder: 'admin.catDesc', type: 'textarea' }
   ];
 
+  getRegionName(code?: string): string {
+    if (!code) return '';
+    const reg = this.regionService.regions().find(r => r.code === code);
+    return reg ? reg.localized_name : code;
+  }
+
   ngOnInit() {
     this.loadPage(1);
   }
 
   loadPage(page: number) {
     this.currentPage = page;
-    const opts: any = { page: this.currentPage };
+    const opts: any = { page: this.currentPage, region: this.regionService.region().toUpperCase() };
     
     this.adminService.getCategories(opts).subscribe({
       next: (data) => {
@@ -167,7 +183,10 @@ export class AdminCategoriesListComponent implements OnInit {
         this.total = data.count;
         this.cdr.markForCheck();
       },
-      error: () => this.cdr.markForCheck()
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.cdr.markForCheck();
+      }
     });
   }
   

@@ -5,17 +5,20 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminChatReport } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { parseAdminError } from '../../core/admin-error.util';
 import { UiButton } from '../../shared/ui/button.component';
-import { UiSelect } from '../../shared/ui/select.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { AuthStore } from '../../core/auth.store';
+import { RegionService } from '../../core/region.service';
 
 @Component({
   selector: 'app-admin-chat-reports-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiSelect, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiButton, UiDropdown, UiPagination],
   template: `
-    <div class="filters">
-      <ui-select [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="statusFilter" (ngModelChange)="reload()"></ui-select>
+    <div class="admin-filters">
+      <ui-dropdown [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="statusFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
     <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
@@ -23,6 +26,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     <table class="admin-table admin-table-clickable" *ngIf="!loading">
       <thead>
         <tr>
+          <th>{{ 'admin.colRegion' | t }}</th>
           <th>{{ 'admin.colReporter' | t }}</th>
           <th>{{ 'admin.colReported' | t }}</th>
           <th>{{ 'admin.colConversation' | t }}</th>
@@ -34,6 +38,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       <tbody>
         <ng-container *ngFor="let report of reports">
           <tr class="report-row" (click)="toggleExpand(report)">
+            <td>{{ getRegionName(report.region) }}</td>
             <td>{{ report.reporter_email }}</td>
             <td>{{ report.reported_party_email }}</td>
             <td>{{ report.listing_title }} <span class="conv-id">({{ report.conversation_id }})</span></td>
@@ -45,7 +50,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
             </td>
           </tr>
           <tr class="detail-row" *ngIf="expandedId === report.id">
-            <td colspan="6">
+            <td colspan="7">
               <div class="detail-content">
                 <div *ngIf="report.detail" class="report-detail">
                   <strong>Details:</strong> {{ report.detail }}
@@ -63,7 +68,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           </tr>
         </ng-container>
         <tr *ngIf="reports.length === 0">
-          <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
+          <td colspan="7" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>
       </tbody>
     </table>
@@ -71,7 +76,6 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="page" (pageChange)="onPageChange($event)"></ui-pagination>
   `,
   styles: [`
-    .filters { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
     .actions-cell { display: flex; gap: 8px; }
     .conv-id { font-size: 12px; color: var(--muted); }
     .report-row { cursor: pointer; }
@@ -89,6 +93,8 @@ export class AdminChatReportsListComponent implements OnInit {
   private http = inject(HttpClient);
   private i18n = inject(I18nService);
   private cdr = inject(ChangeDetectorRef);
+  private authStore = inject(AuthStore);
+  private regionService = inject(RegionService);
 
   reports: AdminChatReport[] = [];
   total = 0;
@@ -100,6 +106,12 @@ export class AdminChatReportsListComponent implements OnInit {
   expandedId: string | null = null;
   loadingMessages = false;
   messages: any[] | null = null;
+
+  getRegionName(code?: string): string {
+    if (!code) return '';
+    const reg = this.regionService.regions().find(r => r.code === code);
+    return reg ? reg.localized_name : code;
+  }
 
   get statusOptions() {
     return [
@@ -129,14 +141,15 @@ export class AdminChatReportsListComponent implements OnInit {
 
   reload() {
     this.loading = true;
-    this.adminService.getChatReports(this.statusFilter, this.page).subscribe({
+    this.adminService.getChatReports(this.statusFilter, this.page, this.regionService.region().toUpperCase()).subscribe({
       next: (res) => {
         this.reports = res.results;
         this.total = res.count;
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errGeneric'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -150,7 +163,8 @@ export class AdminChatReportsListComponent implements OnInit {
         this.actingId = null;
         this.reload();
       },
-      error: () => {
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errGeneric'));
         this.actingId = null;
         this.cdr.markForCheck();
       }
@@ -174,13 +188,15 @@ export class AdminChatReportsListComponent implements OnInit {
             this.loadingMessages = false;
             this.cdr.markForCheck();
           },
-          error: () => {
+          error: (err) => {
+            alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
             this.loadingMessages = false;
             this.cdr.markForCheck();
           }
         });
       },
-      error: () => {
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loadingMessages = false;
         this.cdr.markForCheck();
       }

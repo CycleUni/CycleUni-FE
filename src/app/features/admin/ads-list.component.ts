@@ -1,3 +1,5 @@
+
+import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -8,6 +10,8 @@ import { ListingService } from '../../core/services/listing.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { firstValueFrom } from 'rxjs';
+import { AuthStore } from '../../core/auth.store';
+import { RegionService } from '../../core/region.service';
 
 @Component({
   selector: 'app-admin-ads-list',
@@ -30,6 +34,7 @@ import { firstValueFrom } from 'rxjs';
         <thead>
           <tr>
             <th>ID</th>
+            <th>{{ 'admin.colRegion' | t }}</th>
             <th>{{ 'admin.adTitle' | t }}</th>
             <th>{{ 'admin.adAdvertiser' | t }}</th>
             <th>{{ 'admin.adPosition' | t }}</th>
@@ -42,6 +47,7 @@ import { firstValueFrom } from 'rxjs';
         <tbody>
           <tr *ngFor="let ad of adsData.results">
             <td>{{ ad.id }}</td>
+            <td>{{ ad.all_regions ? ('admin.allRegions' | t) : formatRegions(ad.regions) }}</td>
             <td>
               {{ ad.title }}
               <a *ngIf="ad.target_url" [href]="ad.target_url" target="_blank" title="跳轉連結">🔗</a>
@@ -175,6 +181,8 @@ export class AdminAdsListComponent implements OnInit {
   private listingService = inject(ListingService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private authStore = inject(AuthStore);
+  private regionService = inject(RegionService);
   
   adsData: Paginated<AdminAd> | null = null;
   currentPage = 1;
@@ -201,6 +209,17 @@ export class AdminAdsListComponent implements OnInit {
   };
   labelsInput = '';
 
+  getRegionName(code?: string): string {
+    if (!code) return '';
+    const reg = this.regionService.regions().find(r => r.code === code);
+    return reg ? reg.localized_name : code;
+  }
+
+  formatRegions(regions?: string[]): string {
+    if (!regions || regions.length === 0) return this.i18n.t('admin.noRegion');
+    return regions.map(r => this.getRegionName(r)).join(', ');
+  }
+
   ngOnInit() {
     this.loadPage(1);
     this.loadAdvertisers();
@@ -211,11 +230,12 @@ export class AdminAdsListComponent implements OnInit {
     this.loadPage(1);
   }
 
+
   loadPage(page: number) {
     this.currentPage = page;
     this.loading = true;
     this.cdr.markForCheck();
-    this.adminService.getAds({ page, q: this.q }).subscribe({
+    this.adminService.getAds({ page, q: this.q, region: this.regionService.region().toUpperCase() }).subscribe({
       next: (data) => {
         this.adsData = data;
         this.total = data.count;
@@ -223,7 +243,7 @@ export class AdminAdsListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(this.i18n.t('admin.errLoadFailed'));
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -231,7 +251,6 @@ export class AdminAdsListComponent implements OnInit {
   }
 
   loadAdvertisers() {
-    // 暫以較大的 page_size 拉取，足以涵蓋多數使用情境
     this.adminService.getAdvertisers({ page: 1, page_size: 100 }).subscribe(data => {
       this.advertisers = data.results;
       this.cdr.markForCheck();
@@ -241,7 +260,7 @@ export class AdminAdsListComponent implements OnInit {
   formatDateForInput(dateStr: string): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    const tzOffset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+    const tzOffset = date.getTimezoneOffset() * 60000;
     const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
     return localISOTime;
   }
@@ -272,7 +291,6 @@ export class AdminAdsListComponent implements OnInit {
     this.editingId = ad.id;
     this.formData = { ...ad, show_in_hero: !!ad.show_in_hero };
     this.labelsInput = ad.labels ? ad.labels.join(', ') : '';
-    // Format dates for datetime-local input
     if (this.formData.start_date) {
       this.formData.start_date = this.formatDateForInput(this.formData.start_date);
     }
@@ -295,7 +313,7 @@ export class AdminAdsListComponent implements OnInit {
       alert(this.i18n.t('admin.errUploadFailed'));
     } finally {
       this.uploadingImage = false;
-      event.target.value = ''; // reset file input
+      event.target.value = '';
     }
   }
 
@@ -321,7 +339,6 @@ export class AdminAdsListComponent implements OnInit {
 
     const payload = { ...this.formData };
     
-    // Parse labels
     const parsedLabels = this.labelsInput.split(',').map(s => s.trim()).filter(s => s);
     if (parsedLabels.length > 3) {
       alert("最多只能有 3 個標籤");
@@ -335,7 +352,6 @@ export class AdminAdsListComponent implements OnInit {
     }
     payload.labels = parsedLabels;
 
-    // Convert back to UTC ISO string for backend
     if (payload.start_date) payload.start_date = new Date(payload.start_date).toISOString();
     if (payload.end_date) payload.end_date = new Date(payload.end_date).toISOString();
 
@@ -353,7 +369,7 @@ export class AdminAdsListComponent implements OnInit {
         this.closeModal();
         this.loadPage(this.currentPage);
       },
-      error: (err) => alert(this.i18n.t('admin.errSaveFailed'))
+      error: (err) => alert(parseAdminError(err, this.i18n, 'admin.errSaveFailed'))
     });
   }
 
@@ -364,7 +380,7 @@ export class AdminAdsListComponent implements OnInit {
           this.loadPage(this.currentPage);
         },
         error: (err) => {
-          alert(this.i18n.t('admin.errDeleteFailed'));
+          alert(parseAdminError(err, this.i18n, 'admin.errDeleteFailed'));
         }
       });
     }

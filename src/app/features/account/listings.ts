@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { RegionService } from '../../core/region.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +14,8 @@ import { ListingService } from '../../core/services/listing.service';
 import { MetadataService } from '../../core/services/metadata.service';
 
 import { AccountService } from '../../core/services/account.service';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-account-listings',
@@ -69,7 +72,7 @@ import { AccountService } from '../../core/services/account.service';
             <ui-input [label]="'acct.isbnLabel' | t" [(ngModel)]="editForm.isbn"></ui-input>
           </div>
 
-          <ui-input type="number" [label]="'acct.priceLabel' | t" [(ngModel)]="editForm.price" style="margin-bottom: 16px;"></ui-input>
+          <ui-input type="number" [label]="'acct.priceLabel' | t:{currency: regionService.currency().symbol}" [(ngModel)]="editForm.price" style="margin-bottom: 16px;"></ui-input>
           <ui-dropdown [label]="'acct.conditionLabel' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
           <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions" style="margin-bottom: 16px;"></ui-dropdown>
           <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name" style="margin-bottom: 16px;"></ui-input>
@@ -151,6 +154,7 @@ import { AccountService } from '../../core/services/account.service';
   `]
 })
 export class ListingsComponent implements OnInit {
+  regionService = inject(RegionService);
   myListings: any[] = [];
   editingListing: any = null;
   editForm: any = {};
@@ -177,6 +181,7 @@ export class ListingsComponent implements OnInit {
   private metadataService = inject(MetadataService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   readonly i18n = inject(I18nService);
 
   ngOnInit() {
@@ -331,6 +336,6 @@ export class ListingsComponent implements OnInit {
   }
 
   goToSell() {
-    this.router.navigate(['/sell']);
+    this.router.navigate(this.regionLink.path(['/sell']));
   }
 }

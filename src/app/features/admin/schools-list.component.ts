@@ -1,3 +1,4 @@
+import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -132,7 +133,7 @@ export class AdminSchoolsListComponent implements OnInit {
         this.total = data.count;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
         this.cdr.markForCheck();
       }
     });

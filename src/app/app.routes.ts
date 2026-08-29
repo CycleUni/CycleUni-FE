@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard, accountIndexGuard } from './core/auth.guard';
 import { adminGuard } from './features/admin/admin.guard';
+import { regionGuard, rootRedirectGuard } from './core/region.guard';
 
-// CSR only (PWA) — all routes are lazy-loaded.
-export const routes: Routes = [
+const featureRoutes: Routes = [
   {
     path: '',
     loadComponent: () => import('./features/home/home').then((m) => m.Home),
@@ -24,7 +24,7 @@ export const routes: Routes = [
     path: 'account',
     loadComponent: () => import('./features/account/account').then((m) => m.Account),
     children: [
-      { path: '', canActivate: [accountIndexGuard], children: [] },
+      { path: '', canActivate: [accountIndexGuard], loadComponent: () => import('./features/account/account-index.component').then(m => m.AccountIndexComponent) },
       { path: 'listings', canActivate: [authGuard], loadComponent: () => import('./features/account/listings').then(m => m.ListingsComponent) },
       { path: 'subscriptions', canActivate: [authGuard], loadComponent: () => import('./features/account/subscriptions').then(m => m.SubscriptionsComponent) },
       { path: 'orders', canActivate: [authGuard], loadComponent: () => import('./features/account/orders').then(m => m.OrdersComponent) },
@@ -68,12 +68,24 @@ export const routes: Routes = [
       { path: 'chat-reports', loadComponent: () => import('./features/admin/chat-reports-list.component').then(m => m.AdminChatReportsListComponent) },
       { path: 'managers', loadComponent: () => import('./features/admin/managers-list.component').then(m => m.AdminManagersListComponent) },
       { path: 'advertisers', loadComponent: () => import('./features/admin/advertisers-list.component').then(m => m.AdminAdvertisersListComponent) },
-      // Route renamed from 'ads' to 'promotions' to avoid adblocker chunk loading issues
       { path: 'promotions', loadComponent: () => import('./features/admin/ads-list.component').then(m => m.AdminAdsListComponent) },
     ]
   },
   {
     path: '**',
     loadComponent: () => import('./features/not-found/not-found').then(m => m.NotFoundComponent),
+  }
+];
+
+export const routes: Routes = [
+  {
+    path: ':region',
+    canActivate: [regionGuard],
+    children: featureRoutes
+  },
+  {
+    path: '**',
+    canActivate: [rootRedirectGuard],
+    children: []
   }
 ];

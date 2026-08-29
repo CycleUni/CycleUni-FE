@@ -1,3 +1,4 @@
+import { parseAdminError } from '../../core/admin-error.util';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -96,7 +97,7 @@ export class ForceCancelModalComponent {
         if (code === 'admin.errOrderAlreadyFinal') {
           this.errorMsg = this.i18n.t(code);
         } else {
-          this.errorMsg = this.i18n.t('admin.errGeneric');
+          this.errorMsg = parseAdminError(err, this.i18n, 'admin.errGeneric');
         }
       }
     });

@@ -10,6 +10,8 @@ import { ListingService } from '../../core/services/listing.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { of } from 'rxjs';
+import { RegionService } from '../../core/region.service';
+
 
 describe('selectBestRearCamera', () => {
   it('returns null for empty or null camera list', () => {
@@ -147,6 +149,7 @@ describe('Sell Component Barcode Scanner Validation', () => {
     await TestBed.configureTestingModule({
       imports: [Sell, HttpClientTestingModule],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         provideRouter([]),
         { provide: BookService, useValue: mockBookService },
         { provide: I18nService, useValue: mockI18n },

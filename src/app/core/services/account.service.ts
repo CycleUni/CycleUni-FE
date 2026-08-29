@@ -4,7 +4,7 @@ import { Observable, shareReplay, tap, catchError, throwError } from 'rxjs';
 import { I18nService } from '../i18n.service';
 import { AuthStore } from '../auth.store';
 import { SKIP_AUTH } from '../auth.interceptor';
-
+import { isSameRegion } from '../region-path';
 export interface ChatReportItem {
   id: string;
   conversation?: {
@@ -179,6 +179,10 @@ export class AccountService {
     return this.http.post<any>('/auth/password/', data);
   }
 
+  removePassword(data: { password?: string }): Observable<any> {
+    return this.http.post<any>('/auth/password/remove/', data);
+  }
+
   requestEduVerification(eduEmail: string): Observable<any> {
     return this.http.post<any>('/auth/verify/request/', { edu_email: eduEmail });
   }
@@ -195,9 +199,12 @@ export class AccountService {
     });
   }
 
-  unbindEduEmail(): Observable<any> {
-    return this.http.post<any>('/auth/verify/unbind/', {}).pipe(
-      tap(() => this.profileCache.update(p => p ? { ...p, edu_email: '', verified_at: null } : null))
+  unbindEduEmail(regionCode: string): Observable<any> {
+    return this.http.post<any>('/auth/verify/unbind/', { region: regionCode }).pipe(
+      tap(() => {
+        this.profileCache.update(p => p ? { ...p, verifications: (p['verifications'] as any[] || []).filter((v: any) => !isSameRegion(v.region, regionCode)) } : null);
+        this.authStore.updateUser(u => ({ ...u, verifications: (u.verifications || []).filter((v: any) => !isSameRegion(v.region, regionCode)) }));
+      })
     );
   }
 

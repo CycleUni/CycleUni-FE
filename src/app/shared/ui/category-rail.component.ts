@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, Input, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -6,12 +7,12 @@ import { TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'ui-category-rail',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, TPipe],
   template: `
     <div class="categories-wrapper" *ngIf="categories?.length" [class.has-left]="canScrollLeft" [class.has-right]="canScrollRight">
       <button class="scroll-btn left" *ngIf="canScrollLeft" (click)="scrollCategories(-1)" [attr.aria-label]="'common.previous' | t">&#8249;</button>
       <div class="categories-grid" #categoriesGrid (scroll)="checkScroll()">
-        <a [routerLink]="['/search']" [queryParams]="{ category: cat.slug }" class="category-card" *ngFor="let cat of categories; trackBy: trackBySlug">
+        <a [regionLink]="['/search']" [queryParams]="{ category: cat.slug }" class="category-card" *ngFor="let cat of categories; trackBy: trackBySlug">
           <h3>{{ cat.title }}</h3>
           <p>{{ cat.desc }}</p>
         </a>
@@ -43,8 +44,8 @@ import { TPipe } from '../../core/i18n.service';
       transform: translateY(-50%);
       width: var(--tap-min);
       height: var(--tap-min);
-      background-color: var(--paper);
-      border: 1px solid var(--line-strong);
+      background-color: var(--surface-raised);
+      border: 1px solid var(--surface-raised-border);
       border-radius: 50%;
       font-size: var(--text-2xl);
       line-height: 1;

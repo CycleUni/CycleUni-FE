@@ -20,7 +20,9 @@ export interface AdminUser {
   school_name: string;
   edu_email: string;
   is_active: boolean;
-  is_verified: boolean;
+  is_verified?: boolean;
+  verifications?: any[];
+  regions?: string[];
   verified_at: string | null;
   created_at: string;
   is_staff: boolean;
@@ -33,8 +35,12 @@ export interface AdminListing {
   seller: { id: string | number; email: string };
   school: { id: string | number; name: string } | null;
   price: number;
+  /** ISO 4217 code for this row, so a merged multi-region list formats each
+   *  price in its own currency instead of the viewer's region default. */
+  currency?: string;
   condition: string;
   status: string;
+  region?: string;
   created_at: string;
 }
 
@@ -45,6 +51,8 @@ export interface AdminOrder {
   listing: { id: string; book_title: string };
   status: string;
   total_amount: number;
+  currency?: string;
+  region?: string;
   created_at: string;
   updated_at: string;
 }
@@ -58,6 +66,8 @@ export interface AdminAdvertiser {
   contact_phone: string;
   all_schools: boolean;
   schools: number[];
+  all_regions?: boolean;
+  regions?: string[];
   is_active: boolean;
   created_at: string;
 }
@@ -80,6 +90,8 @@ export interface AdminAd {
   is_internal_image?: boolean;
   clicks_count: number;
   views_count: number;
+  all_regions?: boolean;
+  regions?: string[];
   created_at: string;
   labels?: string[];
 }
@@ -92,13 +104,16 @@ export interface AdminReport {
   detail?: string;
   status: 'open' | 'actioned' | 'dismissed';
   created_at: string;
+  region?: string;
 }
 
 export interface AdminSchool {
   id: number;
   name: string;
+  display_name: string;
   email_domain: string;
   translations: any;
+  region?: string;
   /** Number of accounts attached to this school; a school with any cannot be deleted. */
   user_count?: number;
 }
@@ -110,6 +125,7 @@ export interface AdminCategory {
   description: string;
   sort_order: number;
   is_active: boolean;
+  region?: string;
   translations: any;
 }
 
@@ -123,12 +139,13 @@ export interface AdminChatReport {
   detail?: string;
   status: 'open' | 'actioned' | 'dismissed';
   created_at: string;
+  region?: string;
 }
 
 function buildParams(query: Record<string, string | number | undefined | null>): HttpParams {
   let params = new HttpParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && (value !== '' || key === 'region')) {
       params = params.set(key, String(value));
     }
   }
@@ -141,7 +158,7 @@ function buildParams(query: Record<string, string | number | undefined | null>):
 export class AdminService {
   private http = inject(HttpClient);
 
-  getUsers(opts: { page?: number; q?: string; is_active?: string; school?: string } = {}): Observable<Paginated<AdminUser>> {
+  getUsers(opts: { page?: number; q?: string; is_active?: string; school?: string; region?: string } = {}): Observable<Paginated<AdminUser>> {
     return this.http.get<Paginated<AdminUser>>('/admin/users/', { params: buildParams(opts) });
   }
 
@@ -149,7 +166,7 @@ export class AdminService {
     return this.http.get<AdminUser>(`/admin/users/${id}/`);
   }
 
-  updateUser(id: string | number, changes: { is_active?: boolean; school?: string | number | null; verified?: boolean }): Observable<AdminUser> {
+  updateUser(id: string | number, changes: { is_active?: boolean; school?: string | number | null; verified?: boolean; region?: string }): Observable<AdminUser> {
     return this.http.patch<AdminUser>(`/admin/users/${id}/`, changes);
   }
 
@@ -157,7 +174,7 @@ export class AdminService {
     return this.http.post<AdminUser>(`/admin/managers/${id}/toggle/`, { is_staff });
   }
 
-  getListings(opts: { page?: number; q?: string; status?: string; condition?: string; school?: string } = {}): Observable<Paginated<AdminListing>> {
+  getListings(opts: { page?: number; q?: string; status?: string; condition?: string; school?: string; region?: string } = {}): Observable<Paginated<AdminListing>> {
     return this.http.get<Paginated<AdminListing>>('/admin/listings/', { params: buildParams(opts) });
   }
 
@@ -169,7 +186,7 @@ export class AdminService {
     return this.http.patch<AdminListing>(`/admin/listings/${id}/`, { status });
   }
 
-  getOrders(opts: { page?: number; q?: string; status?: string } = {}): Observable<Paginated<AdminOrder>> {
+  getOrders(opts: { page?: number; q?: string; status?: string; region?: string } = {}): Observable<Paginated<AdminOrder>> {
     return this.http.get<Paginated<AdminOrder>>('/admin/orders/', { params: buildParams(opts) });
   }
 
@@ -181,15 +198,15 @@ export class AdminService {
     return this.http.post<{ status: string }>(`/admin/orders/${id}/force_cancel/`, { reason });
   }
 
-  getReports(status?: string, page?: number): Observable<Paginated<AdminReport>> {
-    return this.http.get<Paginated<AdminReport>>('/moderation/all/', { params: buildParams({ status, page }) });
+  getReports(status?: string, page?: number, region?: string): Observable<Paginated<AdminReport>> {
+    return this.http.get<Paginated<AdminReport>>('/moderation/all/', { params: buildParams({ status, page, region }) });
   }
 
   actionReport(id: string, status: 'actioned' | 'dismissed'): Observable<AdminReport> {
     return this.http.patch<AdminReport>(`/moderation/${id}/`, { status });
   }
 
-  getSchools(opts: { page?: number; q?: string } = {}): Observable<Paginated<AdminSchool>> {
+  getSchools(opts: { page?: number; page_size?: number; q?: string; region?: string } = {}): Observable<Paginated<AdminSchool>> {
     return this.http.get<Paginated<AdminSchool>>('/admin/schools/', { params: buildParams(opts) });
   }
 
@@ -209,7 +226,7 @@ export class AdminService {
     return this.http.delete<void>(`/admin/schools/${id}/`);
   }
 
-  getCategories(opts: { page?: number } = {}): Observable<Paginated<AdminCategory>> {
+  getCategories(opts: { page?: number; region?: string } = {}): Observable<Paginated<AdminCategory>> {
     return this.http.get<Paginated<AdminCategory>>('/admin/categories/', { params: buildParams(opts) });
   }
 
@@ -229,8 +246,8 @@ export class AdminService {
     return this.http.post<any>(`/admin/${endpoint}/bulk/`, { action, items });
   }
 
-  getChatReports(status?: string, page?: number): Observable<Paginated<AdminChatReport>> {
-    return this.http.get<Paginated<AdminChatReport>>('/admin/chat-reports/', { params: buildParams({ status, page }) });
+  getChatReports(status?: string, page?: number, region?: string): Observable<Paginated<AdminChatReport>> {
+    return this.http.get<Paginated<AdminChatReport>>('/admin/chat-reports/', { params: buildParams({ status, page, region }) });
   }
 
   actionChatReport(id: string, status: 'actioned' | 'dismissed'): Observable<AdminChatReport> {
@@ -242,7 +259,7 @@ export class AdminService {
   }
 
   // API endpoints below renamed from 'advertisers' and 'ads' to 'sponsors' and 'promotions' to evade adblockers
-  getAdvertisers(opts: { page?: number; q?: string; page_size?: number } = {}): Observable<Paginated<AdminAdvertiser>> {
+  getAdvertisers(opts: { page?: number; q?: string; page_size?: number; region?: string } = {}): Observable<Paginated<AdminAdvertiser>> {
     return this.http.get<Paginated<AdminAdvertiser>>('/admin/sponsors/', { params: buildParams(opts) });
   }
 
@@ -262,7 +279,7 @@ export class AdminService {
     return this.http.delete<void>(`/admin/sponsors/${id}/`);
   }
 
-  getAds(opts: { page?: number; advertiser_id?: number; q?: string } = {}): Observable<Paginated<AdminAd>> {
+  getAds(opts: { page?: number; advertiser_id?: number; q?: string; region?: string } = {}): Observable<Paginated<AdminAd>> {
     return this.http.get<Paginated<AdminAd>>('/admin/promotions/', { params: buildParams(opts) });
   }
 

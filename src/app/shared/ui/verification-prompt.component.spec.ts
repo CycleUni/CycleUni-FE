@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UiVerificationPrompt } from './verification-prompt.component';
 import { provideRouter } from '@angular/router';
 import { I18nService } from '../../core/i18n.service';
+import { RegionService } from '../../core/region.service';
+
 
 describe('UiVerificationPrompt', () => {
   let component: UiVerificationPrompt;
@@ -13,6 +15,7 @@ describe('UiVerificationPrompt', () => {
     await TestBed.configureTestingModule({
       imports: [UiVerificationPrompt],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         provideRouter([]),
         { provide: I18nService, useValue: { t: (k: string) => k, lang: () => 'zh-TW' } }
       ]

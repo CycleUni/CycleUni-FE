@@ -2,7 +2,7 @@
       <header class="app-header" [class.hide-on-mobile-chat]="mobileLayout.hideBottomNav()">
         <div class="header-content">
           <div class="brand-area">
-            <div class="logo"><a routerLink="/"><span class="logo-name">CycleUni</span><span class="logo-cn">易校網</span></a></div>
+            <div class="logo"><a regionLink="/"><span class="logo-name">CycleUni</span><span class="logo-cn">易校網</span></a></div>
           </div>
           <div class="header-right">
             <div class="school-selector">
@@ -31,14 +31,14 @@
               </ui-dropdown>
             </div>
             <nav class="nav-links">
-              <a routerLink="/search" routerLinkActive="active-link">
+              <a regionLink="/search" routerLinkActive="active-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true">
                   <circle cx="10.5" cy="10.5" r="6.5"/>
                   <line x1="20" y1="20" x2="15.4" y2="15.4"/>
                 </svg>
                 <span class="nav-label">{{ 'nav.search' | t }}</span>
               </a>
-              <a routerLink="/sell" routerLinkActive="active-link">
+              <a regionLink="/sell" routerLinkActive="active-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true">
                   <rect x="3.5" y="3.5" width="17" height="17" rx="2"/>
                   <line x1="12" y1="8" x2="12" y2="16"/>
@@ -46,21 +46,21 @@
                 </svg>
                 <span class="nav-label">{{ 'nav.sell' | t }}</span>
               </a>
-              <a routerLink="/messages" class="nav-link-with-badge" routerLinkActive="active-link">
+              <a regionLink="/messages" class="nav-link-with-badge" routerLinkActive="active-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true">
                   <path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
                 </svg>
                 <span class="nav-label">{{ 'nav.messages' | t }}</span>
                 <span class="nav-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
               </a>
-              <a routerLink="/account" routerLinkActive="active-link">
+              <a regionLink="/account" routerLinkActive="active-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true">
                   <circle cx="12" cy="8" r="3.5"/>
                   <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"/>
                 </svg>
                 <span class="nav-label">{{ userName || ('nav.account' | t) }}</span>
               </a>
-              <a *ngIf="isStaff" routerLink="/admin" routerLinkActive="active-link">
+              <a *ngIf="isStaff" regionLink="/admin" routerLinkActive="active-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="17" height="17" aria-hidden="true">
                   <path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4z"/>
                 </svg>
@@ -99,14 +99,14 @@
       </main>
 
       <nav class="bottom-tab-bar" *ngIf="!mobileLayout.hideBottomNav()">
-        <a routerLink="/search" routerLinkActive="active-tab">
+        <a regionLink="/search" routerLinkActive="active-tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
             <circle cx="10.5" cy="10.5" r="6.5"/>
             <line x1="20" y1="20" x2="15.4" y2="15.4"/>
           </svg>
           <span class="tab-label">{{ 'nav.search' | t }}</span>
         </a>
-        <a routerLink="/sell" routerLinkActive="active-tab">
+        <a regionLink="/sell" routerLinkActive="active-tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
             <rect x="3.5" y="3.5" width="17" height="17" rx="2"/>
             <line x1="12" y1="8" x2="12" y2="16"/>
@@ -114,21 +114,21 @@
           </svg>
           <span class="tab-label">{{ 'nav.sell' | t }}</span>
         </a>
-        <a routerLink="/messages" class="tab-with-badge" routerLinkActive="active-tab">
+        <a regionLink="/messages" class="tab-with-badge" routerLinkActive="active-tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
             <path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
           </svg>
           <span class="tab-label">{{ 'nav.messages' | t }}</span>
           <span class="tab-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
         </a>
-        <a routerLink="/account" routerLinkActive="active-tab">
+        <a regionLink="/account" routerLinkActive="active-tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
             <circle cx="12" cy="8" r="3.5"/>
             <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"/>
           </svg>
           <span class="tab-label">{{ 'nav.account' | t }}</span>
         </a>
-        <a *ngIf="isStaff" routerLink="/admin" routerLinkActive="active-tab">
+        <a *ngIf="isStaff" regionLink="/admin" routerLinkActive="active-tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
             <path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4z"/>
           </svg>
@@ -146,25 +146,13 @@
             <a href="https://cycleuni.github.io/About/" target="_blank" rel="noopener noreferrer">{{ 'footer.about' | t }}</a>
             <a href="https://cycleuni.github.io/About/" target="_blank" rel="noopener noreferrer">{{ 'footer.terms' | t }}</a>
           </div>
-          <div class="footer-prefs" role="group" [attr.aria-label]="'nav.languageSwitcher' | t">
-            <ui-dropdown
-              class="footer-lang-dropdown"
-              [options]="langOptions"
-              [ngModel]="i18n.lang()"
-              (ngModelChange)="onLangChange($event)"
-              [searchable]="false"
-              [compact]="true"
-              [align]="'right'"
-              [appendToBody]="true"
-              [triggerAriaLabel]="'nav.languageSwitcher' | t"
-            >
-              <svg dropdownTrigger class="footer-lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-            </ui-dropdown>
+          <div class="footer-prefs">
+            <ui-prefs-selector></ui-prefs-selector>
           </div>
         </div>
       </footer>
+
+      <div class="standalone-prefs-container" *ngIf="!fullBleed && !showFooter">
+        <ui-prefs-selector></ui-prefs-selector>
+      </div>
     </div>

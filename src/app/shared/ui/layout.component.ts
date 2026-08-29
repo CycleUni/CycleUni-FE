@@ -1,8 +1,12 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
+import { stripRegionPrefix, isSameRegion } from '../../core/region-path';
 import { Component, effect, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UiDropdown } from './dropdown.component';
+import { UiPrefsSelector } from './prefs-selector.component';
+import { RegionService } from '../../core/region.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { AuthStore } from '../../core/auth.store';
 import { AccountService } from '../../core/services/account.service';
@@ -17,7 +21,7 @@ import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 @Component({
   selector: 'ui-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiDropdown, TPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, UiDropdown, TPipe, UiPrefsSelector],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })
@@ -26,12 +30,9 @@ export class UiLayout implements OnDestroy {
   schools: { value: string, label: string }[] = [];
   rawSchools: any[] = [];
   unreadCount = 0;
-  readonly langOptions = [
-    { value: 'zh-TW', label: '中文 (繁體)' },
-    { value: 'en', label: 'English' }
-  ];
   readonly theme = inject(ThemeService);
   readonly mobileLayout = inject(MobileLayoutService);
+
   get themeOptions() {
     return [
       { value: 'system', label: this.i18n.t('nav.themeSystem') || 'System' },
@@ -48,6 +49,7 @@ export class UiLayout implements OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   readonly i18n = inject(I18nService);
+  readonly regionService = inject(RegionService);
   private router = inject(Router);
 
   /**
@@ -137,8 +139,11 @@ export class UiLayout implements OnDestroy {
     // (if they haven't manually chosen a school yet).
     effect(() => {
       const profile = this.authStore.user();
-      if (profile?.school && this.rawSchools.length > 0 && this.schoolStateService.getManualSchool() === null) {
-        const userSchool = this.rawSchools.find(s => s.id === profile.school);
+      const region = this.regionService.region();
+      const verification = profile?.verifications?.find(v => isSameRegion(v.region, region) && !!v.verified_at);
+      const userSchoolId = verification?.school;
+      if (userSchoolId && this.rawSchools.length > 0 && this.schoolStateService.getManualSchool() === null) {
+        const userSchool = this.rawSchools.find(s => s.id === userSchoolId);
         if (userSchool && this.selectedSchool !== userSchool.name) {
           this.selectedSchool = userSchool.name;
           this.schoolStateService.setSchool(this.selectedSchool);
@@ -149,12 +154,12 @@ export class UiLayout implements OnDestroy {
   }
 
   private applyFullBleed() {
-    const url = this.router.url.split('?')[0];
+    const url = stripRegionPrefix(this.router.url);
     this.fullBleed = UiLayout.FULL_BLEED_ROUTES.some(r => url === r || url.startsWith(r + '/'));
   }
 
   private applyFooterVisibility() {
-    const url = this.router.url.split('?')[0];
+    const url = stripRegionPrefix(this.router.url);
     this.showFooter = UiLayout.FOOTER_ROUTES.some(r => url === r || (r !== '/' && url.startsWith(r + '/')));
   }
 
@@ -175,14 +180,6 @@ export class UiLayout implements OnDestroy {
         this.messageService.connectHub(res.token, uid, res.edge_chat_url);
       }
     });
-  }
-
-  switchLang(lang: Lang) {
-    this.i18n.setLang(lang);
-  }
-
-  onLangChange(lang: string) {
-    this.switchLang(lang as Lang);
   }
 
   onThemeChange(mode: string) {
@@ -232,7 +229,10 @@ export class UiLayout implements OnDestroy {
           // correct us. Checking the signal directly here closes that gap
           // regardless of which of the two requests happens to resolve first.
           const profile = this.authStore.user();
-          const userSchool = profile?.school ? this.rawSchools.find(s => s.id === profile.school) : undefined;
+          const region = this.regionService.region();
+          const verification = profile?.verifications?.find(v => isSameRegion(v.region, region) && !!v.verified_at);
+          const userSchoolId = verification?.school;
+          const userSchool = userSchoolId ? this.rawSchools.find(s => s.id === userSchoolId) : undefined;
           this.selectedSchool = userSchool ? userSchool.name : '';
           this.schoolStateService.setSchool(this.selectedSchool);
           this.cdr.markForCheck();

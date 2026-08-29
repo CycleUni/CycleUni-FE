@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
-import { UiSelect } from '../../shared/ui/select.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { ListingService } from '../../core/services/listing.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
@@ -13,17 +13,17 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'app-report-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiSelect, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiDropdown, TPipe],
   template: `
     <div class="modal-overlay" (click)="close()"></div>
     <div class="modal-content">
       <h3>{{ 'moderation.reportModalTitle' | t }}</h3>
 
-      <ui-select
+      <ui-dropdown
         [label]="'moderation.reasonLabel' | t"
         [options]="reasonOptions"
         [(ngModel)]="reason"
-      ></ui-select>
+       [searchable]="false" [appendToBody]="true"></ui-dropdown>
 
       <div class="textarea-wrapper">
         <label>{{ 'moderation.detailLabel' | t }}</label>

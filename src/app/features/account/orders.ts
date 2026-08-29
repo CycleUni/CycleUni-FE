@@ -13,6 +13,8 @@ import { MeetupModalComponent } from './meetup-modal.component';
 import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
 import { PricePipe } from '../../shared/pipes/price.pipe';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-orders',
@@ -230,6 +232,7 @@ export class OrdersComponent implements OnInit {
   private accountService = inject(AccountService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private route = inject(ActivatedRoute);
   private i18n = inject(I18nService);
   private ga = inject(GoogleAnalyticsService);
@@ -269,7 +272,7 @@ export class OrdersComponent implements OnInit {
 
   ngOnInit() {
     if (!this.authStore.isLoggedIn()) {
-      this.router.navigate(['/account']);
+      this.router.navigate(this.regionLink.path(['/account']));
       return;
     }
     this.route.queryParams.subscribe(params => {

@@ -176,7 +176,6 @@
           <ui-verification-prompt
             *ngIf="showUnverifiedPrompt"
             (onDismiss)="showUnverifiedPrompt = false"
-            [message]="'acct.unverifiedDesc' | t"
             style="text-align: left; margin-bottom: 16px; width: 100%; max-width: 500px;">
           </ui-verification-prompt>
           <p>{{ 'msg.selectPrompt' | t }}</p>
@@ -187,7 +186,6 @@
         <ui-verification-prompt
           *ngIf="showUnverifiedPrompt"
           (onDismiss)="showUnverifiedPrompt = false"
-          [message]="'acct.unverifiedDesc' | t"
           style="text-align: left; margin-bottom: 16px; max-width: 500px;">
         </ui-verification-prompt>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" aria-hidden="true">
@@ -195,5 +193,5 @@
         </svg>
         <h4>{{ 'msg.emptyInboxTitle' | t }}</h4>
         <p>{{ 'msg.emptyInboxDesc' | t }}</p>
-        <button class="browse-btn" type="button" routerLink="/search">{{ 'msg.browseBooks' | t }}</button>
+        <button class="browse-btn" type="button" regionLink="/search">{{ 'msg.browseBooks' | t }}</button>
       </div>

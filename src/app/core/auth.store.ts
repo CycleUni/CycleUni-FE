@@ -4,18 +4,24 @@ import { tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { GoogleAnalyticsService } from './services/google-analytics.service';
+import { RegionLinkService } from './region-link.service';
+import { isSameRegion } from './region-path';
+import { isUserVerifiedIn } from './verification';
+
+export interface RegionVerification {
+  region: string;
+  school: any;
+  edu_email: string;
+  verified_at: string | null;
+}
 
 export interface AuthUser {
   id: string | number;
   email: string;
-  edu_email?: string;
   first_name?: string;
   last_name?: string;
   display_name?: string;
-  school?: string | number | null;
-  school_name?: string;
   is_active?: boolean;
-  verified_at?: string | null;
   average_rating?: number;
   review_count?: number;
   no_show_count?: number;
@@ -24,6 +30,7 @@ export interface AuthUser {
   is_google_linked?: boolean;
   is_staff?: boolean;
   is_superuser?: boolean;
+  verifications?: RegionVerification[];
   [key: string]: unknown;
 }
 
@@ -36,6 +43,10 @@ export class AuthStore {
 
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
   readonly user = this._user.asReadonly();
+
+  updateUser(updateFn: (user: AuthUser) => AuthUser) {
+    this._user.update(u => u ? updateFn(u) : null);
+  }
 
   private fetchedForToken: string | null = null;
 
@@ -91,8 +102,8 @@ export class AuthStore {
         // Identify user in GA4 for User Explorer & cross-device reports
         this.ga.setUserId(profile.id);
         this.ga.setUserProperties({
-          school:      profile.school_name ?? null,
-          is_verified: !!profile.verified_at,
+          school: null,
+          verified_region_count: profile.verifications ? profile.verifications.filter(v => !!v.verified_at).length : 0,
           role:        null   // enriched later if needed
         });
       }),
@@ -129,6 +140,16 @@ export class AuthStore {
   }
 
   private router = inject(Router);
+  // Resolved lazily via the injector below, never with a field-level
+  // inject(). AuthStore is constructed by AuthInterceptor, and
+  // RegionLinkService → RegionService → HttpClient → HTTP_INTERCEPTORS closes
+  // a DI cycle: Angular then fails the entire interceptor chain with NG0200
+  // and every API call in the app dies, which surfaces as a bare
+  // "An error occurred" on each page. Its only use is inside a navigation
+  // handler, long after the injector is built.
+  private get regionLink(): RegionLinkService {
+    return this.injector.get(RegionLinkService);
+  }
   private injector = inject(Injector);
   private ga = inject(GoogleAnalyticsService);
 
@@ -160,7 +181,7 @@ export class AuthStore {
     // Clear GA4 user identity on logout
     this.ga.setUserId(null);
     this.ga.clearUserProperties();
-    this.router.navigate(['/account']);
+    this.router.navigate(this.regionLink.path(['/account']));
   }
 
   getAccessToken(): string | null {
@@ -175,6 +196,10 @@ export class AuthStore {
       return localStorage.getItem('refresh_token');
     }
     return null;
+  }
+
+  isVerifiedIn(regionCode: string): boolean {
+    return isUserVerifiedIn(this.user()?.verifications, regionCode);
   }
 
   isLoggedIn() {

@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, OnInit, AfterViewChecked, inject, ViewChild, ElementRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -21,11 +22,13 @@ import { Subscription } from 'rxjs';
 import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKEN } from './message-formatting.util';
 import { PricePipe } from '../../shared/pipes/price.pipe';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe, UiVerificationPrompt],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe, UiVerificationPrompt],
   templateUrl: './messages.html',
   styleUrls: ['./messages.css']
 })
@@ -72,6 +75,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
   private orderService = inject(OrderService);
   readonly i18n = inject(I18nService);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private cdr = inject(ChangeDetectorRef);
   private http = inject(HttpClient);
   private mobileLayout = inject(MobileLayoutService);
@@ -602,21 +606,21 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
 
   goToListing(listingId?: string) {
     if (listingId) {
-      this.router.navigate(['/listing', listingId]);
+      this.router.navigate(this.regionLink.path(['/listing', listingId]));
     }
   }
 
   goToCheckout(listingId?: string) {
     if (listingId) {
-      this.router.navigate(['/checkout', listingId]);
+      this.router.navigate(this.regionLink.path(['/checkout', listingId]));
     }
   }
 
   goToOrder() {
     if (this.activeChat?.order_id) {
-      this.router.navigate(['/account/orders'], { queryParams: { orderId: this.activeChat.order_id } });
+      this.router.navigate(this.regionLink.path(['/account/orders']), { queryParams: { orderId: this.activeChat.order_id } });
     } else {
-      this.router.navigate(['/account/orders']);
+      this.router.navigate(this.regionLink.path(['/account/orders']));
     }
   }
 

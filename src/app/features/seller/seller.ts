@@ -2,12 +2,16 @@ import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
+import { RegionService } from '../../core/region.service';
 
 import { AccountService } from '../../core/services/account.service';
 import { ListingService } from '../../core/services/listing.service';
 import { UiListingRow } from '../../shared/ui/listing-row.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { RegionLinkService } from '../../core/region-link.service';
+import { isSameRegion } from '../../core/region-path';
+import { isUserVerifiedIn } from '../../core/verification';
 
 @Component({
   selector: 'app-seller-page',
@@ -27,7 +31,7 @@ import { TPipe, I18nService } from '../../core/i18n.service';
           <div class="seller-meta">
             <span class="seller-school">
               {{ seller.school_name }}
-              <span class="verified-badge" *ngIf="seller.is_verified" [title]="'seller.verifiedBadge' | t">✓</span>
+              <span class="verified-badge" *ngIf="isSellerVerified()" [title]="'seller.verifiedBadge' | t">✓</span>
             </span>
             <span class="seller-joined">
               {{ 'seller.joined' | t }}{{ getFormattedDate(seller.created_at) }}
@@ -186,9 +190,11 @@ import { TPipe, I18nService } from '../../core/i18n.service';
 export class SellerPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private accountService = inject(AccountService);
   private listingService = inject(ListingService);
   private title = inject(Title);
+  public regionService = inject(RegionService);
   private i18n = inject(I18nService);
   private meta = inject(Meta);
   private cdr = inject(ChangeDetectorRef);
@@ -274,11 +280,15 @@ export class SellerPageComponent implements OnInit {
   }
 
   goToListing(id: string) {
-    this.router.navigate(['/listing', id]);
+    this.router.navigate(this.regionLink.path(['/listing', id]));
   }
 
   goHome() {
-    this.router.navigate(['/']);
+    this.router.navigate(this.regionLink.path(['/']));
+  }
+
+  isSellerVerified(): boolean {
+    return isUserVerifiedIn(this.seller?.verifications, this.regionService.region());
   }
 
   getAvatarInitial(): string {

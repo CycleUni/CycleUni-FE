@@ -6,6 +6,8 @@ import { App, UPDATE_CHECK_INTERVAL_MS, VISIBILITY_CHECK_THROTTLE_MS } from './a
 import { routes } from './app.routes';
 import { GoogleAuthService } from './core/services/google-auth.service';
 import { GoogleAnalyticsService } from './core/services/google-analytics.service';
+import { RegionService } from './core/region.service';
+
 
 /** Smoke tests: the App shell can be created and the route table covers all routes. */
 describe('App', () => {
@@ -17,7 +19,8 @@ describe('App', () => {
         // SwUpdate to auto-reload on a new deployed version — provide the
         // service worker (disabled, no actual SW script in tests) so that
         // injection resolves instead of throwing NG0201.
-        providers: [provideRouter(routes), provideServiceWorker('ngsw-worker.js', { enabled: false })],
+        providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },provideRouter(routes), provideServiceWorker('ngsw-worker.js', { enabled: false })],
       }).compileComponents();
     });
 
@@ -29,8 +32,7 @@ describe('App', () => {
     it('covers the SSD §2 routes plus verify and checkout', () => {
       const paths = routes.map((r) => r.path);
       expect(paths).toEqual([
-        '', 'search', 'book', 'sell', 'account',
-        'checkout/success', 'checkout/:id', 'listing/:id', 'seller/:id', 'messages', 'verify', 'forgot-password', 'admin', '**',
+        ':region', '**',
       ]);
     });
   });
@@ -67,6 +69,7 @@ describe('App', () => {
         await TestBed.configureTestingModule({
           imports: [App],
           providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
             provideRouter(routes),
             { provide: SwUpdate, useValue: mockSwUpdate },
             { provide: GoogleAuthService, useValue: {} },
@@ -93,6 +96,7 @@ describe('App', () => {
       await TestBed.configureTestingModule({
         imports: [App],
         providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
           provideRouter(routes),
           { provide: SwUpdate, useValue: mockSwUpdate },
           { provide: GoogleAuthService, useValue: {} },
@@ -118,6 +122,7 @@ describe('App', () => {
       await TestBed.configureTestingModule({
         imports: [App],
         providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
           provideRouter(routes),
           { provide: SwUpdate, useValue: mockSwUpdate },
           { provide: GoogleAuthService, useValue: {} },
@@ -149,6 +154,7 @@ describe('App', () => {
       await TestBed.configureTestingModule({
         imports: [App],
         providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
           provideRouter(routes),
           { provide: SwUpdate, useValue: mockSwUpdate },
           { provide: GoogleAuthService, useValue: {} },
@@ -181,6 +187,7 @@ describe('App', () => {
       await TestBed.configureTestingModule({
         imports: [App],
         providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
           provideRouter(routes),
           { provide: SwUpdate, useValue: mockSwUpdate },
           { provide: GoogleAuthService, useValue: {} },

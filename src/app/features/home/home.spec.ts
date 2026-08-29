@@ -8,6 +8,8 @@ import { MetadataService } from '../../core/services/metadata.service';
 import { SchoolStateService } from '../../core/services/school-state.service';
 import { of } from 'rxjs';
 import { Router } from '@angular/router';
+import { RegionService } from '../../core/region.service';
+
 
 describe('HomeComponent', () => {
   let component: Home;
@@ -20,6 +22,7 @@ describe('HomeComponent', () => {
 
   beforeEach(async () => {
     mockI18n = {
+      lang: () => 'zh-TW',
       t: (key: string, params?: Record<string, string | number>) => {
         let text = `Translated: ${key}`;
         if (params) {
@@ -28,8 +31,7 @@ describe('HomeComponent', () => {
           }
         }
         return text;
-      },
-      lang: () => 'zh-TW'
+      }
     };
 
     mockListingService = {
@@ -54,6 +56,7 @@ describe('HomeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [Home, HttpClientTestingModule],
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         provideRouter([]),
         { provide: I18nService, useValue: mockI18n },
         { provide: ListingService, useValue: mockListingService },

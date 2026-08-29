@@ -4,6 +4,8 @@ import { isObservable, of, throwError, firstValueFrom } from 'rxjs';
 import { adminGuard } from './admin.guard';
 import { AuthStore } from '../../core/auth.store';
 import { AccountService } from '../../core/services/account.service';
+import { RegionService } from '../../core/region.service';
+
 
 describe('adminGuard', () => {
   let mockAuthStore: any;
@@ -21,6 +23,7 @@ describe('adminGuard', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
         { provide: AuthStore, useValue: mockAuthStore },
         { provide: AccountService, useValue: mockAccountService },
       ]

@@ -4,9 +4,8 @@ import { Observable } from 'rxjs';
 import { SKIP_LANG_PARAM } from '../api-url.interceptor';
 import { SKIP_AUTH } from '../auth.interceptor';
 import { I18nService } from '../i18n.service';
+import { RegionService } from '../region.service';
 
-// Search and book-detail responses carry no localized fields; skip the lang param.
-// Both book search and detail are public endpoints — skip auth token too.
 const PUBLIC_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true).set(SKIP_AUTH, true);
 const OPTIONAL_AUTH_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
 
@@ -15,6 +14,8 @@ const OPTIONAL_AUTH_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
 })
 export class BookService {
   private http = inject(HttpClient);
+  private regionService = inject(RegionService);
+  private i18n = inject(I18nService);
 
   searchBooks(query: string, category?: string, course?: string, school?: string, page: number = 1, engine?: string): Observable<any> {
     let url = `/search/books/?q=${encodeURIComponent(query)}&page=${page}`;
@@ -49,7 +50,6 @@ export class BookService {
     return this.http.post<any>('/books/manual/', bookData);
   }
 
-
   getTopCourses(school?: string, category?: string): Observable<string[]> {
     let url = `/search/courses/?`;
     const params = new URLSearchParams();
@@ -66,11 +66,16 @@ export class BookService {
     return this.http.delete<any>(`/subscriptions/${subscriptionId}/`);
   }
 
-  getEngineOptions(i18n: I18nService) {
-    return [
-      { label: i18n.t('search.engineGoogle'), value: 'googlebooks' },
-      { label: i18n.t('search.engineOpenLibrary'), value: 'openlibrary' },
-      { label: i18n.t('search.engineIsbnNet'), value: 'isbnnet' }
+  getEngineOptions() {
+    const region = this.regionService.currentRegionObj();
+    const available = region ? region.search_engines : ['googlebooks', 'openlibrary', 'isbnnet'];
+    
+    const all = [
+      { label: this.i18n.t('search.engineGoogle'), value: 'googlebooks' },
+      { label: this.i18n.t('search.engineOpenLibrary'), value: 'openlibrary' },
+      { label: this.i18n.t('search.engineIsbnNet'), value: 'isbnnet' }
     ];
+    
+    return all.filter(opt => available.includes(opt.value));
   }
 }

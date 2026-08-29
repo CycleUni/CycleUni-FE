@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -9,12 +10,12 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
 @Component({
   selector: 'app-admin-school-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent],
   template: `
     <div class="header-actions">
       <div>
         <h2>{{ 'common.edit' | t }}: {{ school?.name }}</h2>
-        <a routerLink=".." class="admin-btn admin-btn-sm admin-btn-outline">‹ {{ 'admin.backToList' | t }}</a>
+        <a regionLink=".." class="admin-btn admin-btn-sm admin-btn-outline">‹ {{ 'admin.backToList' | t }}</a>
       </div>
     </div>
 

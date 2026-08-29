@@ -9,6 +9,7 @@ import { UiConditionPicker } from '../../shared/ui/condition-picker.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 import { AccountService } from '../../core/services/account.service';
+import { RegionService } from '../../core/region.service';
 import { BookService } from '../../core/services/book.service';
 import { ListingService } from '../../core/services/listing.service';
 import { MetadataService } from '../../core/services/metadata.service';
@@ -16,6 +17,8 @@ import { AuthStore } from '../../core/auth.store';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { RegionLinkService } from '../../core/region-link.service';
+
 
 /**
  * Cleans and validates an ISBN string (mirroring backend clean_and_validate_isbn).
@@ -146,11 +149,13 @@ export class Sell implements OnInit, OnDestroy {
   private html5QrCode: Html5Qrcode | null = null;
 
   private authStore = inject(AuthStore);
+  regionService = inject(RegionService);
   private accountService = inject(AccountService);
   private bookService = inject(BookService);
   private listingService = inject(ListingService);
   private metadataService = inject(MetadataService);
   private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
   private ga = inject(GoogleAnalyticsService);
@@ -159,7 +164,7 @@ export class Sell implements OnInit, OnDestroy {
   categoryOptions: any[] = [];
 
   get engineOptions() {
-    return this.bookService.getEngineOptions(this.i18n);
+    return this.bookService.getEngineOptions();
   }
 
   condition = 'new';
@@ -259,7 +264,7 @@ export class Sell implements OnInit, OnDestroy {
       this.accountService.getMyProfile().subscribe({
         next: (profile) => {
           this.isLoading = false;
-          this.isVerified = !!profile.verified_at;
+          this.isVerified = this.authStore.isVerifiedIn(this.regionService.region());
           // Both triggers for this banner — landing here unverified, and a
           // later submit blocked by a stale 403 — must go through the same
           // flag, or the dismiss button only silences one of the two paths.
@@ -544,14 +549,14 @@ export class Sell implements OnInit, OnDestroy {
   }
 
   goToHome() {
-    this.router.navigate(['/']);
+    this.router.navigate(this.regionLink.path(['/']));
   }
 
   goToAccount() {
-    this.router.navigate(['/account']);
+    this.router.navigate(this.regionLink.path(['/account']));
   }
 
   goToAccountSettings() {
-    this.router.navigate(['/account/settings']);
+    this.router.navigate(this.regionLink.path(['/account/settings']));
   }
 }

@@ -1,28 +1,25 @@
-import { Pipe, PipeTransform } from '@angular/core';
-
-export const DEFAULT_CURRENCY = 'NT$';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { RegionService } from '../../core/region.service';
+import { I18nService } from '../../core/i18n.service';
 
 /**
- * Formats a numeric price with a currency prefix (default 'NT$').
- *
- * Usage:
- *   {{ 250 | price }}          // 250 -> 'NT$ 250'
- *   {{ 0 | price }}            // 0 -> 'NT$ 0'
- *   {{ price | price: '$' }}   // 250 -> '$ 250'
+ * Formats a minor-unit price into localized currency string based on current region.
  *
  * Edge cases:
  * - null / undefined / '' -> ''
- * - 0 -> 'NT$ 0'
- * - numeric string (e.g. '250') -> 'NT$ 250'
+ * - 0 -> normal formatted output
  * - non-numeric string (e.g. '-') -> original value as string
  */
 @Pipe({
   name: 'price',
   standalone: true,
-  pure: true
+  pure: false
 })
 export class PricePipe implements PipeTransform {
-  transform(value: number | string | null | undefined, currency: string = DEFAULT_CURRENCY): string {
+  private regionService = inject(RegionService);
+  private i18n = inject(I18nService);
+
+  transform(value: number | string | null | undefined, currencyCode?: string): string {
     if (value === null || value === undefined || value === '') {
       return '';
     }
@@ -32,7 +29,41 @@ export class PricePipe implements PipeTransform {
       return String(value);
     }
 
-    const prefix = currency ? `${currency.trim()} ` : '';
-    return `${prefix}${num}`;
+    const currency = this.regionService.currency();
+    const activeCurrencyCode = currencyCode || currency.code;
+    
+    let decimalPlaces = currency.decimal_places;
+    if (activeCurrencyCode !== currency.code) {
+      const regions = this.regionService.regions();
+      const foundRegion = regions.find(r => r.currency.code === activeCurrencyCode);
+      if (foundRegion) {
+        decimalPlaces = foundRegion.currency.decimal_places;
+      } else {
+        try {
+          const options = new Intl.NumberFormat(this.i18n.lang(), { style: 'currency', currency: activeCurrencyCode }).resolvedOptions();
+          decimalPlaces = options.maximumFractionDigits ?? currency.decimal_places;
+        } catch (e) {
+          console.warn(`Unsupported currency code: ${activeCurrencyCode}`);
+        }
+      }
+    }
+    
+    const lang = this.i18n.lang();
+    let localeFromLang = lang; // Use the raw language code directly to support new languages automatically
+
+    const major = num / Math.pow(10, decimalPlaces);
+    
+    try {
+      const formatter = new Intl.NumberFormat(localeFromLang, {
+        style: 'currency',
+        currency: activeCurrencyCode,
+        minimumFractionDigits: decimalPlaces,
+        maximumFractionDigits: decimalPlaces
+      });
+
+      return formatter.format(major);
+    } catch (e) {
+      return `${activeCurrencyCode} ${major}`;
+    }
   }
 }

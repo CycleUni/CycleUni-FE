@@ -14,7 +14,7 @@
             <div class="form-group">
               <label>{{ 'auth.passwordLabel' | t }}</label>
               <ui-input type="password" [placeholder]="'auth.passwordPlaceholder' | t" [(ngModel)]="password" (keyup.enter)="onLogin()" style="width: 100%;"></ui-input>
-              <a routerLink="/forgot-password" class="forgot-password-link">{{ 'auth.forgotPassword' | t }}</a>
+              <a regionLink="/forgot-password" class="forgot-password-link">{{ 'auth.forgotPassword' | t }}</a>
             </div>
 
             <ui-button style="width: 100%; margin-top: 16px;" (onClick)="onLogin()" [disabled]="isLoading">
@@ -105,11 +105,11 @@
           </div>
 
           <nav class="dashboard-nav">
-            <a routerLink="/account/listings" routerLinkActive="active">{{ 'acct.tabListings' | t }}</a>
-            <a routerLink="/account/subscriptions" routerLinkActive="active">{{ 'acct.tabSubs' | t }}</a>
-            <a routerLink="/account/orders" routerLinkActive="active">{{ 'acct.myOrders' | t }}<span class="unread-dot" *ngIf="hasUnreadOrders"></span></a>
-            <a routerLink="/account/reports" routerLinkActive="active">{{ 'acct.tabReports' | t }}</a>
-            <a routerLink="/account/settings" routerLinkActive="active">{{ 'acct.tabSettings' | t }}</a>
+            <a regionLink="/account/listings" routerLinkActive="active">{{ 'acct.tabListings' | t }}</a>
+            <a regionLink="/account/subscriptions" routerLinkActive="active">{{ 'acct.tabSubs' | t }}</a>
+            <a regionLink="/account/orders" routerLinkActive="active">{{ 'acct.myOrders' | t }}<span class="unread-dot" *ngIf="hasUnreadOrders"></span></a>
+            <a regionLink="/account/reports" routerLinkActive="active">{{ 'acct.tabReports' | t }}</a>
+            <a regionLink="/account/settings" routerLinkActive="active">{{ 'acct.tabSettings' | t }}</a>
           </nav>
         </aside>
 

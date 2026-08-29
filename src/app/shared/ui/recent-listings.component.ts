@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, effect, DestroyRef, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -15,7 +16,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'ui-recent-listings',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiBookTile, UiSkeleton, TPipe, UiPagination, UiErrorState, UiPromoBanner],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, UiBookTile, UiSkeleton, TPipe, UiPagination, UiErrorState, UiPromoBanner],
   template: `
     <h2 class="section-heading" [id]="headingId">{{ (school ? 'home.recentTitle' : 'home.recentTitleAll') | t }}</h2>
     <ng-container *ngIf="loading">
@@ -54,7 +55,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
              Filling the remaining columns with a supply-side invitation turns
              the emptiest part of the page into the one CTA the marketplace
              most needs, and keeps the grid from ending in ragged holes. -->
-        <a class="seed-tile" routerLink="/sell" *ngFor="let slot of seedSlots">
+        <a class="seed-tile" regionLink="/sell" *ngFor="let slot of seedSlots">
           <span class="seed-mark" aria-hidden="true">+</span>
           <span class="seed-text">{{ 'home.seedSlot' | t }}</span>
         </a>

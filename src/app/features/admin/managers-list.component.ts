@@ -3,20 +3,21 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminUser } from '../../core/services/admin.service';
+import { parseAdminError } from '../../core/admin-error.util';
 import { AccountService } from '../../core/services/account.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
-import { UiSelect } from '../../shared/ui/select.component';
+import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 
 @Component({
   selector: 'app-admin-managers-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiSelect, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiDropdown, UiPagination],
   template: `
     <div class="admin-filters">
       <ui-search-bar [placeholder]="'admin.searchManagers' | t" [value]="q" (search)="onSearch($event)"></ui-search-bar>
-      <ui-select [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()"></ui-select>
+      <ui-dropdown [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
     <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
@@ -157,7 +158,8 @@ export class AdminManagersListComponent implements OnInit {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }

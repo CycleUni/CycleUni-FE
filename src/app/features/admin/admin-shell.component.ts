@@ -1,3 +1,4 @@
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, ElementRef, ViewChild, HostListener, Inject, PLATFORM_ID, DestroyRef, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
@@ -8,7 +9,7 @@ import { TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, TPipe],
   template: `
     <div class="admin-layout">
       <!-- Desktop Sidebar / Mobile Drawer Menu -->
@@ -22,36 +23,36 @@ import { TPipe } from '../../core/i18n.service';
             <li class="nav-group">
               <div class="group-title">{{ 'admin.groupUsers' | t }}</div>
               <ul>
-                <li><a routerLink="users" routerLinkActive="active">{{ 'admin.navUsers' | t }}</a></li>
-                <li><a routerLink="managers" routerLinkActive="active">{{ 'admin.navManagers' | t }}</a></li>
+                <li><a regionLink="users" routerLinkActive="active">{{ 'admin.navUsers' | t }}</a></li>
+                <li><a regionLink="managers" routerLinkActive="active">{{ 'admin.navManagers' | t }}</a></li>
               </ul>
             </li>
             <li class="nav-group">
               <div class="group-title">{{ 'admin.groupTransactions' | t }}</div>
               <ul>
-                <li><a routerLink="listings" routerLinkActive="active">{{ 'admin.navListings' | t }}</a></li>
-                <li><a routerLink="orders" routerLinkActive="active">{{ 'admin.navOrders' | t }}</a></li>
+                <li><a regionLink="listings" routerLinkActive="active">{{ 'admin.navListings' | t }}</a></li>
+                <li><a regionLink="orders" routerLinkActive="active">{{ 'admin.navOrders' | t }}</a></li>
               </ul>
             </li>
             <li class="nav-group">
               <div class="group-title">{{ 'admin.groupModeration' | t }}</div>
               <ul>
-                <li><a routerLink="reports" routerLinkActive="active">{{ 'admin.navReports' | t }}</a></li>
-                <li><a routerLink="chat-reports" routerLinkActive="active">{{ 'admin.navChatReports' | t }}</a></li>
+                <li><a regionLink="reports" routerLinkActive="active">{{ 'admin.navReports' | t }}</a></li>
+                <li><a regionLink="chat-reports" routerLinkActive="active">{{ 'admin.navChatReports' | t }}</a></li>
               </ul>
             </li>
             <li class="nav-group">
               <div class="group-title">{{ 'admin.groupSettings' | t }}</div>
               <ul>
-                <li><a routerLink="schools" routerLinkActive="active">{{ 'admin.navSchools' | t }}</a></li>
-                <li><a routerLink="categories" routerLinkActive="active">{{ 'admin.navCategories' | t }}</a></li>
+                <li><a regionLink="schools" routerLinkActive="active">{{ 'admin.navSchools' | t }}</a></li>
+                <li><a regionLink="categories" routerLinkActive="active">{{ 'admin.navCategories' | t }}</a></li>
               </ul>
             </li>
             <li class="nav-group">
               <div class="group-title">{{ 'admin.groupAds' | t }}</div>
               <ul>
-                <li><a routerLink="advertisers" routerLinkActive="active">{{ 'admin.navAdvertisers' | t }}</a></li>
-                <li><a routerLink="promotions" routerLinkActive="active">{{ 'admin.navAds' | t }}</a></li>
+                <li><a regionLink="advertisers" routerLinkActive="active">{{ 'admin.navAdvertisers' | t }}</a></li>
+                <li><a regionLink="promotions" routerLinkActive="active">{{ 'admin.navAds' | t }}</a></li>
               </ul>
             </li>
           </ul>

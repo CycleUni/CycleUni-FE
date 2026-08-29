@@ -1,3 +1,4 @@
+import { RegionService } from '../../core/region.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UiListingRow } from './listing-row.component';
 import { I18nService } from '../../core/i18n.service';
@@ -10,6 +11,7 @@ describe('UiListingRow', () => {
 
   beforeEach(() => {
     mockI18n = {
+      lang: () => 'zh-TW',
       t: (key: string, params?: Record<string, string | number>) => {
         let text = `Translated: ${key}`;
         if (params) {
@@ -24,7 +26,8 @@ describe('UiListingRow', () => {
     TestBed.configureTestingModule({
       imports: [UiListingRow],
       providers: [
-        { provide: I18nService, useValue: mockI18n }
+        { provide: I18nService, useValue: mockI18n },
+        { provide: RegionService, useValue: { currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }), regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }] } }
       ]
     });
     fixture = TestBed.createComponent(UiListingRow);

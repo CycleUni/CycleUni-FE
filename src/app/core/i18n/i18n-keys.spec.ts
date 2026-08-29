@@ -2,16 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { en } from './en';
 import { zhTW } from './zh-TW';
+import { zhHK } from './zh-HK';
 import { IMAGE_PREVIEW_TOKEN } from '../../features/messages/message-formatting.util';
-
-/**
- * Static checks on the translation dictionaries themselves. These catch
- * drift that's easy to introduce by hand-editing en.ts/zh-TW.ts — missing a
- * key in one language, pasting a duplicate, or leaving a key behind after
- * removing the code that used it — none of which TypeScript's
- * Record<string, string> type catches on its own (duplicate object-literal
- * keys just silently collapse to the last one at parse time).
- */
 
 const I18N_DIR = path.join(process.cwd(), 'src/app/core/i18n');
 const SRC_DIR = path.join(process.cwd(), 'src/app');
@@ -42,23 +34,22 @@ function extractDeclaredKeys(filePath: string): string[] {
   return keys;
 }
 
-describe('i18n translation keys (en.ts / zh-TW.ts)', () => {
-  it('should have the exact same set of keys in both languages (no missing keys)', () => {
+describe('i18n translation keys (en.ts / zh-TW.ts / zh-HK.ts)', () => {
+  it('should have the exact same set of keys in all languages (no missing keys)', () => {
     const enKeys = new Set(Object.keys(en));
-    const zhKeys = new Set(Object.keys(zhTW));
+    const zhTwKeys = new Set(Object.keys(zhTW));
+    const zhHkKeys = new Set(Object.keys(zhHK));
 
-    const missingInZh = [...enKeys].filter(k => !zhKeys.has(k)).sort();
-    const missingInEn = [...zhKeys].filter(k => !enKeys.has(k)).sort();
+    const missingInZhTw = [...enKeys].filter(k => !zhTwKeys.has(k)).sort();
+    const missingInEn = [...zhTwKeys].filter(k => !enKeys.has(k)).sort();
+    const missingInZhHk = [...enKeys].filter(k => !zhHkKeys.has(k)).sort();
 
-    expect(missingInZh).toEqual([]);
+    expect(missingInZhTw).toEqual([]);
     expect(missingInEn).toEqual([]);
+    expect(missingInZhHk).toEqual([]);
   });
 
   it('should not declare the same key twice within one language file', () => {
-    // Duplicate keys in a `Record<string,string>` literal silently collapse
-    // to the last one at parse time, so Object.keys() on the already-
-    // imported `en`/`zhTW` objects can never reveal a duplicate existed —
-    // this reads the raw source text instead.
     const findDuplicates = (filePath: string): string[] => {
       const keys = extractDeclaredKeys(filePath);
       const seen = new Map<string, number>();
@@ -71,24 +62,10 @@ describe('i18n translation keys (en.ts / zh-TW.ts)', () => {
 
     expect(findDuplicates(path.join(I18N_DIR, 'en.ts'))).toEqual([]);
     expect(findDuplicates(path.join(I18N_DIR, 'zh-TW.ts'))).toEqual([]);
+    expect(findDuplicates(path.join(I18N_DIR, 'zh-HK.ts'))).toEqual([]);
   });
 
   it('should not declare keys that nothing in the app references', () => {
-    // Heuristic, source-text based — not a real TS/HTML AST parse. A key
-    // counts as "used" if its quoted literal appears anywhere in the
-    // frontend source, or in the Django backend: many keys are returned as
-    // error codes (e.g. {"error": {"code": "acct.errEduEmail"}}) and
-    // translated dynamically via `i18n.t(code)` on the frontend, so a plain
-    // substring search — not requiring adjacency to `| t` — is what catches
-    // those without simulating every call site. Keys built by string
-    // concatenation (`'cond.' + listing.condition`) have no literal to
-    // find at all, so any such prefix seen in the source is treated as
-    // "used" for every key starting with it.
-    //
-    // If this fails on a key that IS genuinely used, the scan missed the
-    // pattern — extend the prefix/source detection below rather than
-    // deleting the check. If it fails on a key that's genuinely dead,
-    // delete it from en.ts and zh-TW.ts.
     const feFiles = walk(SRC_DIR, ['.ts', '.html'], ['i18n']).filter(f => !f.endsWith('.spec.ts'));
     let combinedSource = '';
     const dynamicPrefixes = new Set<string>();
@@ -105,9 +82,6 @@ describe('i18n translation keys (en.ts / zh-TW.ts)', () => {
       while ((match = dynamicTemplatePattern.exec(source)) !== null) dynamicPrefixes.add(match[1]);
     }
 
-    // The Django backend is a sibling directory, not guaranteed to be
-    // present in every checkout of this repo alone — skip gracefully
-    // rather than failing the whole suite if it's missing.
     let backendSource = '';
     if (fs.existsSync(BE_DIR)) {
       const beFiles = walk(BE_DIR, ['.py'], ['migrations', '.venv', 'tests', 'node_modules']);
@@ -138,16 +112,11 @@ describe('i18n translation keys (en.ts / zh-TW.ts)', () => {
   });
 
   it('should resolve the image-preview token CFEdgeChat writes', () => {
-    // Cross-repo contract. CFEdgeChat stamps this token into the inbox
-    // preview (persisted by Django into conversation.latest_message_body,
-    // and shown to both participants), and this app resolves it per viewer.
-    // It used to be a hardcoded "[圖片]", which meant an English reader saw
-    // Chinese; if the two repos ever drift apart again, previews silently
-    // render the raw "[SYSTEM:...]" token instead of translated text.
     const key = IMAGE_PREVIEW_TOKEN.replace(/^\[SYSTEM:/, '').replace(/\]$/, '');
 
     expect(en[key]).toBeTruthy();
     expect(zhTW[key]).toBeTruthy();
+    expect(zhHK[key]).toBeTruthy();
     expect(en[key]).not.toEqual(zhTW[key]);
 
     const chatRoom = path.join(process.cwd(), '..', 'CFEdgeChat', 'src', 'ChatRoom.ts');

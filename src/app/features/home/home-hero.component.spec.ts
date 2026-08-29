@@ -1,3 +1,4 @@
+import { RegionService } from '../../core/region.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HomeHero } from './home-hero.component';
 import { provideRouter, Router } from '@angular/router';
@@ -32,7 +33,8 @@ describe('HomeHero', () => {
       imports: [HomeHero],
       providers: [
         provideRouter([]),
-        { provide: I18nService, useValue: mockI18n }
+        { provide: I18nService, useValue: mockI18n },
+        { provide: RegionService, useValue: { currency: () => ({ code: 'TWD', decimal_places: 0 }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }), regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }] } }
       ]
     }).compileComponents();
 
@@ -51,7 +53,7 @@ describe('HomeHero', () => {
   it('searches using the translated string when one exists', () => {
     mockI18n.t = () => '微積分';
     component.setSearchQueryFromKey('home.tagCalculus');
-    expect(router.navigate).toHaveBeenCalledWith(['/search'], {
+    expect(router.navigate).toHaveBeenCalledWith(['/', 'tw', 'search'], {
       queryParams: { q: '微積分' },
       replaceUrl: true
     });

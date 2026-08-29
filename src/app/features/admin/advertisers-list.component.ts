@@ -1,3 +1,4 @@
+import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -159,7 +160,7 @@ export class AdminAdvertisersListComponent implements OnInit {
     this.loadPage(1);
     this.metadataService.getMetadata().subscribe({
       next: (meta: any) => { this.schools = meta?.schools || []; this.cdr.markForCheck(); },
-      error: () => {}
+      error: (err) => {}
     });
   }
 
@@ -180,7 +181,7 @@ export class AdminAdvertisersListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(this.i18n.t('admin.errLoadFailed'));
+        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -242,7 +243,7 @@ export class AdminAdvertisersListComponent implements OnInit {
         this.closeModal();
         this.loadPage(this.currentPage);
       },
-      error: (err) => alert(this.i18n.t('admin.errSaveFailed'))
+      error: (err) => alert(parseAdminError(err, this.i18n, 'admin.errSaveFailed'))
     });
   }
 
@@ -253,7 +254,7 @@ export class AdminAdvertisersListComponent implements OnInit {
           this.loadPage(this.currentPage);
         },
         error: (err) => {
-          alert(this.i18n.t('admin.errDeleteFailed'));
+        alert(parseAdminError(err, this.i18n, 'admin.errDeleteFailed'));
         }
       });
     }
