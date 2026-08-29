@@ -7,11 +7,13 @@ import { IMAGE_PREVIEW_TOKEN } from '../../features/messages/message-formatting.
 
 const I18N_DIR = path.join(process.cwd(), 'src/app/core/i18n');
 const SRC_DIR = path.join(process.cwd(), 'src/app');
-// Still CycleUni-BE: a directory name on disk, not a string this project
-// renames. The UniBooks rename swept it up, existsSync went false, and the
-// orphan check stopped seeing the ~50 keys the backend references by name —
-// reporting every one of them as unused.
-const BE_DIR = path.join(process.cwd(), '..', 'CycleUni-BE');
+// A sibling directory on disk, not a name in this file's own vocabulary.
+// When the rename swept it up the first time, existsSync went false and the
+// orphan check silently stopped seeing the ~50 keys the backend references
+// by name, reporting every one of them as unused. It tracks the directory,
+// which is now UniBooks-BE; the GitHub repository is a separate name and
+// does not have to match.
+const BE_DIR = path.join(process.cwd(), '..', 'UniBooks-BE');
 
 function walk(dir: string, exts: string[], skipDirs: string[] = []): string[] {
   const files: string[] = [];
