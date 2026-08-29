@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TPipe } from '../../core/i18n.service';
+import { UiInput } from '../../shared/ui/input.component';
 import { UiTextarea } from '../../shared/ui/textarea.component';
 
 export interface TranslationField {
@@ -14,28 +15,32 @@ export interface TranslationField {
 @Component({
   selector: 'app-translation-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiTextarea, TPipe, UiButton],
+  imports: [CommonModule, FormsModule, UiTextarea, UiInput, TPipe, UiButton],
   template: `
     <div class="translation-item" *ngFor="let t of translationsList; let i = index">
       <div class="translation-header">
-        <input type="text" class="input lang-input" [(ngModel)]="t.lang" (ngModelChange)="onChange()" placeholder="Language (e.g. en)">
+        <ui-input class="lang-input" [noMargin]="true" [(ngModel)]="t.lang" (ngModelChange)="onChange()" [placeholder]="'admin.translationLangPlaceholder' | t"></ui-input>
         <ui-button size="sm" variant="danger" (onClick)="removeTranslation(i)">{{ 'common.delete' | t }}</ui-button>
       </div>
       <div class="translation-row" *ngFor="let field of fields">
-        <input *ngIf="field.type === 'text'" type="text" class="input" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t">
+        <ui-input *ngIf="field.type === 'text'" [noMargin]="true" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t"></ui-input>
         <ui-textarea *ngIf="field.type === 'textarea'" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t"></ui-textarea>
       </div>
     </div>
-    <ui-button size="sm" variant="outline" (onClick)="addTranslation()">+ Add Language</ui-button>
+    <ui-button size="sm" variant="outline" (onClick)="addTranslation()">{{ 'admin.addTranslationLang' | t }}</ui-button>
   `,
   styles: [`
     .translation-item { background: var(--paper-warm); padding: 12px; border-radius: 6px; border: 1px solid var(--line); margin-bottom: 8px; }
     .translation-header { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .translation-row { margin-bottom: 8px; }
     .translation-row:last-child { margin-bottom: 0; }
+    /* The removed .input rule set border, padding and radius but never a
+       background or colour, so these fields fell through to the user agent's
+       white-on-black default. That reads as correct in light mode and as a
+       white box in dark mode — the failure only shows up in one theme, which
+       is why it survived. ui-input carries the whole set. */
     .lang-input { width: 150px; font-weight: 600; }
     .mt-2 { margin-top: 8px; }
-    .input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
   `]
 })
 export class TranslationEditorComponent {

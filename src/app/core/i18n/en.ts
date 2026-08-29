@@ -654,6 +654,8 @@ export const en: Record<string, string> = {
   'admin.errTranslationsRequired': 'Provide a region name for every supported language — leaving one blank is what made the region show as the canonical English name in every locale.',
   'admin.errLanguagesRequired': 'Tick at least one supported language, or the language picker will have nothing to offer.',
   'admin.errCannotDisableLastRegion': 'This is the last active region. Disabling it would leave the site with nowhere to be.',
+  'admin.translationLangPlaceholder': 'Language code (e.g. en)',
+  'admin.addTranslationLang': '+ Add language',
   'admin.errGeneric': 'Something went wrong. Please try again.',
   'admin.chatNotConfigured': 'Chat server is not configured (missing EDGE_CHAT_JWT_SECRET). Please contact the system administrator to set this environment variable.',
   'admin.listingStatus.active': 'Active',

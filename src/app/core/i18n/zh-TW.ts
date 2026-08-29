@@ -659,6 +659,8 @@ export const zhTW: Record<string, string> = {
   'admin.errTranslationsRequired': '每個支援語言都要填寫地區名稱 —— 留空正是造成地區在所有語系都顯示為「Taiwan」的原因。',
   'admin.errLanguagesRequired': '至少要勾選一種支援語言，否則語言選單將沒有任何選項。',
   'admin.errCannotDisableLastRegion': '這是最後一個啟用中的地區，停用後整個網站將沒有任何地區可用。',
+  'admin.translationLangPlaceholder': '語言代碼（例如 en）',
+  'admin.addTranslationLang': '+ 新增語言',
   'admin.errGeneric': '發生錯誤，請稍後再試。',
   'admin.chatNotConfigured': '聊天伺服器設定缺失（缺少 EDGE_CHAT_JWT_SECRET）。請聯絡系統管理員設定此環境變數。',
   'admin.listingStatus.active': '上架中',
