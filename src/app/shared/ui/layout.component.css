@@ -438,7 +438,14 @@
       justify-content: center;
       align-items: center;
     }
-    @media (max-width: 768px) {
+    /* 900px, not 768px: this padding exists to clear .bottom-tab-bar, and the
+       bar appears at max-width 900. At 768 the two disagreed, so between 769
+       and 900 the bar was on screen with nothing reserved for it and sat on
+       top of the region and language pickers — the only controls down here.
+       The other two clearances in this file already key off 900; this one was
+       the outlier. Any rule that reserves space for the bar has to share its
+       breakpoint. */
+    @media (max-width: 900px) {
       .standalone-prefs-container {
         padding: 16px 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
       }

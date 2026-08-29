@@ -585,11 +585,28 @@ body {
   border-collapse: collapse;
   text-align: left;
   font-size: 14px;
+  /* The wrapper scrolls horizontally, so the table is allowed to be wider
+     than it. Without a floor, `table-layout: auto` hands the width to
+     whichever column holds the longest unbreakable run — an email like
+     demo_tw_bulkseller36@test.com took 243px of 544 — and squeezes the rest.
+     Chinese has no spaces to break on, so a column crushed that far wraps one
+     character per line: 地區 became 台/灣 and 學校 became 國/立/臺/灣/大/學,
+     stretching the row to 141px tall. */
+  min-width: 720px;
 }
 .admin-table th,
 .admin-table td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
+  /* Long addresses and URLs break mid-token rather than forcing the column
+     wider, which is what starved the neighbouring columns. */
+  overflow-wrap: anywhere;
+}
+/* Short label columns — region, verified, active — read as one word or not at
+   all. Nothing is gained by wrapping them and a lot is lost. */
+.admin-table td.nowrap,
+.admin-table th.nowrap {
+  white-space: nowrap;
 }
 .admin-table th {
   background: var(--paper-warm);
