@@ -26,8 +26,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return (this.verifications || []).find(v => isSameRegion(v.region, this.currentRegion!.code) && !!v.verified_at) || null;
   }
 
-  private readonly verifyPendingEmailStorageKeyLegacy = 'cycleuni.account.eduVerification.pendingEmail';
-  private readonly verifyCooldownUntilStorageKeyLegacy = 'cycleuni.account.eduVerification.cooldownUntil';
+  private readonly verifyPendingEmailStorageKeyLegacy = 'unibooks.account.eduVerification.pendingEmail';
+  private readonly verifyCooldownUntilStorageKeyLegacy = 'unibooks.account.eduVerification.cooldownUntil';
 
   email = '';
   firstName = '';

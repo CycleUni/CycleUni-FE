@@ -57,7 +57,7 @@ describe('ThemeService', () => {
     service.setMode('light');
     expect(service.mode()).toBe('light');
     expect(service.resolved()).toBe('light');
-    expect(localStorage.getItem('cycleuni_theme')).toBe('light');
+    expect(localStorage.getItem('unibooks_theme')).toBe('light');
   });
 
   it('resolves to dark when mode is explicitly set to dark, even if OS prefers light', () => {
@@ -67,17 +67,17 @@ describe('ThemeService', () => {
     service.setMode('dark');
     expect(service.mode()).toBe('dark');
     expect(service.resolved()).toBe('dark');
-    expect(localStorage.getItem('cycleuni_theme')).toBe('dark');
+    expect(localStorage.getItem('unibooks_theme')).toBe('dark');
   });
 
   it('removes storage key when setting mode back to system', () => {
     const service = createService();
     service.setMode('dark');
-    expect(localStorage.getItem('cycleuni_theme')).toBe('dark');
+    expect(localStorage.getItem('unibooks_theme')).toBe('dark');
 
     service.setMode('system');
     expect(service.mode()).toBe('system');
-    expect(localStorage.getItem('cycleuni_theme')).toBeNull();
+    expect(localStorage.getItem('unibooks_theme')).toBeNull();
   });
 
   it('updates resolved live when the OS theme changes in system mode', () => {

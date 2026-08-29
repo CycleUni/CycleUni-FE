@@ -88,12 +88,12 @@ describe('Messages draft persistence', () => {
     component.newMessage = 'Hello seller!';
     component.onDraftChange('Hello seller!');
 
-    expect(sessionStorage.getItem('cycleuni.chat.draft.conv-A')).toBe('Hello seller!');
+    expect(sessionStorage.getItem('unibooks.chat.draft.conv-A')).toBe('Hello seller!');
 
     component.sendMessage();
 
     expect(component.newMessage).toBe('');
-    expect(sessionStorage.getItem('cycleuni.chat.draft.conv-A')).toBeNull();
+    expect(sessionStorage.getItem('unibooks.chat.draft.conv-A')).toBeNull();
   });
 
   it('caps draft size to prevent quota exhaustion', () => {
@@ -103,7 +103,7 @@ describe('Messages draft persistence', () => {
     component.newMessage = hugeText;
     component.onDraftChange(hugeText);
 
-    const saved = sessionStorage.getItem('cycleuni.chat.draft.conv-A');
+    const saved = sessionStorage.getItem('unibooks.chat.draft.conv-A');
     expect(saved?.length).toBe(2000);
   });
 });

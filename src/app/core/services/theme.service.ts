@@ -2,7 +2,7 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 
-const STORAGE_KEY = 'cycleuni_theme';
+const STORAGE_KEY = 'unibooks_theme';
 
 @Injectable({
   providedIn: 'root'

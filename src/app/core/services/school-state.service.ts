@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-export const MANUAL_SCHOOL_KEY = 'cycleuni_manual_school';
+export const MANUAL_SCHOOL_KEY = 'unibooks_manual_school';
 
 @Injectable({
   providedIn: 'root'

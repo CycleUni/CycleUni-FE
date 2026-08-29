@@ -138,7 +138,7 @@ export const zhTW: Record<string, string> = {
   'auth.login': '登入',
   'auth.register': '註冊',
   'auth.studentLogin': '登入',
-  'auth.welcomeBack': '歡迎回到 CycleUni 易校網。',
+  'auth.welcomeBack': '歡迎回到 UniBooks。',
   'auth.loginRequiredHint': '請先登入以繼續操作。',
   'auth.emailLabel': '登入信箱',
   'auth.passwordLabel': '密碼',
@@ -149,7 +149,7 @@ export const zhTW: Record<string, string> = {
   'auth.and': '與',
   'auth.period': '。',
   'auth.registerTitle': '註冊新帳號',
-  'auth.registerHint': '加入 CycleUni，讓知識以最低成本傳承。',
+  'auth.registerHint': '加入 UniBooks，讓知識以最低成本傳承。',
   'auth.lastNameLabel': '姓氏',
   'auth.lastNamePlaceholder': '例：王',
   'auth.firstNameLabel': '名字',
@@ -323,7 +323,7 @@ export const zhTW: Record<string, string> = {
   'msg.meetupAcceptBody': '賣家已同意面交邀請，請雙方透過私訊約定面交時間與地點。',
   'msg.meetupDeclineBody': '賣家已拒絕此筆面交邀請，訂單已自動取消。',
   'msg.meetupCancelBody': '買家已取消此筆面交邀請，訂單已自動取消。',
-  'msg.meetupCompleteBody': '面交完成，感謝使用 CycleUni！',
+  'msg.meetupCompleteBody': '面交完成，感謝使用 UniBooks！',
   'msg.meetupActionAccept': '接受面交',
   'msg.meetupActionDecline': '拒絕面交',
   'msg.meetupActionCancel': '取消面交',
@@ -474,7 +474,7 @@ export const zhTW: Record<string, string> = {
   // Order notifications
   'order.notify.meetup_requested': '買家下單面交，等待賣家同意',
   'order.notify.seller_approved': '賣家已同意面交，訂單狀態更新為處理中',
-  'order.notify.delivered': '面交完成，感謝使用 CycleUni！',
+  'order.notify.delivered': '面交完成，感謝使用 UniBooks！',
   'order.notify.cancelled_by_buyer': '買家取消了訂單',
   'order.notify.cancelled_by_seller': '賣家取消了訂單',
   'order.notify.seller_rejected': '賣家拒絕面交，訂單已取消',
@@ -537,7 +537,7 @@ export const zhTW: Record<string, string> = {
   'seller.verifiedBadge': '已驗證校園信箱',
   'seller.noReviews': '尚無評價',
   'seller.noShowCount': '放鳥紀錄: {n} 次',
-  'seller.pageTitle': '{name} 的二手商品 | CycleUni',
+  'seller.pageTitle': '{name} 的二手商品 | UniBooks',
 
   // Moderation / Report
   'moderation.reportButton': '檢舉',
@@ -699,7 +699,7 @@ export const zhTW: Record<string, string> = {
   'verify.submit': '送出驗證',
   'verify.successTitle': '驗證成功！',
   'verify.successBodyRegister': '您的帳號已成功啟用，現在已為您登入。',
-  'verify.successBodyEdu': '您的 {suffix} 信箱已經成功通過驗證，現在您可以完整使用 CycleUni 的所有功能了。',
+  'verify.successBodyEdu': '您的 {suffix} 信箱已經成功通過驗證，現在您可以完整使用 UniBooks 的所有功能了。',
   'verify.redirecting': '即將為您導向...',
   'verify.goHome': '前往首頁',
   'verify.goToLogin': '立即前往登入',
@@ -731,8 +731,8 @@ export const zhTW: Record<string, string> = {
   'notfound.backHome': '返回首頁',
   
   // SEO
-  'seo.title': 'CycleUni 易校網',
-  'seo.description': 'CycleUni 易校網是一個專為大學生設計的二手書籍與物品交易平台，讓校園資源循環利用更簡單。',
+  'seo.title': 'UniBooks',
+  'seo.description': 'UniBooks 是一個專為大學生設計的二手書籍與物品交易平台，讓校園資源循環利用更簡單。',
 
   // Admin Ads & Advertisers
   'admin.navAdvertisers': '廣告商',

@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
  * RetryInterceptor — lightweight, targeted retry for transient server errors.
  *
  * Design decisions:
- * - Only intercepts requests to our own backend (cycleuni). Cross-origin
+ * - Only intercepts requests to our own backend (unibooks). Cross-origin
  *   requests (e.g. CFEdgeChat, Google sign-in) are left untouched.
  * - Retries ONLY on transient errors: HTTP 5xx (server fault, likely cold
  *   start timeout from Vercel Lambda), 429 with retry-after, or status 0

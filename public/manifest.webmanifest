@@ -1,6 +1,6 @@
 {
-  "name": "CycleUni 易校網",
-  "short_name": "CycleUni",
+  "name": "UniBooks",
+  "short_name": "UniBooks",
   "description": "二手書也有搜尋引擎。",
   "display": "standalone",
   "scope": "/",

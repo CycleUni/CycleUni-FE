@@ -181,7 +181,7 @@ export class AdminChatReportsListComponent implements OnInit {
     this.loadingMessages = true;
     this.adminService.getChatReportToken(reportId).subscribe({
       next: ({ token, edge_chat_url, room_id }) => {
-        const url = `${edge_chat_url}/api/cycleuni/${room_id}/messages`;
+        const url = `${edge_chat_url}/api/unibooks/${room_id}/messages`;
         this.http.get<any[]>(url, { headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' } }).subscribe({
           next: (msgs) => {
             this.messages = msgs;

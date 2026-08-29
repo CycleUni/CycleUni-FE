@@ -37,7 +37,7 @@ if (process.env.NG_APP_ALLOWED_HOSTS) {
   try {
     let angularJson = JSON.parse(fs.readFileSync(angularJsonPath, 'utf8'));
     const hosts = process.env.NG_APP_ALLOWED_HOSTS.split(',').map(s => s.trim());
-    const buildOptions = angularJson.projects['cycleuni-fe'].architect.build.options;
+    const buildOptions = angularJson.projects['unibooks-fe'].architect.build.options;
     if (buildOptions.security) {
       buildOptions.security.allowedHosts = hosts;
       fs.writeFileSync(angularJsonPath, JSON.stringify(angularJson, null, 2), 'utf8');

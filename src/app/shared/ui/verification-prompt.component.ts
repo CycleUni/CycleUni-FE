@@ -94,7 +94,7 @@ import { RegionService } from '../../core/region.service';
 export class UiVerificationPrompt {
   protected regionService = inject(RegionService);
 
-  @Input() storageKey = 'cycleuni.verification_prompt.dismissed';
+  @Input() storageKey = 'unibooks.verification_prompt.dismissed';
   @Input() title = '';
   @Input() message = '';
   @Output() onDismiss = new EventEmitter<void>();

@@ -120,7 +120,7 @@ export class MessageService {
   // by the caller.
   markConversationReadCF(roomId: string, token: string, edgeChatUrl: string, userId: string): Observable<void> {
     return this.http.post<void>(
-      `${edgeChatUrl}/api/cycleuni/${roomId}/read`,
+      `${edgeChatUrl}/api/unibooks/${roomId}/read`,
       {},
       { headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }, params: { userId } }
     );
@@ -186,7 +186,7 @@ export class MessageService {
   // Django URLs) never sees them, and without this the SW would intercept
   // and mishandle the cross-origin request itself.
   getEdgeMessages(roomId: string, token: string, edgeChatUrl: string): Observable<EdgeChatMessage[]> {
-    return this.http.get<EdgeChatMessage[]>(`${edgeChatUrl}/api/cycleuni/${roomId}/messages`, {
+    return this.http.get<EdgeChatMessage[]>(`${edgeChatUrl}/api/unibooks/${roomId}/messages`, {
       headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }
     });
   }
@@ -213,7 +213,7 @@ export class MessageService {
       params = params.set('before', String(before));
     }
     return this.http.get<{ messages: EdgeChatMessage[]; has_more: boolean } | EdgeChatMessage[]>(
-      `${edgeChatUrl}/api/cycleuni/${roomId}/messages`,
+      `${edgeChatUrl}/api/unibooks/${roomId}/messages`,
       { headers: { Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true' }, params }
     ).pipe(
       // A worker predating the envelope ignores `paginated` and still returns
@@ -242,7 +242,7 @@ export class MessageService {
     // The WebSocket API has no way to set a custom Authorization header, so
     // the token travels as a subprotocol instead of a URL query param —
     // still browser-native, but it doesn't end up in the connect URL.
-    const wsUrl = edgeChatUrl.replace(/^http/, 'ws') + `/ws/cycleuni/${roomId}`;
+    const wsUrl = edgeChatUrl.replace(/^http/, 'ws') + `/ws/unibooks/${roomId}`;
 
     // Captured locally and checked (`this.ws !== ws`) at the top of every
     // handler below. Per-room messages carry no room_id on the wire — the

@@ -138,7 +138,7 @@ export const en: Record<string, string> = {
   'auth.login': 'Log in',
   'auth.register': 'Sign up',
   'auth.studentLogin': 'Login',
-  'auth.welcomeBack': 'Welcome back to CycleUni.',
+  'auth.welcomeBack': 'Welcome back to UniBooks.',
   'auth.loginRequiredHint': 'Please log in to continue.',
   'auth.emailLabel': 'Email',
   'auth.passwordLabel': 'Password',
@@ -149,7 +149,7 @@ export const en: Record<string, string> = {
   'auth.and': ' and ',
   'auth.period': '.',
   'auth.registerTitle': 'Create an account',
-  'auth.registerHint': 'Join CycleUni and pass knowledge on at the lowest cost.',
+  'auth.registerHint': 'Join UniBooks and pass knowledge on at the lowest cost.',
   'auth.lastNameLabel': 'Last Name (姓氏)',
   'auth.lastNamePlaceholder': 'e.g. Wang',
   'auth.firstNameLabel': 'First Name (名字)',
@@ -324,7 +324,7 @@ export const en: Record<string, string> = {
   'msg.meetupAcceptBody': 'Seller accepted the meetup invitation. Please coordinate time and location in chat.',
   'msg.meetupDeclineBody': 'Seller declined the meetup invitation. Order cancelled.',
   'msg.meetupCancelBody': 'Buyer cancelled the meetup invitation. Order cancelled.',
-  'msg.meetupCompleteBody': 'Meetup completed. Thank you for using CycleUni!',
+  'msg.meetupCompleteBody': 'Meetup completed. Thank you for using UniBooks!',
   'msg.meetupActionAccept': 'Accept Meetup',
   'msg.meetupActionDecline': 'Decline',
   'msg.meetupActionCancel': 'Cancel Request',
@@ -345,7 +345,7 @@ export const en: Record<string, string> = {
   'sell.notLoggedInTitle': 'Not Logged In',
   'sell.notLoggedInDesc': 'You must be logged in to sell books.',
   'sell.goLogin': 'Go to Login',
-  'sell.unverifiedDesc': 'You must verify your university email before you can sell books on CycleUni.',
+  'sell.unverifiedDesc': 'You must verify your university email before you can sell books on UniBooks.',
   'sell.goVerify': 'Go to Account Settings to Verify',
   'sell.step1': '1. Search Book',
   'sell.step2': '2. Condition & Photos',
@@ -472,7 +472,7 @@ export const en: Record<string, string> = {
   // Order notifications
   'order.notify.meetup_requested': 'Buyer placed a meetup order. Waiting for seller confirmation.',
   'order.notify.seller_approved': 'Seller has accepted the meetup, order status updated to processing',
-  'order.notify.delivered': 'Meetup completed. Thank you for using CycleUni!',
+  'order.notify.delivered': 'Meetup completed. Thank you for using UniBooks!',
   'order.notify.cancelled_by_buyer': 'Buyer cancelled the order.',
   'order.notify.cancelled_by_seller': 'Seller cancelled the order.',
   'order.notify.seller_rejected': 'Seller rejected the meetup. Order cancelled.',
@@ -532,7 +532,7 @@ export const en: Record<string, string> = {
   'seller.verifiedBadge': 'Verified school email',
   'seller.noReviews': 'No reviews yet',
   'seller.noShowCount': 'No-shows: {n}',
-  'seller.pageTitle': "{name}'s Listings | CycleUni",
+  'seller.pageTitle': "{name}'s Listings | UniBooks",
 
   // Moderation / Report
   'moderation.reportButton': 'Report',
@@ -694,7 +694,7 @@ export const en: Record<string, string> = {
   'verify.submit': 'Submit',
   'verify.successTitle': 'Verified!',
   'verify.successBodyRegister': 'Your account is now active and you\'re logged in.',
-  'verify.successBodyEdu': 'Your {suffix} email is now verified — you have full access to CycleUni.',
+  'verify.successBodyEdu': 'Your {suffix} email is now verified — you have full access to UniBooks.',
   'verify.redirecting': 'Redirecting you shortly...',
   'verify.goHome': 'Go to homepage',
   'verify.goToLogin': 'Go to login',
@@ -726,8 +726,8 @@ export const en: Record<string, string> = {
   'notfound.backHome': 'Back to Home',
 
   // SEO
-  'seo.title': 'CycleUni',
-  'seo.description': 'CycleUni is a second-hand book and item trading platform designed for university students, making campus resource recycling simple.',
+  'seo.title': 'UniBooks',
+  'seo.description': 'UniBooks is a second-hand book and item trading platform designed for university students, making campus resource recycling simple.',
 
   // Admin Ads & Advertisers
   'admin.navAdvertisers': 'Advertisers',

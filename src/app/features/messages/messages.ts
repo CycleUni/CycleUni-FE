@@ -102,7 +102,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
   private imeJustEnded = false;
 
   private readonly MAX_DRAFT_LENGTH = 2000;
-  private readonly DRAFT_STORAGE_PREFIX = 'cycleuni.chat.draft.';
+  private readonly DRAFT_STORAGE_PREFIX = 'unibooks.chat.draft.';
 
   constructor(private route: ActivatedRoute) { }
 

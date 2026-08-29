@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "cycleuni-fe": {
+    "unibooks-fe": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -104,10 +104,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "cycleuni-fe:build:production"
+              "buildTarget": "unibooks-fe:build:production"
             },
             "development": {
-              "buildTarget": "cycleuni-fe:build:development"
+              "buildTarget": "unibooks-fe:build:development"
             }
           },
           "defaultConfiguration": "development"

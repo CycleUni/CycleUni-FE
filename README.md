@@ -1,4 +1,4 @@
-# CycleUni 易校網 — 前端（CycleUni-FE）
+# UniBooks — 前端（UniBooks-FE）
 
 台灣大專院校二手教科書搜尋與媒合平台之前端。
 
@@ -40,7 +40,7 @@ npm start        # proxy.conf.json 會把 /api/cover 轉發到 :8788
 站內樣式的預設封面（`<ui-book-cover>` 的 placeholder）。正式部署到
 Cloudflare Pages 時 Function 由平台自動執行，不需要這一步。
 
-詳細架構見 `docs/frontend-ssd.md`（位於上層 CycleUni 工作根目錄）。
+詳細架構見 `docs/frontend-ssd.md`（位於上層 UniBooks 工作根目錄）。
 
 ---
 
@@ -121,9 +121,9 @@ npm run e2e           # Playwright
 
 ### 7️⃣ 部署流程
 
-1. **建置** `npm run build` → 產生 `dist/cycleuni-fe/browser/`
+1. **建置** `npm run build` → 產生 `dist/unibooks-fe/browser/`
 2. **部署**
-   - **Cloudflare Pages**：上傳 `dist/cycleuni-fe/browser/` 作為靜態資產
+   - **Cloudflare Pages**：上傳 `dist/unibooks-fe/browser/` 作為靜態資產
    - **環境變數**：在 Cloudflare Dashboard 設定 `API_URL`（指向後端 API）與 `APP_ENV=production`
 3. **安全設定**：`angular.json` production 中 `security.allowedHosts` 必須空白，避免跨域 400 錯誤。
 
@@ -131,7 +131,7 @@ npm run e2e           # Playwright
 
 ## 🌐 PWA 支援 (Progressive Web App)
 
-CycleUni-FE 支援 PWA，提供離線使用、安裝到桌面、推播通知等原生 App 體驗。
+UniBooks-FE 支援 PWA，提供離線使用、安裝到桌面、推播通知等原生 App 體驗。
 
 ### PWA 架構
 
@@ -154,7 +154,7 @@ CycleUni-FE 支援 PWA，提供離線使用、安裝到桌面、推播通知等�
     { "name": "icons", "installMode": "prefetch", "resources": { "files": ["/icons/*.png"] }}
   ],
   "dataGroups": [
-    { "name": "api", "urls": ["/api/**", "https://api.cycleuni.com/**"], "cacheConfig": { "strategy": "networkFirst", "maxSize": 50, "maxAge": "1h", "timeout": "10s" }}
+    { "name": "api", "urls": ["/api/**", "https://api.unibooks.com/**"], "cacheConfig": { "strategy": "networkFirst", "maxSize": 50, "maxAge": "1h", "timeout": "10s" }}
   ]
 }
 ```
@@ -179,7 +179,7 @@ provideServiceWorker('ngsw-worker.js', {
 ### 建置與驗證
 
 ```bash
-npm run build          # 正式建置，產出 dist/cycleuni-fe/browser/ngsw-worker.js 等
+npm run build          # 正式建置，產出 dist/unibooks-fe/browser/ngsw-worker.js 等
 # 部署後用 Lighthouse PWA audit 驗證
 ```
 
@@ -194,4 +194,4 @@ npm run build          # 正式建置，產出 dist/cycleuni-fe/browser/ngsw-wor
 
 ---
 
-以上說明提供了 **功能分層、路由、API、UI、測試、部署與 PWA** 的完整藍圖，協助新進開發者快速掌握 CycleUni‑FE 的架構與開發流程。
+以上說明提供了 **功能分層、路由、API、UI、測試、部署與 PWA** 的完整藍圖，協助新進開發者快速掌握 UniBooks‑FE 的架構與開發流程。
