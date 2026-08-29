@@ -13,8 +13,8 @@ import { TPipe } from '../../core/i18n.service';
         <div class="success-box">
           <div class="icon">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="30" stroke="#22c55e" stroke-width="4"/>
-              <path d="M20 32 L28 40 L44 24" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <circle cx="32" cy="32" r="30" stroke="var(--success)" stroke-width="4"/>
+              <path d="M20 32 L28 40 L44 24" stroke="var(--success)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             </svg>
           </div>
           <h2>{{ 'checkout.successTitle' | t }}</h2>

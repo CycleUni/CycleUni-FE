@@ -6,6 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { AccountService, ChatReportItem, ListingReportItem } from '../../core/services/account.service';
 import { TPipe } from '../../core/i18n.service';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiEmpty } from '../../shared/ui/empty.component';
 import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
 
 export interface UserReportItem {
@@ -28,7 +29,7 @@ export interface UserReportItem {
 @Component({
   selector: 'app-account-reports',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiPagination, DateTimeFormatPipe],
+  imports: [CommonModule, RouterModule, TPipe, UiPagination, UiEmpty, DateTimeFormatPipe],
   template: `
     <div class="section-head-row">
       <h2 class="section-heading">{{ 'acct.tabReports' | t }}</h2>
@@ -51,9 +52,7 @@ export interface UserReportItem {
     </div>
 
     <div *ngIf="!isLoading">
-      <div *ngIf="reports.length === 0" class="empty-state">
-        <p>{{ 'acct.noReports' | t }}</p>
-      </div>
+      <ui-empty *ngIf="reports.length === 0" [message]="'acct.noReports' | t"></ui-empty>
 
       <div class="reports-list" *ngIf="reports.length > 0">
         <div class="report-card" *ngFor="let report of reports">
@@ -129,7 +128,7 @@ export interface UserReportItem {
       border-bottom-color: var(--accent);
       font-weight: 700;
     }
-    .loading-state, .empty-state {
+    .loading-state {
       padding: 32px;
       text-align: center;
       color: var(--muted);
@@ -178,9 +177,9 @@ export interface UserReportItem {
       border: 1px solid var(--line);
     }
     .type-badge.chat {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
+      background: var(--info-bg);
+      color: var(--info-ink);
+      border: 1px solid var(--info-border);
     }
     .report-reason {
       font-weight: 600;
@@ -200,12 +199,12 @@ export interface UserReportItem {
       text-transform: capitalize;
     }
     .status-badge.open {
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--warn-bg);
+      color: var(--warn-ink);
     }
     .status-badge.actioned {
-      background: #d1fae5;
-      color: #065f46;
+      background: var(--success-light);
+      color: var(--success);
     }
     .status-badge.dismissed {
       background: var(--paper-warm);

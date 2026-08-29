@@ -202,7 +202,7 @@ import { AuthStore } from '../../core/auth.store';
         left: -280px;
         width: 280px;
         height: 100vh;
-        background: var(--paper, #fff);
+        background: var(--paper);
         z-index: 1000; /* above bottom-tab-bar */
         transition: transform 0.3s ease;
         padding: 0;

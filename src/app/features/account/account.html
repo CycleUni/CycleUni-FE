@@ -27,7 +27,7 @@
               {{ 'auth.noAccount' | t }}<a href="javascript:void(0)" (click)="authMode = 'register'">{{ 'auth.clickToRegister' | t }}</a>
             </div>
 
-            <div *ngIf="authMode === 'login' && authMessage" class="inline-msg" [class.error]="authIsError" style="margin-top: 16px; font-size: 14px;">
+            <div *ngIf="authMode === 'login' && authMessage" class="inline-msg" [class.error]="authIsError">
               {{ authMessage }}
             </div>
 
@@ -75,7 +75,7 @@
               {{ 'auth.hasAccount' | t }}<a href="javascript:void(0)" (click)="authMode = 'login'">{{ 'auth.backToLogin' | t }}</a>
             </div>
 
-            <div *ngIf="authMode === 'register' && authMessage" class="inline-msg" [class.error]="authIsError" style="margin-top: 16px; font-size: 14px;">
+            <div *ngIf="authMode === 'register' && authMessage" class="inline-msg" [class.error]="authIsError">
               {{ authMessage }}
             </div>
 

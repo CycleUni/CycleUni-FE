@@ -75,8 +75,6 @@ import { parseAdminError } from '../../core/admin-error.util';
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
-    .inline-msg { margin: 12px 0; font-size: 14px; }
-    .inline-msg.error { color: var(--danger); }
   `]
 })
 export class AdminCurrenciesListComponent implements OnInit {

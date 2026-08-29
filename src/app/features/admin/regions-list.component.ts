@@ -112,8 +112,6 @@ import { Lang } from '../../core/i18n';
     .text-hint { font-size: 13px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px; }
     .translation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; width: 60px; text-align: center; }
-    .inline-msg { margin: 12px 0; font-size: 14px; }
-    .inline-msg.error { color: var(--danger); }
   `]
 })
 export class AdminRegionsListComponent implements OnInit {

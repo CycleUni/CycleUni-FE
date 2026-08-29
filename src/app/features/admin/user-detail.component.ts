@@ -109,12 +109,6 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
       font-size: 14px;
       cursor: pointer;
     }
-    .inline-msg {
-      margin: 12px 0;
-      font-size: 14px;
-    }
-    .inline-msg.error { color: var(--danger); }
-    .inline-msg.ok { color: var(--success); }
   `]
 })
 export class AdminUserDetailComponent implements OnInit {

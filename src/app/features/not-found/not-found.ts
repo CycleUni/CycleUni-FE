@@ -35,19 +35,19 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       font-weight: 800;
       line-height: 1;
       margin: 0;
-      color: var(--ink, #1a1a1a);
+      color: var(--ink);
       font-family: 'Noto Serif TC', serif;
     }
     .error-title {
       font-size: 32px;
       font-weight: 700;
-      color: var(--ink, #1a1a1a);
+      color: var(--ink);
       margin: 16px 0;
       font-family: 'Noto Serif TC', serif;
     }
     .error-desc {
       font-size: 16px;
-      color: var(--muted, #666);
+      color: var(--muted);
       margin-bottom: 32px;
       line-height: 1.5;
     }

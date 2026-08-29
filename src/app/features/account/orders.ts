@@ -6,6 +6,7 @@ import { AuthStore } from '../../core/auth.store';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReviewModalComponent } from './review-modal.component';
@@ -19,7 +20,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, PricePipe, UiSearchBarComponent],
+  imports: [CommonModule, RouterModule, TPipe, UiButton, UiEmpty, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, PricePipe, UiSearchBarComponent],
   template: `
     <h2 class="section-heading">{{ 'acct.myOrders' | t }}</h2>
 
@@ -39,7 +40,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 
       <div *ngIf="!isLoading">
         <div *ngIf="activeTab === 'buying'">
-          <div *ngIf="filteredBoughtOrders.length === 0" class="empty-state">{{ 'acct.noOrders' | t }}</div>
+          <ui-empty *ngIf="filteredBoughtOrders.length === 0" [message]="'acct.noOrders' | t"></ui-empty>
           <div class="order-card" *ngFor="let order of filteredBoughtOrders" [id]="'order-' + order.id">
             <div *ngIf="hasExclusiveConflict(order)" class="exclusive-conflict">
               {{ 'order.exclusiveConflict' | t }}
@@ -71,7 +72,7 @@ import { RegionLinkService } from '../../core/region-link.service';
         </div>
 
         <div *ngIf="activeTab === 'selling'">
-          <div *ngIf="filteredSoldOrders.length === 0" class="empty-state">{{ 'acct.noSales' | t }}</div>
+          <ui-empty *ngIf="filteredSoldOrders.length === 0" [message]="'acct.noSales' | t"></ui-empty>
           <div class="order-card" *ngFor="let order of filteredSoldOrders" [id]="'order-' + order.id">
             <div class="order-header">
               <span class="order-id">#{{ order.id }}</span>

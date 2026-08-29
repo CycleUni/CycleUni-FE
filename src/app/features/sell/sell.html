@@ -42,7 +42,7 @@
           </div>
 
           <div id="reader" [hidden]="!isScanning" style="margin-top: 16px; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);"></div>
-          <div *ngIf="cameraError" class="inline-msg error" style="margin-top: 8px; font-size: 14px;">{{ cameraError }}</div>
+          <div *ngIf="cameraError" class="inline-msg error">{{ cameraError }}</div>
           <!-- Search Results List -->
           <div *ngIf="searchResults.length > 0 && !bookPreview" class="results-container">
             <h4 class="select-hint">{{ 'sell.selectBook' | t }}</h4>
@@ -91,7 +91,7 @@
             </div>
           </div>
 
-          <div *ngIf="apiError && step === 1" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; padding: 12px; background: #f8d7da; color: #842029; border-radius: 4px; font-size: 14px;">
+          <div *ngIf="apiError && step === 1" class="inline-msg error">
             {{ apiError }}
           </div>
 
@@ -134,7 +134,7 @@
                 <input #fileInput type="file" accept="image/*" style="display: none" (change)="onFileSelected($event)" [disabled]="isUploading">
               </div>
             </div>
-            <div *ngIf="uploadError" class="inline-msg error" style="margin-top: 8px; font-size: 14px;">
+            <div *ngIf="uploadError" class="inline-msg error">
               {{ uploadError }}
             </div>
           </div>
@@ -160,7 +160,7 @@
 
           
 
-          <div *ngIf="apiError && step === 3" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; padding: 12px; background: #f8d7da; color: #842029; border-radius: 4px; font-size: 14px;">
+          <div *ngIf="apiError && step === 3" class="inline-msg error">
             {{ apiError }}
           </div>
 

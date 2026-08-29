@@ -145,7 +145,7 @@ import { isUserVerifiedIn } from '../../core/verification';
     }
 
     .verified-badge {
-      background: #34c759;
+      background: var(--success);
       color: white;
       border-radius: 50%;
       width: 16px;

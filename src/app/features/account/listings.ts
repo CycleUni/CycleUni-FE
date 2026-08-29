@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiListingRow } from '../../shared/ui/listing-row.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
@@ -20,7 +21,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-account-listings',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiInput, UiListingRow, UiDropdown, UiPagination, UiSearchBarComponent, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiEmpty, UiInput, UiListingRow, UiDropdown, UiPagination, UiSearchBarComponent, TPipe],
   template: `
     <div class="section-head-row">
       <h2 class="section-heading">{{ 'acct.tabListings' | t }}</h2>
@@ -50,9 +51,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       ></ui-listing-row>
     </div>
     
-    <div class="empty-state" *ngIf="myListings.length === 0">
-      <p>{{ 'acct.noListings' | t }}</p>
-    </div>
+    <ui-empty *ngIf="myListings.length === 0" [message]="'acct.noListings' | t"></ui-empty>
     
     <ui-pagination *ngIf="totalListings > 20" [total]="totalListings" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
 

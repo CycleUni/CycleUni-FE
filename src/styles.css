@@ -72,6 +72,12 @@
   --danger-light: #FBEAE8;
   --success:      #2E7D57;
   --success-light: #EBF5F0;
+  --info-bg:      #EFF6FF;
+  --info-ink:     #1D4ED8;
+  --info-border:  #BFDBFE;
+  --special-bg:   #F3E8FF;
+  --special-ink:  #7E22CE;
+  --star:         #F59E0B;
 
   /* Spacing scale (8px base). Use these instead of ad hoc px values for
      section/card padding and gaps so vertical rhythm reads as one system
@@ -148,6 +154,24 @@
     --danger-light: #2E1C1A;
     --success:      #5FB08C;
     --success-light: #1E2D26;
+  --info-bg:      #172554;
+  --info-ink:     #93C5FD;
+  --info-border:  #1E3A8A;
+    --special-bg:   #3B0764;
+    --special-ink:  #D8B4FE;
+    --star:         #FBBF24;
+  --special-bg:   #F3E8FF;
+  --special-ink:  #7E22CE;
+  --star:         #F59E0B;
+    --info-bg:      #172554;
+    --info-ink:     #93C5FD;
+    --info-border:  #1E3A8A;
+    --special-bg:   #3B0764;
+    --special-ink:  #D8B4FE;
+    --star:         #FBBF24;
+  --special-bg:   #F3E8FF;
+  --special-ink:  #7E22CE;
+  --star:         #F59E0B;
 
     --btn-primary-bg:       #2F7A5C;
     --btn-primary-ink:      #F2F7F4;
@@ -186,6 +210,15 @@
   --danger-light: #2E1C1A;
   --success:      #5FB08C;
   --success-light: #1E2D26;
+  --info-bg:      #172554;
+  --info-ink:     #93C5FD;
+  --info-border:  #1E3A8A;
+    --special-bg:   #3B0764;
+    --special-ink:  #D8B4FE;
+    --star:         #FBBF24;
+  --special-bg:   #F3E8FF;
+  --special-ink:  #7E22CE;
+  --star:         #F59E0B;
 
   --btn-primary-bg:       #2F7A5C;
   --btn-primary-ink:      #F2F7F4;
@@ -585,7 +618,7 @@ body {
 .admin-btn-primary { background: var(--accent); color: var(--paper); }
 .admin-btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
 .admin-btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-.admin-btn-danger { background: transparent; color: #dc2626; border: 1px solid #dc2626; }
+.admin-btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
 .admin-btn-sm { padding: 4px 8px; font-size: 12px; }
 
 /* Unified Modal Layout (Shared by admin ads and account) */
@@ -596,23 +629,58 @@ body {
 .app-modal-actions { padding: 0 24px 24px; margin-top: 0 !important; flex-shrink: 0; display: flex; justify-content: flex-end; gap: 12px; }
 
 .admin-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-.admin-badge-success { background: rgba(22,163,74,0.12); color: #16a34a; }
-.admin-badge-error { background: rgba(220,38,38,0.12); color: #dc2626; }
+.admin-badge-success { background: var(--success-light); color: var(--success); }
+.admin-badge-error { background: var(--danger-light); color: var(--danger); }
 
 .admin-form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; background: var(--paper); color: var(--ink); }
 
 .admin-status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: var(--paper-warm); color: var(--muted); }
-.admin-status-badge.active, .admin-status-badge.ok { background: #e0f2fe; color: #0284c7; }
+.admin-status-badge.active, .admin-status-badge.ok { background: var(--info-bg); color: var(--info-ink); }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .admin-status-badge.active,
   :root:not([data-theme="light"]) .admin-status-badge.ok {
-    background: #0c4a6e;
-    color: #38bdf8;
+    background: var(--info-border);
+  --special-bg:   #F3E8FF;
+  --special-ink:  #7E22CE;
+  --star:         #F59E0B;
+    color: var(--info-ink);
   }
 }
 :root[data-theme="dark"] .admin-status-badge.active,
 :root[data-theme="dark"] .admin-status-badge.ok {
-  background: #0c4a6e;
-  color: #38bdf8;
+  background: var(--info-border);
+  --special-bg:   #F3E8FF;
+  --special-ink:  #7E22CE;
+  --star:         #F59E0B;
+  color: var(--info-ink);
+}
+
+/*
+ * Shared form group and inline messages
+ */
+.form-group {
+  margin-bottom: var(--space-4, 16px);
+}
+.form-group label {
+  display: block;
+  margin-bottom: var(--space-2, 8px);
+  font-size: var(--text-sm, 14px);
+  font-weight: 500;
+}
+.inline-msg {
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  border-radius: var(--radius-sm, 4px);
+  margin: var(--space-3, 12px) 0;
+  font-size: var(--text-sm, 14px);
+  background-color: var(--success-light);
+  color: var(--success);
+}
+.inline-msg.error {
+  background-color: var(--danger-light);
+  color: var(--danger);
+}
+.inline-msg.ok {
+  background-color: var(--success-light);
+  color: var(--success);
 }

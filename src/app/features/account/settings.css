@@ -29,16 +29,6 @@
       font-weight: 500;
       margin-bottom: 8px;
     }
-    .inline-msg {
-      padding: 8px;
-      border-radius: 4px;
-      background-color: var(--success-light);
-      color: var(--success);
-    }
-    .inline-msg.error {
-      background-color: var(--danger-light);
-      color: var(--danger);
-    }
 
 .auto-verify-box {
   max-width: 400px;

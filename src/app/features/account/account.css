@@ -276,16 +276,6 @@
       border: 1px dashed var(--line);
       background-color: var(--paper-warm);
     }
-    .inline-msg {
-      padding: 8px;
-      border-radius: 4px;
-      background-color: var(--success-light);
-      color: var(--success);
-    }
-    .inline-msg.error {
-      background-color: var(--danger-light);
-      color: var(--danger);
-    }
     .edit-modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;

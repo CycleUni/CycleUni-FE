@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiMeetupCard } from '../../shared/ui/meetup-card.component';
 import { UiImageLightbox } from '../../shared/ui/image-lightbox.component';
@@ -18,6 +19,7 @@ import { OrderService } from '../../core/services/order.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { Subscription } from 'rxjs';
 import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKEN } from './message-formatting.util';
@@ -28,7 +30,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe, UiVerificationPrompt],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, UiEmpty, UiButton, UiInput, UiMeetupCard, TPipe, UiImageLightbox, UiReportModal, UiRoleBadge, MessagesInboxList, PricePipe, UiVerificationPrompt],
   templateUrl: './messages.html',
   styleUrls: ['./messages.css']
 })
@@ -74,6 +76,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
   private authStore = inject(AuthStore);
   private orderService = inject(OrderService);
   readonly i18n = inject(I18nService);
+  private theme = inject(ThemeService);
   private router = inject(Router);
   private regionLink = inject(RegionLinkService);
   private cdr = inject(ChangeDetectorRef);
@@ -581,9 +584,21 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
 
   readonly expiredImageSrc = computed(() => {
     // Read the signal so this computed updates when language changes
-    this.i18n.lang(); 
+    this.i18n.lang();
+    // ...and again for the theme. A data: URI is its own document, so the
+    // custom properties on :root are not visible inside it and the SVG
+    // cannot say var(--paper-warm). The values have to be read out here and
+    // baked into the string, which means this has to recompute when the
+    // theme changes or the placeholder stays light grey on a dark page.
+    this.theme.resolved();
+    const css: CSSStyleDeclaration | null =
+      typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+    const token = (name: string, fallback: string) =>
+      (css?.getPropertyValue(name) ?? '').trim() || fallback;
+    const bg = token('--paper-warm', '#f3f4f6');
+    const ink = token('--muted', '#9ca3af');
     const fallbackMsg = this.i18n.t('msg.imageLoadFailed') || '';
-    const svg = `<svg width="200" height="150" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#f3f4f6" rx="8"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="#9ca3af" text-anchor="middle" dominant-baseline="middle">${fallbackMsg}</text></svg>`;
+    const svg = `<svg width="200" height="150" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="${bg}" rx="8"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="${ink}" text-anchor="middle" dominant-baseline="middle">${fallbackMsg}</text></svg>`;
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   });
 

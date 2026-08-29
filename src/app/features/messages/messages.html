@@ -172,17 +172,17 @@
           </div>
         </div>
 
-        <div class="chat-area empty-state" *ngIf="!activeChat && !loadingChats">
+        <ui-empty class="chat-area" [fullPage]="true" *ngIf="!activeChat && !loadingChats">
           <ui-verification-prompt
             *ngIf="showUnverifiedPrompt"
             (onDismiss)="showUnverifiedPrompt = false"
             style="text-align: left; margin-bottom: 16px; width: 100%; max-width: 500px;">
           </ui-verification-prompt>
           <p>{{ 'msg.selectPrompt' | t }}</p>
-        </div>
+        </ui-empty>
       </div>
 
-      <div class="empty-state empty-inbox full-page" *ngIf="!loadingChats && chats.length === 0">
+      <ui-empty class="empty-inbox" [fullPage]="true" *ngIf="!loadingChats && chats.length === 0">
         <ui-verification-prompt
           *ngIf="showUnverifiedPrompt"
           (onDismiss)="showUnverifiedPrompt = false"
@@ -194,4 +194,4 @@
         <h4>{{ 'msg.emptyInboxTitle' | t }}</h4>
         <p>{{ 'msg.emptyInboxDesc' | t }}</p>
         <button class="browse-btn" type="button" regionLink="/search">{{ 'msg.browseBooks' | t }}</button>
-      </div>
+      </ui-empty>

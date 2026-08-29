@@ -33,8 +33,8 @@ import { RegionLinkService } from '../../core/region-link.service';
           <ng-container *ngIf="status === 'success'">
             <div class="success-icon">
               <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="32" cy="32" r="30" stroke="#22c55e" stroke-width="4" fill="none"/>
-                <path d="M20 32 L28 46 L44 20" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <circle cx="32" cy="32" r="30" stroke="var(--success)" stroke-width="4" fill="none"/>
+                <path d="M20 32 L28 46 L44 20" stroke="var(--success)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
               </svg>
             </div>
             <h2>{{ 'verify.successTitle' | t }}</h2>

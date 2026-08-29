@@ -236,7 +236,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       grid-row: span 2;
     }
     .tile-actions-inner { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px; }
-    .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light, #fee2e2); border-radius:4px; }
+    .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light); border-radius:4px; }
 
     .error-box { padding: 32px 24px; text-align: center; border: 1px solid var(--flag); border-radius: var(--radius-sm); background-color: var(--warn-bg); }
     .error-box h3 { margin-top: 0; margin-bottom: 12px; color: var(--warn-ink); }

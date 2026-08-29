@@ -31,7 +31,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
         <ui-textarea [(ngModel)]="detail" [placeholder]="'moderation.detailPlaceholder' | t"></ui-textarea>
       </div>
 
-      <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
+      <div *ngIf="errorMsg" class="inline-msg error">
         {{ errorMsg }}
       </div>
 

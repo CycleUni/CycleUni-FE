@@ -27,7 +27,7 @@
           <ui-button (onClick)="onAutoVerify()" [disabled]="isLoading">
             {{ (isLoading ? 'acct.sending' : 'acct.autoVerifyBtn') | t }}
           </ui-button>
-          <div *ngIf="autoVerifyMessage" class="inline-msg" [class.error]="autoVerifyIsError" style="margin-top: 8px; font-size: 14px;">
+          <div *ngIf="autoVerifyMessage" class="inline-msg" [class.error]="autoVerifyIsError">
             {{ autoVerifyMessage }}
           </div>
         </div>
@@ -45,7 +45,7 @@
                     : ('acct.sendVerification' | t))
               }}
             </ui-button>
-            <div *ngIf="verifyMessage" class="inline-msg" [class.error]="verifyIsError" style="margin-top: 8px; font-size: 14px;">
+            <div *ngIf="verifyMessage" class="inline-msg" [class.error]="verifyIsError">
               {{ verifyMessage }}
             </div>
           </div>
@@ -68,7 +68,7 @@
               }}
             </ui-button>
           </div>
-          <div *ngIf="verifyMessage" class="inline-msg" [class.error]="verifyIsError" style="margin-top: 8px; font-size: 14px;">
+          <div *ngIf="verifyMessage" class="inline-msg" [class.error]="verifyIsError">
             {{ verifyMessage }}
           </div>
         </div>
@@ -99,7 +99,7 @@
       <ui-button style="margin-top: 16px;" (onClick)="onUpdateProfile()" [disabled]="isLoading">
         {{ (isLoading ? 'acct.saving' : 'acct.saveProfile') | t }}
       </ui-button>
-      <div *ngIf="settingsMessage" class="inline-msg" [class.error]="settingsIsError" style="margin-top: 8px; font-size: 14px;">
+      <div *ngIf="settingsMessage" class="inline-msg" [class.error]="settingsIsError">
         {{ settingsMessage }}
       </div>
     </div>
@@ -121,7 +121,7 @@
       <ui-button style="margin-top: 8px;" (onClick)="onChangePassword()" [disabled]="isLoading">
         {{ (hasPassword ? 'acct.changePasswordBtn' : 'acct.setPasswordBtn') | t }}
       </ui-button>
-      <div *ngIf="pwdMessage" class="inline-msg" [class.error]="pwdIsError" style="margin-top: 8px; font-size: 14px;">
+      <div *ngIf="pwdMessage" class="inline-msg" [class.error]="pwdIsError">
         {{ pwdMessage }}
       </div>
     </div>
@@ -138,7 +138,7 @@
       <ui-button variant="white" (onClick)="onRemovePassword()" [disabled]="isLoading">
         <span class="text-danger">{{ 'acct.removePasswordBtn' | t }}</span>
       </ui-button>
-      <div *ngIf="removePwdMessage" class="inline-msg" [class.error]="removePwdIsError" style="margin-top: 8px; font-size: 14px;">
+      <div *ngIf="removePwdMessage" class="inline-msg" [class.error]="removePwdIsError">
         {{ removePwdMessage }}
       </div>
     </div>

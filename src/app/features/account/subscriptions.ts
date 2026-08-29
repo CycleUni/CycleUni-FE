@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
@@ -11,7 +12,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-account-subscriptions',
   standalone: true,
-  imports: [CommonModule, UiButton, UiBookTile, TPipe],
+  imports: [CommonModule, UiButton, UiEmpty, UiBookTile, TPipe],
   template: `
     <div class="section-head-row">
       <h2 class="section-heading">{{ 'acct.tabSubs' | t }}</h2>
@@ -40,9 +41,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       </ui-book-tile>
     </div>
 
-    <div class="empty-state" *ngIf="mySubscriptions.length === 0">
-      <p>{{ 'acct.noSubs' | t }}</p>
-    </div>
+    <ui-empty *ngIf="mySubscriptions.length === 0" [message]="'acct.noSubs' | t"></ui-empty>
   `,
   styles: [`
     .section-head-row {

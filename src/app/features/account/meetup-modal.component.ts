@@ -92,7 +92,7 @@ import { UiInput } from '../../shared/ui/input.component';
       border-bottom: 1px solid var(--line);
     }
     .form-group {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     .field-group {
       margin-bottom: 16px;

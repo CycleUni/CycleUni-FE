@@ -339,4 +339,3 @@
     }
 
     .loading { padding: 40px; text-align: center; color: var(--muted); }
-    .empty-state { padding: 64px 24px; text-align: center; color: var(--muted); background: var(--paper); border-radius: 12px; border: 1px solid var(--line); }

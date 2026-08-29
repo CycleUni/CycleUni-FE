@@ -68,8 +68,8 @@ import { UiPagination } from '../../shared/ui/pagination.component';
   `,
   styles: [`
     .superuser-badge {
-      background: rgba(139,92,246,0.12);
-      color: #8b5cf6;
+      background: var(--special-bg);
+      color: var(--special-ink);
     }
     .btn-toggle {
       padding: 4px 10px;

@@ -52,8 +52,6 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
     .field { display: flex; flex-direction: column; gap: 2px; }
     .field label { font-size: 12px; color: var(--muted); }
     .field span { font-size: 14px; color: var(--ink); }
-    .inline-msg { margin: 12px 0; font-size: 14px; }
-    .inline-msg.ok { color: var(--success); }
   `]
 })
 export class AdminOrderDetailComponent implements OnInit {

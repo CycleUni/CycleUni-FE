@@ -14,6 +14,7 @@ import { SchoolStateService } from '../../core/services/school-state.service';
 import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { UiBookCover } from '../../shared/ui/book-cover.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 import { RegionLinkService } from '../../core/region-link.service';
 
@@ -21,7 +22,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, UiBookCover, UiPagination, UiVerificationPrompt],
+  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, UiBookCover, UiPagination, UiEmpty, UiVerificationPrompt],
   template: `
       <div class="container" *ngIf="book">
         <ui-back-button></ui-back-button>
@@ -90,9 +91,7 @@ import { RegionLinkService } from '../../core/region-link.service';
           
           <ui-pagination *ngIf="!isLoadingListings && totalListings > 20" [total]="totalListings" [pageSize]="20" [currentPage]="currentPage" (pageChange)="onPageChange($event)"></ui-pagination>
 
-          <div class="empty-state" *ngIf="!isLoadingListings && listings.length === 0">
-            <p>{{ 'book.emptyState' | t }}</p>
-          </div>
+          <ui-empty *ngIf="!isLoadingListings && listings.length === 0" [message]="'book.emptyState' | t"></ui-empty>
         </div>
       </div>
   `,
@@ -190,8 +189,8 @@ import { RegionLinkService } from '../../core/region-link.service';
     .no-local-alert {
       padding: 12px 16px;
       margin-bottom: 24px;
-      background-color: var(--danger-light, #fee2e2);
-      color: var(--danger, #ef4444);
+      background-color: var(--danger-light);
+      color: var(--danger);
       border-radius: 8px;
       font-size: 14px;
       text-align: center;
@@ -202,13 +201,6 @@ import { RegionLinkService } from '../../core/region-link.service';
       margin-bottom: 8px;
     }
 
-    .empty-state {
-      padding: 48px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      background-color: var(--paper-warm);
-    }
 
     @media (max-width: 768px) {
       .book-header {

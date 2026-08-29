@@ -37,7 +37,7 @@ import { OrderService } from '../../core/services/order.service';
 
           <ui-input [label]="'order.comment' | t" [(ngModel)]="comment" [placeholder]="'order.optional' | t"></ui-input>
 
-          <div *ngIf="errorMsg" class="inline-msg error" style="margin-top: 16px; margin-bottom: 16px; font-size: 14px;">
+          <div *ngIf="errorMsg" class="inline-msg error">
             {{ errorMsg }}
           </div>
         </div>
@@ -64,7 +64,7 @@ import { OrderService } from '../../core/services/order.service';
       transition: color 0.2s;
     }
     .star:hover, .star.active {
-      color: #FFD700;
+      color: var(--star);
     }
   `]
 })

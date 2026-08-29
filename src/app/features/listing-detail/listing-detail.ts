@@ -5,6 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ListingService } from '../../core/services/listing.service';
 import { BookService } from '../../core/services/book.service';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiErrorState } from '../../shared/ui/error-state.component';
 import { UiBackButton } from '../../shared/ui/back-button.component';
 import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
@@ -21,7 +22,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-listing-detail',
   standalone: true,
-  imports: [RegionLinkDirective, CommonModule, RouterModule, UiButton, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, UiButton, UiErrorState, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
   templateUrl: './listing-detail.html',
   styleUrls: ['./listing-detail.css']
 })

@@ -102,9 +102,6 @@ import { UiButton } from '../../shared/ui/button.component';
       font-size: 14px;
       cursor: pointer;
     }
-    .inline-msg { margin: 12px 0; font-size: 14px; }
-    .inline-msg.error { color: var(--danger); }
-    .inline-msg.ok { color: var(--success); }
   `]
 })
 export class AdminRegionDetailComponent implements OnInit {
