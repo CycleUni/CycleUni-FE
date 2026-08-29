@@ -40,7 +40,7 @@ import { Lang } from '../../core/i18n';
             <td>{{ item.currency }}</td>
             <td>{{ item.is_active ? ('admin.yes' | t) : ('admin.no' | t) }}</td>
             <td>
-              <a class="admin-btn admin-btn-sm admin-btn-outline" [routerLink]="[item.code]">{{ 'common.edit' | t }}</a>
+              <ui-button size="sm" variant="outline" [link]="[item.code]">{{ 'common.edit' | t }}</ui-button>
             </td>
           </tr>
         </tbody>

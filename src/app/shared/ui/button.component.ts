@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <a
       *ngIf="link"
-      [class]="'ui-btn ' + variant + ' ' + size"
+      [class]="'ui-btn ' + variant + ' ' + size + (hostClass ? ' ' + hostClass : '')"
       [regionLink]="link"
       [queryParams]="linkParams"
       (click)="onClick.emit($event)"
@@ -19,7 +19,7 @@ import { RouterModule } from '@angular/router';
     </a>
     <button
       *ngIf="!link"
-      [class]="'ui-btn ' + variant + ' ' + size"
+      [class]="'ui-btn ' + variant + ' ' + size + (hostClass ? ' ' + hostClass : '')"
       [disabled]="disabled"
       [attr.type]="type"
       (click)="onClick.emit($event)"
@@ -85,6 +85,13 @@ import { RouterModule } from '@angular/router';
       opacity: 0.5;
       cursor: not-allowed;
     }
+    /* Blocked, not disabled: the button must stay clickable so pressing it can
+       explain why the action is blocked. Dimming is the only signal;
+       \`disabled\` or \`pointer-events: none\` would swallow the click. */
+    .ui-btn.is-blocked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
     .primary {
       background-color: var(--btn-primary-bg);
       color: var(--btn-primary-ink);
@@ -111,6 +118,30 @@ import { RouterModule } from '@angular/router';
     .white:hover:not(:disabled) {
       background-color: var(--paper-warm);
     }
+    .danger {
+      background-color: transparent;
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+    .danger:hover:not(:disabled) {
+      background-color: var(--danger-light);
+    }
+    .outline {
+      background-color: transparent;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .outline:hover:not(:disabled) {
+      background-color: var(--paper-warm);
+    }
+    .secondary {
+      background-color: var(--paper-warm);
+      color: var(--ink);
+      border-color: var(--line);
+    }
+    .secondary:hover:not(:disabled) {
+      background-color: var(--line);
+    }
   `]
 })
 export class UiButton {
@@ -125,9 +156,10 @@ export class UiButton {
    */
   @Input() link?: any[] | string;
   @Input() linkParams?: Record<string, any>;
-  @Input() variant: 'primary' | 'ghost' | 'white' = 'primary';
+  @Input() variant: 'primary' | 'ghost' | 'white' | 'danger' | 'outline' | 'secondary' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() type: string = 'button';
   @Input() disabled: boolean = false;
+  @Input() hostClass: string = '';
   @Output() onClick = new EventEmitter<Event>();
 }

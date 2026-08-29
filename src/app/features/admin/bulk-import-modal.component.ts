@@ -1,3 +1,4 @@
+import { UiButton } from '../../shared/ui/button.component';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { UiTextarea } from '../../shared/ui/textarea.component';
   selector: 'app-bulk-import-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, UiTextarea, TPipe],
+  imports: [CommonModule, FormsModule, UiTextarea, TPipe, UiButton],
   template: `
     <div class="app-modal-overlay" *ngIf="show" (click)="close.emit()">
       <div class="app-modal import-modal" (click)="$event.stopPropagation()">
@@ -23,9 +24,9 @@ import { UiTextarea } from '../../shared/ui/textarea.component';
               <label>JSON URL (optional)</label>
               <div class="url-input-row">
                 <input type="text" class="input" [(ngModel)]="jsonUrl" placeholder="https://example.com/data.json">
-                <button type="button" class="admin-btn admin-btn-sm admin-btn-outline" (click)="fetchJson()" [disabled]="loading">
+                <ui-button size="sm" variant="outline" (onClick)="fetchJson()" [disabled]="loading">
                   {{ loading && loadingAction === 'fetch' ? 'Fetching...' : 'Fetch' }}
-                </button>
+                </ui-button>
               </div>
             </div>
             <div class="form-group">
@@ -81,13 +82,13 @@ import { UiTextarea } from '../../shared/ui/textarea.component';
         </div>
 
         <div class="app-modal-actions">
-          <button type="button" class="admin-btn admin-btn-secondary" (click)="close.emit()">{{ 'common.cancel' | t }}</button>
-          <button type="button" *ngIf="step === 'input'" class="admin-btn admin-btn-primary" (click)="preview()" [disabled]="loading">
+          <ui-button variant="secondary" (onClick)="close.emit()">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button variant="primary" *ngIf="step === 'input'" (onClick)="preview()" [disabled]="loading">
             {{ loading && loadingAction === 'preview' ? 'Previewing...' : 'Preview' }}
-          </button>
-          <button type="button" *ngIf="step === 'preview'" class="admin-btn admin-btn-primary" (click)="apply()" [disabled]="loading">
+          </ui-button>
+          <ui-button variant="primary" *ngIf="step === 'preview'" (onClick)="apply()" [disabled]="loading">
             {{ loading && loadingAction === 'apply' ? 'Applying...' : 'Apply Changes' }}
-          </button>
+          </ui-button>
         </div>
       </div>
     </div>

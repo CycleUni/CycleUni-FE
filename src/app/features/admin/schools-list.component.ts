@@ -1,3 +1,4 @@
+import { UiButton } from '../../shared/ui/button.component';
 import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -12,13 +13,13 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
 @Component({
   selector: 'app-admin-schools-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent, UiPagination],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent, UiPagination, UiButton],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navSchools' | t }}</h2>
       <div>
-        <button class="admin-btn admin-btn-outline" style="margin-right: 12px;" (click)="showImportModal = true">{{ 'admin.bulkImport' | t }}</button>
-        <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addSchool' | t }}</button>
+        <ui-button variant="outline" style="margin-right: 12px;" (onClick)="showImportModal = true">{{ 'admin.bulkImport' | t }}</ui-button>
+        <ui-button variant="primary" (onClick)="openCreateModal()">{{ 'admin.addSchool' | t }}</ui-button>
       </div>
     </div>
 
@@ -42,12 +43,8 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
             <td>{{ school.name }}</td>
             <td>{{ school.email_domain }}</td>
             <td>
-              <a class="admin-btn admin-btn-sm admin-btn-outline" [routerLink]="[school.id]">{{ 'common.edit' | t }}</a>
-              <button class="admin-btn admin-btn-sm admin-btn-danger"
-                      style="margin-left: 8px;"
-                      [class.is-blocked]="!!school.user_count"
-                      [attr.aria-disabled]="school.user_count ? 'true' : null"
-                      (click)="deleteSchool(school)">{{ 'common.delete' | t }}</button>
+              <ui-button size="sm" variant="outline" [link]="[school.id]">{{ 'common.edit' | t }}</ui-button>
+              <ui-button size="sm" variant="danger" (onClick)="deleteSchool(school)" style="margin-left: 8px;" [hostClass]="!!school.user_count ? 'is-blocked' : ''" [attr.aria-disabled]="school.user_count ? 'true' : null">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>
@@ -77,8 +74,8 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
           </div>
         </div>
         <div class="app-modal-actions">
-          <button class="admin-btn admin-btn-secondary" (click)="showCreateModal = false">{{ 'common.cancel' | t }}</button>
-          <button class="admin-btn admin-btn-primary" (click)="createSchool()">{{ 'admin.save' | t }}</button>
+          <ui-button variant="secondary" (onClick)="showCreateModal = false">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button variant="primary" (onClick)="createSchool()">{{ 'admin.save' | t }}</ui-button>
         </div>
       </div>
     </div>
@@ -96,13 +93,6 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
     .translation-row { display: flex; align-items: center; gap: 8px; }
     .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; }
-    /* Blocked, not disabled: the button must stay clickable so pressing it can
-       explain why the school cannot be deleted. Dimming is the only signal;
-       \`disabled\` or \`pointer-events: none\` would swallow the click. */
-    .admin-btn-danger.is-blocked {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
   `]
 })
 export class AdminSchoolsListComponent implements OnInit {

@@ -1,3 +1,4 @@
+import { UiButton } from '../../shared/ui/button.component';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,19 +14,19 @@ export interface TranslationField {
 @Component({
   selector: 'app-translation-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiTextarea, TPipe],
+  imports: [CommonModule, FormsModule, UiTextarea, TPipe, UiButton],
   template: `
     <div class="translation-item" *ngFor="let t of translationsList; let i = index">
       <div class="translation-header">
         <input type="text" class="input lang-input" [(ngModel)]="t.lang" (ngModelChange)="onChange()" placeholder="Language (e.g. en)">
-        <button class="admin-btn admin-btn-sm admin-btn-danger" (click)="removeTranslation(i)">{{ 'common.delete' | t }}</button>
+        <ui-button size="sm" variant="danger" (onClick)="removeTranslation(i)">{{ 'common.delete' | t }}</ui-button>
       </div>
       <div class="translation-row" *ngFor="let field of fields">
         <input *ngIf="field.type === 'text'" type="text" class="input" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t">
         <ui-textarea *ngIf="field.type === 'textarea'" [(ngModel)]="t.data[field.key]" (ngModelChange)="onChange()" [placeholder]="field.placeholder | t"></ui-textarea>
       </div>
     </div>
-    <button class="admin-btn admin-btn-sm admin-btn-outline mt-2" (click)="addTranslation()">+ Add Language</button>
+    <ui-button size="sm" variant="outline" (onClick)="addTranslation()">+ Add Language</ui-button>
   `,
   styles: [`
     .translation-item { background: var(--paper-warm); padding: 12px; border-radius: 6px; border: 1px solid var(--line); margin-bottom: 8px; }

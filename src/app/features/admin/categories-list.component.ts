@@ -1,3 +1,4 @@
+import { UiButton } from '../../shared/ui/button.component';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -16,14 +17,14 @@ import { RegionService } from '../../core/region.service';
 @Component({
   selector: 'app-admin-categories-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination, UiCheckbox, UiTextarea],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, BulkImportModalComponent, UiPagination, UiCheckbox, UiTextarea, UiButton],
   template: `
     <ng-container *ngIf="!showModal">
       <div class="header-actions">
         <h2>{{ 'admin.navCategories' | t }}</h2>
         <div>
-          <button class="admin-btn admin-btn-outline" style="margin-right: 12px;" (click)="showImportModal = true">{{ 'admin.bulkImport' | t }}</button>
-          <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addCollege' | t }}</button>
+          <ui-button variant="outline" style="margin-right: 12px;" (onClick)="showImportModal = true">{{ 'admin.bulkImport' | t }}</ui-button>
+          <ui-button variant="primary" (onClick)="openCreateModal()">{{ 'admin.addCollege' | t }}</ui-button>
         </div>
       </div>
 
@@ -54,8 +55,8 @@ import { RegionService } from '../../core/region.service';
                 <span class="admin-status-badge" [class.active]="cat.is_active">{{ (cat.is_active ? 'common.yes' : 'common.no') | t }}</span>
               </td>
               <td>
-                <button class="admin-btn admin-btn-sm admin-btn-outline" (click)="openEditModal(cat)">{{ 'common.edit' | t }}</button>
-                <button class="admin-btn admin-btn-sm admin-btn-danger" style="margin-left: 8px;" (click)="deleteCategory(cat.id)">{{ 'common.delete' | t }}</button>
+                <ui-button size="sm" variant="outline" (onClick)="openEditModal(cat)">{{ 'common.edit' | t }}</ui-button>
+                <ui-button size="sm" variant="danger" style="margin-left: 8px;" (onClick)="deleteCategory(cat.id)">{{ 'common.delete' | t }}</ui-button>
               </td>
             </tr>
             <tr *ngIf="categoriesData.results.length === 0">
@@ -72,7 +73,7 @@ import { RegionService } from '../../core/region.service';
       <div class="header-actions">
         <div>
           <h2>{{ editingId ? ('common.edit' | t) : ('common.create' | t) }}: {{ form.title || form.slug }}</h2>
-          <a class="admin-btn admin-btn-sm admin-btn-outline" (click)="showModal = false">‹ {{ 'admin.backToList' | t }}</a>
+          <ui-button size="sm" variant="outline" (onClick)="showModal = false">‹ {{ 'admin.backToList' | t }}</ui-button>
         </div>
       </div>
 
@@ -112,7 +113,7 @@ import { RegionService } from '../../core/region.service';
             </app-translation-editor>
           </div>
 
-          <button class="admin-btn admin-btn-primary" (click)="saveCategory()">{{ 'admin.save' | t }}</button>
+          <ui-button variant="primary" (onClick)="saveCategory()">{{ 'admin.save' | t }}</ui-button>
         </div>
       </div>
     </ng-container>

@@ -1,3 +1,4 @@
+import { UiButton } from '../../shared/ui/button.component';
 import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -13,12 +14,12 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 @Component({
   selector: 'app-admin-advertisers-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox, UiButton],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navAdvertisers' | t }}</h2>
       <div>
-        <button class="admin-btn admin-btn-primary" (click)="openCreateModal()">{{ 'admin.addAdvertiser' | t }}</button>
+        <ui-button variant="primary" (onClick)="openCreateModal()">{{ 'admin.addAdvertiser' | t }}</ui-button>
       </div>
     </div>
 
@@ -50,8 +51,8 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
               </span>
             </td>
             <td>
-              <button class="admin-btn admin-btn-sm admin-btn-outline" (click)="openEditModal(adv)">{{ 'common.edit' | t }}</button>
-              <button class="admin-btn admin-btn-sm admin-btn-outline" (click)="deleteAdvertiser(adv.id)" style="margin-left: 4px; color: var(--error); border-color: var(--error);">{{ 'common.delete' | t }}</button>
+              <ui-button size="sm" variant="outline" (onClick)="openEditModal(adv)">{{ 'common.edit' | t }}</ui-button>
+              <ui-button size="sm" variant="outline" (onClick)="deleteAdvertiser(adv.id)" style="margin-left: 4px; color: var(--error); border-color: var(--error);">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>
@@ -100,8 +101,8 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
         </div>
         
         <div class="app-modal-actions">
-          <button class="admin-btn admin-btn-outline" (click)="closeModal()">{{ 'common.cancel' | t }}</button>
-          <button class="admin-btn admin-btn-primary" (click)="save()">{{ 'common.save' | t }}</button>
+          <ui-button variant="outline" (onClick)="closeModal()">{{ 'common.cancel' | t }}</ui-button>
+          <ui-button variant="primary" (onClick)="save()">{{ 'common.save' | t }}</ui-button>
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { UiButton } from '../../shared/ui/button.component';
 import { RegionLinkDirective } from '../../core/region-link.directive';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -10,12 +11,12 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
 @Component({
   selector: 'app-admin-school-detail',
   standalone: true,
-  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, FormsModule, TPipe, TranslationEditorComponent, UiButton],
   template: `
     <div class="header-actions">
       <div>
         <h2>{{ 'common.edit' | t }}: {{ school?.name }}</h2>
-        <a regionLink=".." class="admin-btn admin-btn-sm admin-btn-outline">‹ {{ 'admin.backToList' | t }}</a>
+        <ui-button size="sm" variant="outline" regionLink="..">‹ {{ 'admin.backToList' | t }}</ui-button>
       </div>
     </div>
 
@@ -42,7 +43,7 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
           </app-translation-editor>
         </div>
 
-        <button class="admin-btn admin-btn-primary" (click)="saveSchool()">{{ 'admin.save' | t }}</button>
+        <ui-button variant="primary" (onClick)="saveSchool()">{{ 'admin.save' | t }}</ui-button>
       </div>
     </div>
   `,

@@ -614,12 +614,6 @@ body {
 .back-link:hover { color: var(--accent); }
 
 /* Admin shared styles from Work 2 and 3 */
-.admin-btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; }
-.admin-btn-primary { background: var(--accent); color: var(--paper); }
-.admin-btn-secondary { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
-.admin-btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-.admin-btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-.admin-btn-sm { padding: 4px 8px; font-size: 12px; }
 
 /* Unified Modal Layout (Shared by admin ads and account) */
 .app-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
