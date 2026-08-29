@@ -1,3 +1,3 @@
-name = "cycleuni-fe"
-pages_build_output_dir = "dist/cycleuni-fe/browser"
+name = "unibooks-fe"
+pages_build_output_dir = "dist/unibooks-fe/browser"
 compatibility_date = "2024-04-05"
