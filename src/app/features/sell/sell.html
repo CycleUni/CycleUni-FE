@@ -111,7 +111,7 @@
 
         <!-- Step 2 -->
         <div *ngIf="step === 2" class="step-content">
-          <ui-condition-picker [label]="'acct.conditionLabel' | t" [(value)]="condition" (valueChange)="onFormChange()" [options]="conditionOptions"></ui-condition-picker>
+          <ui-condition-picker [label]="'common.condition' | t" [(value)]="condition" (valueChange)="onFormChange()" [options]="conditionOptions"></ui-condition-picker>
           <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="category" (ngModelChange)="onFormChange()" [options]="categoryOptions"></ui-dropdown>
           <ui-input [label]="'sell.courseLabel' | t" [placeholder]="'sell.coursePlaceholder' | t" [(ngModel)]="course" (ngModelChange)="onFormChange()"></ui-input>
           <ui-input [label]="'sell.professorLabel' | t" [placeholder]="'sell.professorPlaceholder' | t" [(ngModel)]="professor" (ngModelChange)="onFormChange()"></ui-input>

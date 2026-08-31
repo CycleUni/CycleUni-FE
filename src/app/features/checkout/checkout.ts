@@ -55,7 +55,7 @@ import { RegionLinkService } from '../../core/region-link.service';
             <div *ngIf="errorKey || errorMsg" class="inline-msg error">
               {{ errorKey ? (errorKey | t) : errorMsg }}
               <div *ngIf="isNoChatError" style="margin-top: 16px;">
-                <ui-button variant="white" style="display: block; width: 100%;" (onClick)="contactSeller()">{{ 'checkout.contactSeller' | t }}</ui-button>
+                <ui-button variant="white" style="display: block; width: 100%;" (onClick)="contactSeller()">{{ 'book.contactSeller' | t }}</ui-button>
               </div>
             </div>
 
