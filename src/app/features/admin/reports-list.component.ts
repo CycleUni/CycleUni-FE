@@ -22,7 +22,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       <ui-dropdown [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="statusFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
-    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.loading' | t }}</div>
 
     <table class="admin-table" *ngIf="!loading">
       <thead>
@@ -47,6 +47,9 @@ import { UiPagination } from '../../shared/ui/pagination.component';
             <ui-button variant="ghost" (onClick)="action(report, 'dismissed')" [disabled]="actingId === report.id">{{ 'admin.reportActionDismiss' | t }}</ui-button>
           </td>
         </tr>
+        <!-- Stays noMatches unconditionally: statusOptions has no "all"
+             entry, so this table is always scoped to one status and an empty
+             result always means "none with this status", never "no reports". -->
         <tr *ngIf="reports.length === 0">
           <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>

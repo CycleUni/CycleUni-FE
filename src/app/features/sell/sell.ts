@@ -922,8 +922,8 @@ export class Sell implements OnInit, OnDestroy, HasUnsavedChanges {
     this.router.navigate(this.regionLink.path(['/']));
   }
 
-  goToAccount() {
-    this.router.navigate(this.regionLink.path(['/account']));
+  goToLogin() {
+    this.router.navigate(this.regionLink.path(['/login']));
   }
 
   goToAccountSettings() {

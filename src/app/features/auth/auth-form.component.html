@@ -1,0 +1,87 @@
+<div class="container">
+  <div class="auth-box surface-card">
+
+    <ng-container *ngIf="mode === 'login'">
+      <h2>{{ 'auth.studentLogin' | t }}</h2>
+      <p class="auth-hint">{{ 'auth.welcomeBack' | t }}</p>
+      <p class="auth-required-hint" *ngIf="returnUrl">{{ 'auth.loginRequiredHint' | t }}</p>
+
+      <div class="form-group">
+        <label>{{ 'auth.emailLabel' | t }}</label>
+        <ui-input placeholder="your.email@example.com" [(ngModel)]="email" (keyup.enter)="onLogin()" style="width: 100%;"></ui-input>
+      </div>
+
+      <div class="form-group">
+        <label>{{ 'auth.passwordLabel' | t }}</label>
+        <ui-input type="password" [placeholder]="'auth.passwordPlaceholder' | t" [(ngModel)]="password" (keyup.enter)="onLogin()" style="width: 100%;"></ui-input>
+        <a regionLink="/forgot-password" class="forgot-password-link">{{ 'auth.forgotPassword' | t }}</a>
+      </div>
+
+      <ui-button style="width: 100%; margin-top: 16px;" (onClick)="onLogin()" [disabled]="isLoading">
+        {{ (isLoading ? 'auth.loggingIn' : 'auth.login') | t }}
+      </ui-button>
+
+      <div id="google-btn" style="margin-top: 16px; display: flex; justify-content: center;"></div>
+
+      <div class="auth-toggle">
+        {{ 'auth.noAccount' | t }}<a regionLink="/register" [queryParams]="linkQueryParams">{{ 'auth.clickToRegister' | t }}</a>
+      </div>
+
+      <div *ngIf="authMessage" class="inline-msg" [class.error]="authIsError">
+        {{ authMessage }}
+      </div>
+
+      <div class="auth-note">
+        {{ 'auth.agreeLogin' | t }}<a href="javascript:void(0)">{{ 'footer.tos' | t }}</a>{{ 'auth.and' | t }}<a href="javascript:void(0)">{{ 'footer.privacy' | t }}</a>{{ 'auth.period' | t }}
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="mode === 'register'">
+      <h2>{{ 'auth.registerTitle' | t }}</h2>
+      <p class="auth-hint">{{ 'auth.registerHint' | t }}</p>
+
+      <div class="form-group" style="display: flex; gap: 16px;">
+        <div style="flex: 1;">
+          <label>{{ 'auth.lastNameLabel' | t }}</label>
+          <ui-input [placeholder]="'auth.lastNamePlaceholder' | t" [(ngModel)]="registerLastName" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+        </div>
+        <div style="flex: 1;">
+          <label>{{ 'auth.firstNameLabel' | t }}</label>
+          <ui-input [placeholder]="'auth.firstNamePlaceholder' | t" [(ngModel)]="registerFirstName" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+        </div>
+      </div>
+      <p class="field-hint" style="margin-bottom: 16px;">{{ 'auth.nameHint' | t }}</p>
+
+      <div class="form-group">
+        <label>{{ 'auth.registerEmailLabel' | t }}</label>
+        <ui-input placeholder="your.email@example.com" [(ngModel)]="registerEmail" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+      </div>
+
+      <div class="form-group">
+        <label>{{ 'auth.setPasswordLabel' | t }}</label>
+        <ui-input type="password" [placeholder]="'auth.passwordMin' | t" [(ngModel)]="registerPassword" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+      </div>
+
+      <div class="form-group">
+        <label>{{ 'auth.confirmPasswordLabel' | t }}</label>
+        <ui-input type="password" [placeholder]="'auth.confirmPlaceholder' | t" [(ngModel)]="registerConfirmPassword" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+      </div>
+
+      <ui-button style="width: 100%; margin-top: 16px;" (onClick)="onRegister()" [disabled]="isLoading">
+        {{ (isLoading ? 'auth.registering' : 'auth.register') | t }}
+      </ui-button>
+
+      <div class="auth-toggle">
+        {{ 'auth.hasAccount' | t }}<a regionLink="/login" [queryParams]="linkQueryParams">{{ 'auth.backToLogin' | t }}</a>
+      </div>
+
+      <div *ngIf="authMessage" class="inline-msg" [class.error]="authIsError">
+        {{ authMessage }}
+      </div>
+
+      <div class="auth-note">
+        {{ 'auth.agreeRegister' | t }}<a href="javascript:void(0)">{{ 'footer.tos' | t }}</a>{{ 'auth.and' | t }}<a href="javascript:void(0)">{{ 'footer.privacy' | t }}</a>{{ 'auth.period' | t }}
+      </div>
+    </ng-container>
+  </div>
+</div>

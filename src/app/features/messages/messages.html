@@ -30,18 +30,23 @@
             </div>
 
             <div class="listing-banner" *ngIf="activeChat.listing_title">
-              <div class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
+              <!-- A real <button>, not a <div (click)>: this is the only way
+                   back to the listing from a conversation, and as a div it was
+                   unreachable by keyboard and announced as nothing at all.
+                   Everything inside is phrasing content (span) because a
+                   button may not contain flow content. -->
+              <button type="button" class="listing-banner-left" (click)="goToListing(activeChat.listing_id)">
                 <img *ngIf="activeChat.listing_photo" [src]="activeChat.listing_photo" [attr.alt]="activeChat.listing_title || ('common.bookCover' | t)" class="listing-thumb">
-                <div class="placeholder-thumb" *ngIf="!activeChat.listing_photo"></div>
-                <div class="listing-details">
-                  <div class="listing-title">{{ activeChat.listing_title }}</div>
-                  <div class="listing-meta">
+                <span class="placeholder-thumb" *ngIf="!activeChat.listing_photo"></span>
+                <span class="listing-details">
+                  <span class="listing-title">{{ activeChat.listing_title }}</span>
+                  <span class="listing-meta">
                     <span class="price">{{ activeChat.listing_price | price }}</span>
                     <span class="condition badge">{{ ('cond.' + activeChat.listing_condition) | t }}</span>
                     <span class="course" *ngIf="activeChat.listing_course">{{ activeChat.listing_course }}</span>
-                  </div>
-                </div>
-              </div>
+                  </span>
+                </span>
+              </button>
 
               <div class="listing-banner-actions">
                 <ng-container *ngIf="activeChat.order_id">

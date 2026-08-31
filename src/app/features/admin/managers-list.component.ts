@@ -22,7 +22,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       <ui-dropdown [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
-    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.loading' | t }}</div>
 
     <div class="table-container">
 
@@ -58,7 +58,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
           </td>
         </tr>
         <tr *ngIf="users.length === 0">
-          <td colspan="5" class="empty-note">{{ 'common.noMatches' | t }}</td>
+          <td colspan="5" class="empty-note">{{ (hasFilters ? 'common.noMatches' : 'common.noData') | t }}</td>
         </tr>
       </tbody>
     </table>
@@ -77,7 +77,9 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       padding: 4px 10px;
       font-size: 13px;
       border-radius: 4px;
-      border: 1px solid var(--line);
+      /* --line-strong, not --line: a button's edge is an interactive
+         boundary, and --line is 1.48:1 — below WCAG 1.4.11's 3:1. */
+      border: 1px solid var(--line-strong);
       background: var(--paper);
       color: var(--ink);
       cursor: pointer;
@@ -120,6 +122,14 @@ export class AdminManagersListComponent implements OnInit {
   q = '';
   isActiveFilter = 'true';
   loading = true;
+
+  /** Whether the table the admin is looking at is narrowed by anything. An
+   *  empty result then means "nothing matched", which is a different fact
+   *  from "this table has no rows at all" — and only the second one should
+   *  read as an empty-table message. */
+  get hasFilters(): boolean {
+    return !!(this.q || this.isActiveFilter);
+  }
   isSuperuser = false;
 
   constructor() {

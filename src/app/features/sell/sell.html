@@ -5,7 +5,7 @@
         <div class="alert-box warning">
           <h3>{{ 'sell.notLoggedInTitle' | t }}</h3>
           <p>{{ 'sell.notLoggedInDesc' | t }}</p>
-          <ui-button style="margin-top: 16px;" (onClick)="goToAccount()">{{ 'sell.goLogin' | t }}</ui-button>
+          <ui-button style="margin-top: 16px;" (onClick)="goToLogin()">{{ 'sell.goLogin' | t }}</ui-button>
         </div>
       </div>
 
@@ -51,21 +51,27 @@
           <!-- Search Results List -->
           <div *ngIf="searchResults.length > 0 && !bookPreview" class="results-container">
             <h4 class="select-hint">{{ 'sell.selectBook' | t }}</h4>
-            <div class="book-match selectable" *ngFor="let result of searchResults" (click)="selectBook(result)">
-              <div class="cover">
+            <!-- A real button, not a div with a click handler. Picking the book
+                 is step one of listing one, so while this was a div the whole
+                 sell flow was closed to anyone working without a mouse. The
+                 children are spans rather than divs and headings because a
+                 button may only contain phrasing content — ui-book-cover
+                 already renders nothing but img and span. -->
+            <button type="button" class="book-match selectable" *ngFor="let result of searchResults" (click)="selectBook(result)">
+              <span class="cover">
                 <ui-book-cover
                   [coverUrl]="result.coverUrl"
                   [title]="result.title"
                   [author]="result.author || result.authors"
                   [isbn]="result.isbn"
                 ></ui-book-cover>
-              </div>
-              <div class="info" style="flex: 1;">
-                <h3 class="book-title-serif">{{ result.title }}</h3>
-                <p class="muted">{{ result.author || result.authors }}</p>
-                <p class="muted" style="font-size: 12px; margin-top: 4px;">ISBN: {{ result.isbn }}</p>
-              </div>
-            </div>
+              </span>
+              <span class="info">
+                <span class="book-title-serif result-title">{{ result.title }}</span>
+                <span class="muted">{{ result.author || result.authors }}</span>
+                <span class="muted result-isbn">ISBN: {{ result.isbn }}</span>
+              </span>
+            </button>
             <div class="actions split" style="margin-top: 16px;">
               <ui-button variant="ghost" (onClick)="enterManually()">{{ 'sell.enterManually' | t }}</ui-button>
             </div>

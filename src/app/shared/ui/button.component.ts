@@ -137,7 +137,9 @@ import { RouterModule } from '@angular/router';
     .secondary {
       background-color: var(--paper-warm);
       color: var(--ink);
-      border-color: var(--line);
+      /* --line-strong, not --line: a button's edge is an interactive
+         boundary, and --line is 1.48:1 — below WCAG 1.4.11's 3:1. */
+      border-color: var(--line-strong);
     }
     .secondary:hover:not(:disabled) {
       background-color: var(--line);

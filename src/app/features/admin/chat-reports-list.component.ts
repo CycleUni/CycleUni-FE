@@ -22,7 +22,7 @@ import { RegionService } from '../../core/region.service';
       <ui-dropdown [label]="'admin.colStatus' | t" [options]="statusOptions" [(ngModel)]="statusFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
-    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.loading' | t }}</div>
 
     <table class="admin-table admin-table-clickable" *ngIf="!loading">
       <thead>
@@ -68,6 +68,9 @@ import { RegionService } from '../../core/region.service';
             </td>
           </tr>
         </ng-container>
+        <!-- Stays noMatches unconditionally: statusOptions has no "all"
+             entry, so this table is always scoped to one status and an empty
+             result always means "none with this status", never "no reports". -->
         <tr *ngIf="reports.length === 0">
           <td colspan="7" class="empty-note">{{ 'common.noMatches' | t }}</td>
         </tr>

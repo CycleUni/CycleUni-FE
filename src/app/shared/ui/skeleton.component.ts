@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TPipe } from '../../core/i18n.service';
 
 /**
  * Loading placeholder.
@@ -14,9 +15,15 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'ui-skeleton',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TPipe],
   template: `
-    <div class="skeleton" [class]="'v-' + variant" aria-hidden="true">
+    <div class="skeleton" [class]="'v-' + variant" role="status" aria-busy="true">
+      <!-- The whole block used to be aria-hidden, so a screen reader was told
+           nothing at all was happening while these four call sites waited on
+           the network — the plain-text "loading" states elsewhere at least
+           said something. The shapes themselves carry no text, so the only
+           thing to announce is this label. -->
+      <span class="sr-only">{{ 'common.loading' | t }}</span>
       <ng-container [ngSwitch]="variant">
 
         <ng-container *ngSwitchCase="'tile-grid'">
@@ -55,9 +62,25 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; position: relative; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    /* --line-strong, not --line. --line is 1.48:1 against the page ground,
+       and the pulse then dipped it to 1.12:1 — for roughly a third of every
+       1.5s cycle the placeholder was effectively not on screen. The fill is
+       now 3.4:1 at rest and the pulse floor is 0.5, so the shapes stay
+       between 2.4:1 and 1.7:1 throughout. */
     .pulse {
-      background-color: var(--line);
+      background-color: var(--line-strong);
       animation: pulse 1.5s infinite ease-in-out;
       border-radius: var(--radius-xs);
     }
@@ -124,9 +147,9 @@ import { CommonModule } from '@angular/common';
     .s-card:first-child { border-left: none; }
 
     @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 0.3; }
-      100% { opacity: 0.6; }
+      0% { opacity: 0.75; }
+      50% { opacity: 0.5; }
+      100% { opacity: 0.75; }
     }
   `]
 })

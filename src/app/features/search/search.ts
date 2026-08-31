@@ -284,7 +284,10 @@ const CONDITION_NONE = 'none';
       .search-button ::ng-deep .ui-btn.md { padding-inline: 0; }
       .search-button .submit-icon { display: block; }
       .container { flex-direction:column; gap:0; }
-      .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; }
+      /* --line-strong, not --line: this is a real button, i.e. an
+         interactive boundary, and --line is 1.48:1 — below the 3:1
+         WCAG 1.4.11 asks of non-text UI. */
+      .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line-strong); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; }
       .filter-toggle-caret { flex-shrink:0; color:var(--muted); transition:transform .2s; }
       .filter-toggle-caret.open { transform:rotate(180deg); }
       .sidebar { width:100%; display:flex; flex-wrap:wrap; gap:0 24px; border-bottom:1px solid var(--line); margin-bottom:24px; }
@@ -630,7 +633,7 @@ export class Search implements OnInit {
 
   subscribeBook(item: any) {
     if (!this.auth.isLoggedIn()) {
-      this.toast.info(this.i18n.t('alert.loginToSubscribe')); this.router.navigate(this.regionLink.path(['/account'])); return;
+      this.toast.info(this.i18n.t('alert.loginToSubscribe')); this.router.navigate(this.regionLink.path(['/login'])); return;
     }
     const doSubscribe = (id: string) => {
       this.bookService.subscribe(id).subscribe({

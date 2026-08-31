@@ -453,7 +453,7 @@ export class Book implements OnInit {
 
   contactSeller(listingId: string) {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/login']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
 
@@ -486,7 +486,7 @@ export class Book implements OnInit {
 
   buyNow(listingId: string) {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/login']), { queryParams: { returnUrl: this.router.url } });
       return;
     }
     this.router.navigate(this.regionLink.path(['/checkout', listingId]));
@@ -495,7 +495,7 @@ export class Book implements OnInit {
   subscribeBook() {
     if (!this.auth.isLoggedIn()) {
       this.toast.info(this.i18n.t('alert.loginToSubscribe'));
-      this.router.navigate(this.regionLink.path(['/account']));
+      this.router.navigate(this.regionLink.path(['/login']));
       return;
     }
     if (this.bookId) {

@@ -13,17 +13,39 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  return regionUrlTree(router, regionService, ['/account'], { queryParams: { returnUrl: state.url } });
+  return regionUrlTree(router, regionService, ['/login'], { queryParams: { returnUrl: state.url } });
 };
 
-export const accountIndexGuard: CanActivateFn = () => {
+/** /login and /register are for people who are not signed in. Someone who is
+ *  gets sent on rather than shown a form they cannot use — honouring
+ *  returnUrl, so a stale link into the gate still ends where it promised. */
+export const guestGuard: CanActivateFn = (route) => {
   const auth = inject(AuthStore);
   const router = inject(Router);
   const regionService = inject(RegionService);
-  
+
+  if (!auth.isLoggedIn()) {
+    return true;
+  }
+
+  const returnUrl = route.queryParamMap.get('returnUrl');
+  if (returnUrl) {
+    return router.parseUrl(returnUrl);
+  }
+  return regionUrlTree(router, regionService, ['/account']);
+};
+
+export const accountIndexGuard: CanActivateFn = (route, state) => {
+  const auth = inject(AuthStore);
+  const router = inject(Router);
+  const regionService = inject(RegionService);
+
   if (auth.isLoggedIn()) {
     return regionUrlTree(router, regionService, ['/account', 'listings']);
   }
-  
-  return true;
+
+  // The parent route's authGuard normally catches this first; this is the
+  // second line of defence for an old bookmark that lands straight on
+  // /account, which used to render the login wall itself.
+  return regionUrlTree(router, regionService, ['/login'], { queryParams: { returnUrl: state.url } });
 };

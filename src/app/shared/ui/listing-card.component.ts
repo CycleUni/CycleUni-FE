@@ -1,42 +1,74 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RegionLinkDirective } from '../../core/region-link.directive';
 import { UiButton } from './button.component';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { PricePipe } from '../pipes/price.pipe';
 
+/**
+ * `ui-listing-card`: one real per-seller Listing, with marketplace chrome.
+ * Contrast with `ui-book-tile`, which only ever represents a Book.
+ *
+ * The card body is a real anchor whenever the caller supplies `link`, and a
+ * `<button>` otherwise. It used to be a bare `<div (click)>`, which on the
+ * Book page — where every seller's listing is one of these — meant a keyboard
+ * user could not open a single listing, and a screen reader was told nothing
+ * was interactive at all.
+ *
+ * The two actions (contact seller / arrange meetup) are deliberately
+ * *siblings* of that body, not children: they are real buttons, and an
+ * interactive element nested inside a link or button is invalid HTML that
+ * browsers resolve inconsistently and keyboards cannot traverse. Everything
+ * inside the body is phrasing content (span, not div) for the same reason —
+ * a `<button>` may not contain flow content.
+ */
 @Component({
   selector: 'ui-listing-card',
   standalone: true,
-  imports: [CommonModule, UiButton, TPipe, PricePipe],
+  imports: [CommonModule, RegionLinkDirective, UiButton, TPipe, PricePipe],
   template: `
-    <div class="listing-card" (click)="onClickCard.emit(item.id)">
-      <div class="listing-content">
-        <div class="listing-photo-container">
+    <div class="listing-card">
+      <a
+        *ngIf="link"
+        class="listing-body"
+        [regionLink]="link"
+        (click)="onClickCard.emit(item.id)"
+      >
+        <ng-container *ngTemplateOutlet="body"></ng-container>
+      </a>
+
+      <button *ngIf="!link" type="button" class="listing-body" (click)="onClickCard.emit(item.id)">
+        <ng-container *ngTemplateOutlet="body"></ng-container>
+      </button>
+
+      <ng-template #body>
+        <span class="listing-photo-container">
           <img *ngIf="(item.photo_url || item.photos?.[0]) && !imageBroken" [src]="item.photo_url || item.photos?.[0]" alt="" (error)="onImageError()" />
           <span *ngIf="!item.photo_url && !item.photos?.length || imageBroken">{{ 'book.noPhoto' | t }}</span>
-        </div>
-        <div class="listing-header">
+        </span>
+        <span class="listing-header">
           <span class="price">{{ item.price | price }}</span>
           <span class="condition-badge" [ngClass]="item.condition">{{ getConditionLabel(item.condition) }}</span>
-        </div>
-        <div class="seller-info">
+        </span>
+        <span class="seller-info">
           <strong>{{ item.seller_name }}</strong> ({{ item.school_name || ('acct.noSchool' | t) }})
-        </div>
-        <div class="course-info" *ngIf="item.course_name">
+        </span>
+        <span class="course-info" *ngIf="item.course_name">
           {{ 'book.coursePrefix' | t:{course: item.course_name} }}
-        </div>
-        <div class="listing-note" *ngIf="item.description">
+        </span>
+        <span class="listing-note" *ngIf="item.description">
           {{ item.description }}
-        </div>
-        <!-- Contacting the seller leads, and the meetup request follows. The
-             order used to be reversed, but the backend rejects an order from a
-             buyer with no conversation on this listing (checkout.errNoChat), so
-             the leading button was sending every first-time buyer into a page
-             that could only fail. -->
-        <div class="button-group" style="display: flex; gap: 8px; margin-top: auto; padding-top: 16px;">
-          <ui-button style="flex: 1;" (onClick)="onContactSellerClick($event)">{{ 'book.contactSeller' | t }}</ui-button>
-          <ui-button variant="ghost" style="flex: 1;" (onClick)="onBuyNowClick($event)">{{ 'checkout.arrangeMeetup' | t }}</ui-button>
-        </div>
+        </span>
+      </ng-template>
+
+      <!-- Contacting the seller leads, and the meetup request follows. The
+           order used to be reversed, but the backend rejects an order from a
+           buyer with no conversation on this listing (checkout.errNoChat), so
+           the leading button was sending every first-time buyer into a page
+           that could only fail. -->
+      <div class="button-group">
+        <ui-button style="flex: 1;" (onClick)="onContactSeller.emit(item.id)">{{ 'book.contactSeller' | t }}</ui-button>
+        <ui-button variant="ghost" style="flex: 1;" (onClick)="onBuyNow.emit(item.id)">{{ 'checkout.arrangeMeetup' | t }}</ui-button>
       </div>
     </div>
   `,
@@ -44,25 +76,47 @@ import { PricePipe } from '../pipes/price.pipe';
     :host {
       display: block;
     }
+    /* --line-strong, not --line: the whole card is a click target, and
+       --line is 1.48:1 — below WCAG 1.4.11's 3:1 for non-text UI. */
     .listing-card {
-      border: 1px solid var(--line);
+      border: 1px solid var(--line-strong);
       border-radius: var(--radius-xs);
       padding: 16px;
       background-color: var(--paper);
-      cursor: pointer;
       transition: transform 0.1s, box-shadow 0.1s;
       display: flex;
       flex-direction: column;
     }
-    .listing-content {
+    /* Resets so the anchor/button carrying the body still looks like the old
+       div: both ship UA styles (centred text, a border, their own font) that
+       would otherwise redraw the card. */
+    .listing-body {
       flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
+      text-align: left;
+      width: 100%;
+      padding: 0;
+      border: none;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
     }
+    /* Hover elevation now follows the theme. It was var(--shadow-small, ...),
+       a token that has never existed, so every card fell through to the
+       hard-coded fallback and kept a light-mode shadow on a dark ground. */
     .listing-card:hover {
       transform: translateY(-2px);
-      box-shadow: var(--shadow-small, 0 4px 6px rgba(0,0,0,0.1));
+      box-shadow: var(--shadow-card-lg);
+    }
+    .button-group {
+      display: flex;
+      gap: 8px;
+      padding-top: 16px;
     }
     .listing-photo-container {
       width: 100%;
@@ -75,6 +129,7 @@ import { PricePipe } from '../pipes/price.pipe';
       color: var(--muted);
       font-size: 14px;
       overflow: hidden;
+      flex-shrink: 0;
     }
     .listing-photo-container img {
       width: 100%;
@@ -111,12 +166,14 @@ import { PricePipe } from '../pipes/price.pipe';
       color: var(--flag);
     }
     .seller-info {
+      display: block;
       font-size: 15px;
       margin-bottom: 8px;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
     .course-info {
+      display: block;
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 8px;
@@ -124,6 +181,7 @@ import { PricePipe } from '../pipes/price.pipe';
       word-break: break-word;
     }
     .listing-note {
+      display: block;
       font-size: 14px;
       color: var(--muted);
       font-style: italic;
@@ -138,6 +196,14 @@ import { PricePipe } from '../pipes/price.pipe';
 })
 export class UiListingCard {
   @Input({ required: true }) item!: any;
+
+  /**
+   * Router target for the card body. When set the body renders as a real
+   * anchor with an href (middle-click, open-in-new-tab, SEO); when omitted it
+   * falls back to a `<button>` and the caller navigates in `(onClickCard)`.
+   */
+  @Input() link?: any[] | string;
+
   @Output() onClickCard = new EventEmitter<string>();
   @Output() onBuyNow = new EventEmitter<string>();
   @Output() onContactSeller = new EventEmitter<string>();
@@ -152,15 +218,5 @@ export class UiListingCard {
   getConditionLabel(cond: string): string {
     const translated = this.i18n.t(`cond.${cond}`);
     return translated === `cond.${cond}` ? cond : translated;
-  }
-
-  onBuyNowClick(event: Event) {
-    event.stopPropagation();
-    this.onBuyNow.emit(this.item.id);
-  }
-
-  onContactSellerClick(event: Event) {
-    event.stopPropagation();
-    this.onContactSeller.emit(this.item.id);
   }
 }

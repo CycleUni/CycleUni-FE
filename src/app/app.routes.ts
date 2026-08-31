@@ -1,6 +1,6 @@
 import { superuserGuard } from './features/admin/superuser.guard';
 import { Routes } from '@angular/router';
-import { authGuard, accountIndexGuard } from './core/auth.guard';
+import { authGuard, accountIndexGuard, guestGuard } from './core/auth.guard';
 import { adminGuard } from './features/admin/admin.guard';
 import { regionGuard, rootRedirectGuard } from './core/region.guard';
 import { unsavedChangesGuard } from './core/unsaved-changes.guard';
@@ -24,7 +24,20 @@ const featureRoutes: Routes = [
     loadComponent: () => import('./features/sell/sell').then((m) => m.Sell),
   },
   {
+    path: 'login',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/login').then((m) => m.LoginPage),
+  },
+  {
+    path: 'register',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/register').then((m) => m.RegisterPage),
+  },
+  {
     path: 'account',
+    // Guarded at the parent now that /account is the dashboard only — the
+    // login wall it used to render on the same URL moved to /login.
+    canActivate: [authGuard],
     loadComponent: () => import('./features/account/account').then((m) => m.Account),
     children: [
       { path: '', canActivate: [accountIndexGuard], loadComponent: () => import('./features/account/account-index.component').then(m => m.AccountIndexComponent) },

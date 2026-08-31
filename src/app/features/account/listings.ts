@@ -136,7 +136,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
       height: 24px;
       border-radius: 50%;
       background-color: var(--flag);
-      color: white;
+      color: var(--on-flag);
       border: none;
       font-size: 14px;
       line-height: 1;
