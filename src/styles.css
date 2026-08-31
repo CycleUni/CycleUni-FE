@@ -77,7 +77,11 @@
   --info-border:  #BFDBFE;
   --special-bg:   #F3E8FF;
   --special-ink:  #7E22CE;
-  --star:         #F59E0B;
+  /* Deliberately a burnt amber rather than the bright #F59E0B this used to
+     be: at 2.15:1 on --paper that one failed WCAG 1.4.11's 3:1 floor for
+     non-text UI, and the star row is the only thing telling you what rating
+     you picked. 5.0:1 on --paper, 4.6:1 on --paper-warm. */
+  --star:         #B45309;
 
   /* Spacing scale (8px base). Use these instead of ad hoc px values for
      section/card padding and gaps so vertical rhythm reads as one system
@@ -118,6 +122,17 @@
   --btn-primary-bg:       var(--accent);
   --btn-primary-ink:      var(--paper);
   --btn-primary-bg-hover: var(--accent-ink);
+
+  /* Labels drawn *on top of* a filled --accent/--flag/--success surface
+     (avatars, badges, pagination's current page, the reconnecting pill).
+     Those all hard-coded `color: white`, which is only correct in light
+     mode: the dark palette lightens each of those fills to sit on a near-
+     black ground, so white-on-fill collapses to 3.31:1 / 3.28:1 / 2.60:1 —
+     the same trap --btn-primary-* above exists to prevent. The label has to
+     flip with the theme, so it resolves here rather than in the component. */
+  --on-accent:  #FFFFFF; /* 7.9:1 on --accent */
+  --on-flag:    #FFFFFF; /* 5.9:1 on --flag */
+  --on-success: #FFFFFF; /* 5.0:1 on --success */
 
   /* Minimum hit area for anything tappable (iOS 44pt / Android 48dp).
      Controls may look smaller than this via transparent padding, but the
@@ -163,7 +178,18 @@
 
     --btn-primary-bg:       #2F7A5C;
     --btn-primary-ink:      #F2F7F4;
-    --btn-primary-bg-hover: #3E9070;
+    /* Hover darkens here too. It used to *lighten* to #3E9070, which both
+       dropped the label to 3.57:1 and inverted the gesture — light mode's hover
+       goes darker (7.9:1 -> 11.6:1), so the two themes said opposite things
+       with the same interaction. Now 4.8:1 -> 6.6:1. */
+    --btn-primary-bg-hover: #256349;
+
+    /* See --on-* in :root. The dark palette's fills are the *lighter*
+       variants sitting on a near-black ground, so the readable label is dark
+       ink, not white: 5.4:1 / 5.4:1 / 6.8:1 respectively. */
+    --on-accent:  #17181A;
+    --on-flag:    #17181A;
+    --on-success: #17181A;
 
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
     --shadow-card-lg: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 32px -10px rgba(0, 0, 0, 0.7);
@@ -207,7 +233,18 @@
 
   --btn-primary-bg:       #2F7A5C;
   --btn-primary-ink:      #F2F7F4;
-  --btn-primary-bg-hover: #3E9070;
+  /* Hover darkens here too. It used to *lighten* to #3E9070, which both
+     dropped the label to 3.57:1 and inverted the gesture — light mode's hover
+     goes darker (7.9:1 -> 11.6:1), so the two themes said opposite things
+     with the same interaction. Now 4.8:1 -> 6.6:1. */
+  --btn-primary-bg-hover: #256349;
+
+  /* See --on-* in :root. The dark palette's fills are the *lighter*
+     variants sitting on a near-black ground, so the readable label is dark
+     ink, not white: 5.4:1 / 5.4:1 / 6.8:1 respectively. */
+  --on-accent:  #17181A;
+  --on-flag:    #17181A;
+  --on-success: #17181A;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 24px -12px rgba(0, 0, 0, 0.6);
   --shadow-card-lg: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 32px -10px rgba(0, 0, 0, 0.7);
@@ -628,7 +665,9 @@ body {
 .admin-badge-success { background: var(--success-light); color: var(--success); }
 .admin-badge-error { background: var(--danger-light); color: var(--danger); }
 
-.admin-form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; box-sizing: border-box; background: var(--paper); color: var(--ink); }
+/* --line-strong, not --line: this is an input field, i.e. an interactive
+   boundary (see the token comment at the top of this file). */
+.admin-form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 4px; box-sizing: border-box; background: var(--paper); color: var(--ink); }
 
 .admin-status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: var(--paper-warm); color: var(--muted); }
 .admin-status-badge.active, .admin-status-badge.ok { background: var(--info-bg); color: var(--info-ink); }
