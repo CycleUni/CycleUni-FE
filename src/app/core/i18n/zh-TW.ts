@@ -198,6 +198,8 @@ export const zhTW: Record<string, string> = {
   'acct.statSubs': '{n} 求書中',
   'acct.logout': '登出',
   'acct.tabListings': '我的上架',
+  'acct.navGroupMine': '我的',
+  'acct.navGroupTrade': '交易',
   'acct.tabSubs': '我的求書',
   'acct.tabReports': '檢舉紀錄',
   'acct.tabSettings': '帳號設定',

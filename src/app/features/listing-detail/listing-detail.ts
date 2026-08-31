@@ -203,7 +203,7 @@ export class ListingDetail implements OnInit, OnDestroy {
    *  there, instead of showing the prompt that says what to do about it. */
   private canStartTransaction(): boolean {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(this.regionLink.path(['/login']), { queryParams: { returnUrl: this.router.url } });
       return false;
     }
     const user = this.auth.getUser();

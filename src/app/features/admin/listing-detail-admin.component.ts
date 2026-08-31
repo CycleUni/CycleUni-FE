@@ -16,7 +16,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
   template: `
     <a routerLink="../.." class="back-link">&larr; {{ 'admin.backToList' | t }}</a>
 
-    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.loading' | t }}</div>
 
     <div class="detail-card" *ngIf="!loading && listing">
       <h2>{{ listing.book?.title }}</h2>

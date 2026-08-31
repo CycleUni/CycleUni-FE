@@ -201,6 +201,8 @@ export const en: Record<string, string> = {
   'acct.statSubs': '{n} requests',
   'acct.logout': 'Log out',
   'acct.tabListings': 'My listings',
+  'acct.navGroupMine': 'Personal',
+  'acct.navGroupTrade': 'Trading',
   'acct.tabSubs': 'My book requests',
   'acct.tabReports': 'My reports',
   'acct.tabSettings': 'Account settings',

@@ -54,7 +54,7 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
             </td>
             <td>
               <ui-button size="sm" variant="outline" (onClick)="openEditModal(adv)">{{ 'common.edit' | t }}</ui-button>
-              <ui-button size="sm" variant="outline" (onClick)="deleteAdvertiser(adv.id)" style="margin-left: 4px; color: var(--error); border-color: var(--error);">{{ 'common.delete' | t }}</ui-button>
+              <ui-button size="sm" variant="outline" (onClick)="deleteAdvertiser(adv.id)" style="margin-left: 4px; color: var(--danger); border-color: var(--danger);">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>

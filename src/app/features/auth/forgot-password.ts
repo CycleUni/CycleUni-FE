@@ -176,6 +176,6 @@ export class ForgotPassword implements OnInit {
   }
 
   goToLogin() {
-    this.router.navigate(this.regionLink.path(['/account']));
+    this.router.navigate(this.regionLink.path(['/login']));
   }
 }

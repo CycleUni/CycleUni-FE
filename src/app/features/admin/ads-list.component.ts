@@ -65,13 +65,13 @@ import { RegionService } from '../../core/region.service';
                 {{ ad.is_active ? ('admin.advertiserActive' | t) : ('admin.advertiserInactive' | t) }}
               </span>
             </td>
-            <td style="font-size: 0.85em; color: var(--text-muted)">
+            <td style="font-size: 0.85em; color: var(--muted)">
               {{ ad.start_date | date:'yyyy/MM/dd HH:mm' }} -<br>
               {{ ad.end_date | date:'yyyy/MM/dd HH:mm' }}
             </td>
             <td>
               <ui-button size="sm" variant="outline" (onClick)="openEditModal(ad)">{{ 'common.edit' | t }}</ui-button>
-              <ui-button size="sm" variant="outline" (onClick)="deleteAd(ad.id)" style="margin-left: 4px; color: var(--error); border-color: var(--error);">{{ 'common.delete' | t }}</ui-button>
+              <ui-button size="sm" variant="outline" (onClick)="deleteAd(ad.id)" style="margin-left: 4px; color: var(--danger); border-color: var(--danger);">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>

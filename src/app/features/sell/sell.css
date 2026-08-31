@@ -63,9 +63,26 @@
       margin-top: 16px;
       border-radius: var(--radius-xs);
     }
+    /* The selectable variant is a <button>, so it needs the UA styles reset —
+       centred text, its own font and a border of its own would otherwise
+       redraw the row. width/text-align restore the block layout the div had. */
     .book-match.selectable {
       cursor: pointer;
       transition: border-color 0.2s, transform 0.2s;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+    }
+    .book-match .result-title {
+      display: block;
+      font-size: var(--text-lg);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .book-match .result-isbn {
+      font-size: 12px;
     }
     .book-match.selectable:hover {
       border-color: var(--accent);
@@ -87,6 +104,9 @@
     .book-match .info {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .book-match h3 {
       margin: 0 0 4px;
@@ -148,7 +168,7 @@
       top: -8px;
       right: -8px;
       background: var(--flag);
-      color: white;
+      color: var(--on-flag);
       border: none;
       border-radius: 50%;
       width: 24px;

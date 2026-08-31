@@ -48,7 +48,7 @@ import { CommonModule } from '@angular/common';
     }
     .page-btn.active {
       background: var(--accent);
-      color: white;
+      color: var(--on-accent);
       border-color: var(--accent);
     }
     .page-btn:disabled {

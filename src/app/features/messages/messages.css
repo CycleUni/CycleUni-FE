@@ -58,7 +58,7 @@
       border: none;
       border-radius: 4px;
       background-color: var(--accent);
-      color: white;
+      color: var(--on-accent);
       font-size: 14px;
       font-weight: 500;
       font-family: inherit;
@@ -98,6 +98,15 @@
       cursor: pointer;
       flex: 1;
       min-width: 0;
+      /* This is a real <button> now, so reset the UA chrome it ships with
+         (border, background, centred text, its own font) that would
+         otherwise redraw the banner. */
+      padding: 0;
+      border: none;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-align: left;
     }
     .listing-banner-left:hover .listing-title {
       color: var(--accent);
@@ -216,7 +225,7 @@
     }
     .reconnecting-badge {
       background-color: var(--flag);
-      color: white;
+      color: var(--on-flag);
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 12px;

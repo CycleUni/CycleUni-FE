@@ -169,7 +169,7 @@ import { ToastService } from '../../core/services/toast.service';
     }
     .meetup-detail {
       font-size: 14px;
-      color: var(--primary) !important;
+      color: var(--accent) !important;
       font-weight: 500;
     }
     
@@ -275,7 +275,7 @@ export class OrdersComponent implements OnInit {
 
   ngOnInit() {
     if (!this.authStore.isLoggedIn()) {
-      this.router.navigate(this.regionLink.path(['/account']));
+      this.router.navigate(this.regionLink.path(['/login']));
       return;
     }
     this.route.queryParams.subscribe(params => {

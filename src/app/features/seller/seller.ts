@@ -107,7 +107,7 @@ import { isUserVerifiedIn } from '../../core/verification';
       height: 64px;
       border-radius: 50%;
       background-color: var(--accent);
-      color: white;
+      color: var(--on-accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -149,7 +149,7 @@ import { isUserVerifiedIn } from '../../core/verification';
 
     .verified-badge {
       background: var(--success);
-      color: white;
+      color: var(--on-success);
       border-radius: 50%;
       width: 16px;
       height: 16px;
@@ -184,8 +184,8 @@ import { isUserVerifiedIn } from '../../core/verification';
       padding: 8px 24px;
       border: none;
       border-radius: 20px;
-      background: var(--primary);
-      color: white;
+      background: var(--accent);
+      color: var(--on-accent);
       cursor: pointer;
     }
   `]

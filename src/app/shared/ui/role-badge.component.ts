@@ -24,9 +24,9 @@ import { TPipe } from '../../core/i18n.service';
       border-radius: 4px;
       text-transform: uppercase;
       background: var(--flag);
-      color: white;
+      color: var(--on-flag);
     }
-    .role-badge.seller { background: var(--accent); }
+    .role-badge.seller { background: var(--accent); color: var(--on-accent); }
   `]
 })
 export class UiRoleBadge {

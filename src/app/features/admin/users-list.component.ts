@@ -23,7 +23,7 @@ import { RegionService } from '../../core/region.service';
       <ui-dropdown [label]="'admin.filterActive' | t" [options]="activeOptions" [(ngModel)]="isActiveFilter" (ngModelChange)="reload()" [searchable]="false"></ui-dropdown>
     </div>
 
-    <div *ngIf="loading" class="empty-note">{{ 'common.noData' | t }}</div>
+    <div *ngIf="loading" class="empty-note">{{ 'common.loading' | t }}</div>
 
     <div class="table-container">
 
@@ -53,7 +53,7 @@ import { RegionService } from '../../core/region.service';
           </td>
         </tr>
         <tr *ngIf="users.length === 0">
-          <td colspan="6" class="empty-note">{{ 'common.noMatches' | t }}</td>
+          <td colspan="6" class="empty-note">{{ (hasFilters ? 'common.noMatches' : 'common.noData') | t }}</td>
         </tr>
       </tbody>
     </table>
@@ -81,6 +81,14 @@ export class AdminUsersListComponent {
   q = '';
   isActiveFilter = '';
   loading = true;
+
+  /** Whether the table the admin is looking at is narrowed by anything. An
+   *  empty result then means "nothing matched", which is a different fact
+   *  from "this table has no rows at all" — and only the second one should
+   *  read as an empty-table message. */
+  get hasFilters(): boolean {
+    return !!(this.q || this.isActiveFilter);
+  }
 
   getRegionName(code?: string): string {
     if (!code) return '';

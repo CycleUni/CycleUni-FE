@@ -150,6 +150,6 @@ export class VerifyEmail implements OnInit {
     // Registration verification already logs the user in (see
     // AuthStore.verifyRegistration) — send them into the app rather than
     // back to a login form they no longer need.
-    this.router.navigate(this.regionLink.path([this.type === 'register' ? '/' : '/account']));
+    this.router.navigate(this.regionLink.path([this.type === 'register' ? '/' : '/login']));
   }
 }

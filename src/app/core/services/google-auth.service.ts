@@ -1,10 +1,8 @@
 import { Injectable, inject, PLATFORM_ID, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
 import { AuthStore } from '../auth.store';
 import { I18nService } from '../i18n.service';
 import { ThemeService } from './theme.service';
-import { RegionLinkService } from '../region-link.service';
 
 
 @Injectable({
@@ -14,8 +12,6 @@ export class GoogleAuthService {
   private authStore = inject(AuthStore);
   private i18n = inject(I18nService);
   private themeService = inject(ThemeService);
-  private router = inject(Router);
-  private regionLink = inject(RegionLinkService);
   private platformId = inject(PLATFORM_ID);
   
   private googleClientId = '';
@@ -197,12 +193,12 @@ export class GoogleAuthService {
           if ((window as any).google?.accounts?.id) {
             (window as any).google.accounts.id.cancel();
           }
-          // Navigating away ensures we can clear up prompt state. 
-          // If already on /account, maybe redirect to /account/listings
-          const currentUrl = this.router.url;
-          if (currentUrl === '/account') {
-            this.router.navigate(this.regionLink.path(['/account/listings']));
-          }
+          // No navigation here. This used to compare against '/account',
+          // which stopped matching the moment routes gained their /:region
+          // prefix — so One Tap left the user sitting on the login wall.
+          // AuthFormComponent now watches AuthStore instead and owns the
+          // "we are signed in, leave the auth page" decision, which is the
+          // only place that knows about returnUrl anyway.
         },
         error: (err) => {
           console.error('Google login failed', err);

@@ -181,7 +181,9 @@ export class AuthStore {
     // Clear GA4 user identity on logout
     this.ga.setUserId(null);
     this.ga.clearUserProperties();
-    this.router.navigate(this.regionLink.path(['/account']));
+    // Signing out lands on the sign-in page, the same place the old
+    // /account login wall put them.
+    this.router.navigate(this.regionLink.path(['/login']));
   }
 
   getAccessToken(): string | null {
