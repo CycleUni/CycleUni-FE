@@ -41,7 +41,11 @@ import { PricePipe } from '../pipes/price.pipe';
         <ui-badge *ngIf="status === 'active'" type="waitlist">{{ 'row.active' | t }}</ui-badge>
         <ui-badge *ngIf="status === 'sold'" condition="noted">{{ 'row.sold' | t }}</ui-badge>
         <ui-badge *ngIf="status === 'reserved'" condition="damaged">{{ 'row.reserved' | t }}</ui-badge>
-        <ui-badge *ngIf="status === 'inactive'" condition="damaged">{{ 'row.inactive' | t }}</ui-badge>
+        <!-- 'removed', not 'inactive'. The backend's STATUS_CHOICES are
+             active/reserved/sold/removed, so this badge never rendered, and a
+             listing that moderation took down sat in the seller's own list
+             looking untouched with nothing to say what had happened. -->
+        <ui-badge *ngIf="status === 'removed'" condition="damaged">{{ 'row.removed' | t }}</ui-badge>
         <ui-badge *ngIf="condition && (!status || status === 'active')" [condition]="condition">{{ conditionText }}</ui-badge>
         <div class="condition-summary" *ngIf="conditionSummary">{{ conditionSummary }}</div>
         <ui-badge *ngIf="waitlistCount" type="waitlist">{{ 'home.waitingCount' | t:{n: waitlistCount | countCap} }}</ui-badge>

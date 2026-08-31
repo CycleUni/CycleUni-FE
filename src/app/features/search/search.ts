@@ -87,7 +87,7 @@ const CONDITION_NONE = 'none';
         <aside class="sidebar" [class.mobile-collapsed]="!filtersOpen">
           <div class="filter-group">
             <ui-facet-list
-              [title]="'search.conditionTitle' | t"
+              [title]="'common.condition' | t"
               [options]="conditionFacetOptions"
               selectionMode="multiple"
               (optionToggle)="toggleCondition($event)"

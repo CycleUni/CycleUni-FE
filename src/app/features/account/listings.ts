@@ -74,7 +74,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
           </div>
 
           <ui-input type="number" [label]="'acct.priceLabel' | t:{currency: regionService.currency().symbol}" [(ngModel)]="editForm.price" style="margin-bottom: 16px;"></ui-input>
-          <ui-dropdown [label]="'acct.conditionLabel' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
+          <ui-dropdown [label]="'common.condition' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
           <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions" style="margin-bottom: 16px;"></ui-dropdown>
           <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name" style="margin-bottom: 16px;"></ui-input>
           <ui-input [label]="'sell.professorLabel' | t" [(ngModel)]="editForm.professor_name" style="margin-bottom: 16px;"></ui-input>
