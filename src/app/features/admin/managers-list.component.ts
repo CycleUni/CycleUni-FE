@@ -83,7 +83,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       background: var(--paper);
       color: var(--ink);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background-color var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
     }
     .btn-toggle:hover {
       background: var(--paper-warm);

@@ -1,6 +1,6 @@
     <div class="layout-wrapper" [class.is-full-bleed]="fullBleed">
       <header class="app-header" [class.hide-on-mobile-chat]="mobileLayout.hideBottomNav()">
-        <div class="header-content">
+        <div class="header-content container">
           <div class="brand-area">
             <div class="logo"><a regionLink="/"><span class="logo-name">UniBooks</span></a></div>
           </div>
@@ -147,7 +147,7 @@
       </nav>
 
       <footer class="app-footer" role="contentinfo" *ngIf="!fullBleed && showFooter">
-        <div class="footer-content">
+        <div class="footer-content container">
           <div class="footer-brand-area">
             <span class="footer-brand">UniBooks</span>
             <span class="footer-tagline">{{ 'footer.tagline' | t }}</span>
@@ -162,7 +162,7 @@
         </div>
       </footer>
 
-      <div class="standalone-prefs-container" *ngIf="!fullBleed && !showFooter">
+      <div class="standalone-prefs-container container" *ngIf="!fullBleed && !showFooter">
         <ui-prefs-selector></ui-prefs-selector>
       </div>
     </div>

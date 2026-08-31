@@ -109,7 +109,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       text-decoration: none;
       color: var(--muted);
       background-color: var(--paper-warm);
-      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+      transition: border-color var(--motion-base), color var(--motion-base), background-color var(--motion-base);
     }
     .seed-tile:hover {
       border-color: var(--accent);

@@ -9,7 +9,7 @@ import { TPipe } from '../../core/i18n.service';
   standalone: true,
   imports: [CommonModule, RouterModule, UiButton, TPipe],
   template: `
-      <main class="container">
+      <main class="success-page">
         <div class="success-box">
           <div class="icon">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,14 +27,16 @@ import { TPipe } from '../../core/i18n.service';
       </main>
   `,
   styles: [`
-    .container {
+    /* Not .container: a full-height centring wrapper, not a content column. */
+    .success-page {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 60vh;
+      padding-inline: var(--space-4);
     }
     .success-box {
-      background: var(--paper);
+      background: var(--surface-card);
       padding: 48px;
       border: 1px solid var(--line);
       border-radius: 8px;

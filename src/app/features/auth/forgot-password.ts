@@ -79,7 +79,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       padding: 48px 32px;
       border: 1px solid var(--line);
       border-radius: 4px;
-      background-color: var(--paper);
+      background-color: var(--surface-card);
       text-align: center;
     }
     .fp-box h2 {

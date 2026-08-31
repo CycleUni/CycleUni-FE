@@ -1,14 +1,16 @@
-    .container { 
-      max-width: 1000px; 
-      margin: 40px auto; 
-      padding: 0 16px;
+    /* Width comes from .container--narrow: one listing plus its photo column
+       is a reading page, not a browse grid. This class carries only the
+       vertical rhythm; redeclaring .container here is what put the content's
+       left edge 76px inside the header logo's. */
+    .detail-page {
+      margin-block: var(--space-6);
     }
     
     .product-layout {
       display: grid;
       grid-template-columns: 1fr;
       gap: 40px;
-      background: var(--paper);
+      background: var(--surface-card);
       padding: 32px;
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -106,7 +108,7 @@
       justify-content: center;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.2s, background 0.2s;
+      transition: opacity var(--motion-base), background-color var(--motion-base);
     }
     .main-image-wrapper:hover .nav-btn {
       opacity: 1;
@@ -130,7 +132,9 @@
       overflow: hidden;
       cursor: pointer;
       opacity: 0.7;
-      transition: all 0.2s;
+      /* Enumerated, not `all`: the thumbnails live in a horizontal scroller
+         whose widths change as photos load, and `all` animates those too. */
+      transition: opacity var(--motion-fast), border-color var(--motion-fast);
       flex-shrink: 0;
     }
     .thumbnail:hover {
@@ -181,7 +185,7 @@
       margin-bottom: 32px;
       padding-bottom: 4px;
       border-bottom: 1px dashed var(--accent);
-      transition: opacity 0.2s;
+      transition: opacity var(--motion-base);
     }
     .book-link:hover {
       opacity: 0.8;
@@ -219,7 +223,7 @@
     }
     .seller-box.clickable {
       cursor: pointer;
-      transition: filter 0.2s ease;
+      transition: filter var(--motion-base) ease;
     }
     .seller-box.clickable:hover {
       filter: brightness(0.95);

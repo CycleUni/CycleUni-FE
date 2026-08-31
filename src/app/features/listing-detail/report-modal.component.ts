@@ -59,7 +59,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
     }
     .modal-content {
       position: relative;
-      background: var(--paper);
+      background: var(--surface-raised);
       padding: 24px;
       border-radius: 8px;
       width: 100%;

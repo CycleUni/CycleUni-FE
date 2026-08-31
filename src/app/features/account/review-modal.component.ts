@@ -61,7 +61,7 @@ import { OrderService } from '../../core/services/order.service';
     }
     .star {
       color: var(--line);
-      transition: color 0.2s;
+      transition: color var(--motion-base);
     }
     .star:hover, .star.active {
       color: var(--star);

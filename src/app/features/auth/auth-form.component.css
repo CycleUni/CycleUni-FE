@@ -1,4 +1,7 @@
-    .container {
+    /* Not .container: this is a centring wrapper for a 400px box, not a
+       content column, and naming it .container silently overrode the global
+       column rule for the whole sign-in route. */
+    .auth-page {
       display: flex;
       justify-content: center;
       padding: var(--space-8) var(--space-4);
@@ -77,7 +80,7 @@
     }
 
     @media (max-width: 768px) {
-      .container {
+      .auth-page {
         padding: var(--space-6) var(--space-4);
       }
       .auth-box {

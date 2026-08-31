@@ -80,7 +80,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
     .admin-status-badge { width: fit-content; }
 
     .detail-card {
-      background: var(--paper);
+      background: var(--surface-card);
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 24px;

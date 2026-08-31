@@ -1,7 +1,8 @@
+    /* Width comes from the global .container. This used to state its own
+       1120px + 16px padding, i.e. a 1088px column, so the account sidebar sat
+       16px inside the header logo it lines up under. */
     .dashboard {
-      max-width: 1120px;
-      margin: 32px auto;
-      padding: 0 16px;
+      margin-block: var(--space-6);
       display: flex;
       gap: 48px;
     }
@@ -230,7 +231,7 @@
     }
     .modal-content {
       position: relative;
-      background: var(--paper);
+      background: var(--surface-raised);
       padding: 24px;
       border-radius: 8px;
       width: 100%;
@@ -243,7 +244,7 @@
       .dashboard {
         flex-direction: column;
         gap: 24px;
-        margin: 16px auto;
+        margin-block: var(--space-4);
       }
       .dashboard-sidebar {
         width: 100%;

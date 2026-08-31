@@ -92,7 +92,8 @@ import { Toast, ToastService } from '../../core/services/toast.service';
       border: 1px solid var(--line-strong);
       border-radius: var(--radius-control);
       box-shadow: var(--shadow-card-lg);
-      background-color: var(--paper);
+      /* A toast floats over the page rather than sitting on it. */
+      background-color: var(--surface-raised);
       color: var(--ink);
       font-size: var(--text-sm);
       line-height: 1.45;

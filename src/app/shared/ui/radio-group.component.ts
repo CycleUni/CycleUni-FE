@@ -70,7 +70,7 @@ let nextId = 0;
       border-radius: 50%;
       background-color: var(--btn-primary-ink);
       transform: scale(0);
-      transition: transform 0.1s ease-in-out;
+      transition: transform var(--motion-fast) ease-in-out;
     }
     input[type="radio"]:checked {
       background-color: var(--accent);

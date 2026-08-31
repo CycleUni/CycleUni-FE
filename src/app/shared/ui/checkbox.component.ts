@@ -61,7 +61,7 @@ import { CommonModule } from '@angular/common';
       background-color: var(--btn-primary-ink);
       clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
       transform: scale(0);
-      transition: transform 0.1s ease-in-out;
+      transition: transform var(--motion-fast) ease-in-out;
     }
     input[type="checkbox"]:checked {
       background-color: var(--accent);

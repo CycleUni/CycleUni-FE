@@ -26,7 +26,7 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiBreadcrumb, TPipe, UiListingCard, UiBookCover, UiPagination, UiEmpty, UiVerificationPrompt],
   template: `
-      <div class="container" *ngIf="book">
+      <div class="container container--narrow book-page" *ngIf="book">
         <ui-back-button></ui-back-button>
 
         <ui-breadcrumb [items]="breadcrumbItems"></ui-breadcrumb>
@@ -100,10 +100,11 @@ import { ToastService } from '../../core/services/toast.service';
       </div>
   `,
   styles: [`
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 32px 16px;
+    /* Width comes from .container--narrow. The old rule redeclared
+       .container at 960px with border-box padding, i.e. a 928px column — 96px
+       narrower than the header band, the widest left-edge jump in the app. */
+    .book-page {
+      padding-block: var(--space-6);
     }
     
     .book-header {

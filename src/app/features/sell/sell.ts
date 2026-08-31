@@ -734,7 +734,7 @@ export class Sell implements OnInit, OnDestroy, HasUnsavedChanges {
           if (err.status === 403 || code === 'acct.errUnverified' || code === 'auth.errNotVerified') {
             this.showUnverifiedPrompt = true;
           } else {
-            this.apiError = this.i18n.t('sell.listFailed') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.error?.detail || this.i18n.t('sell.unknownError')));
+            this.apiError = this.i18n.t('sell.listFailed', { msg: code ? this.i18n.t(code) : (err.error?.error?.message || err.error?.detail || this.i18n.t('sell.unknownError')) });
           }
           this.cdr.markForCheck();
         }

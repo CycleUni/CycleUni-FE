@@ -16,6 +16,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { RegionLinkService } from '../../core/region-link.service';
 import { ToastService } from '../../core/services/toast.service';
+import { scrollBehavior } from '../../core/reduced-motion';
 
 
 @Component({
@@ -209,12 +210,29 @@ import { ToastService } from '../../core/services/toast.service';
       border-top: 1px dashed var(--line);
       justify-content: flex-end;
     }
+    /* The tint fading out is not decoration: arriving here from a
+       notification, it is the only thing saying *which* of these rows is the
+       order you were sent to look at. */
     .highlight-pulse {
       animation: highlight 2s;
     }
     @keyframes highlight {
       0% { background-color: var(--accent-soft); }
       100% { background-color: transparent; }
+    }
+    /* ...so under reduced motion it must not go through the global
+       animation-duration: 0.01ms, which does not calm the effect down, it
+       deletes it — the row would be pointed at for four thousandths of a
+       second and the user would be left scanning the list by hand. The same
+       information is carried statically instead: a flat tint that holds for
+       the same two seconds the class is on the element (see checkHighlight),
+       then disappears when the class is removed. Inside the media query so it
+       cannot leak into the animated path. */
+    @media (prefers-reduced-motion: reduce) {
+      .highlight-pulse {
+        animation: none;
+        background-color: var(--accent-soft);
+      }
     }
   `]
 })
@@ -379,7 +397,7 @@ export class OrdersComponent implements OnInit {
     setTimeout(() => {
       const el = document.getElementById('order-' + this.highlightOrderId);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
         el.classList.add('highlight-pulse');
         setTimeout(() => el.classList.remove('highlight-pulse'), 2000);
       }

@@ -43,16 +43,11 @@
       top: 0;
       z-index: 100;
     }
-    /* Same column arithmetic as the global .container: a border-box
-       max-width:1120 with 16px padding yields an 1088px column, which is
-       16px narrower than the full-bleed bands (hero, footer) produce — that
-       mismatch is why the logo used to sit 16px inside every section's left
-       edge. */
+    /* The column itself comes from .container on the same element — this is
+       the edge every page's content is measured against, so it must not be a
+       private copy of the arithmetic. Block padding only. */
     .header-content {
-      width: 100%;
-      max-width: 1152px;
-      margin: 0 auto;
-      padding: var(--space-4);
+      padding-block: var(--space-4);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -202,10 +197,6 @@
       margin-top: var(--space-8);
     }
     .footer-content {
-      width: 100%;
-      max-width: 1152px;
-      margin: 0 auto;
-      padding-inline: var(--space-4);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -301,7 +292,7 @@
 
     @media (max-width: 900px) {
       .header-content {
-        padding: 12px 16px;
+        padding-block: 12px;
       }
       .school-selector {
         /* Shrinks to its content (icon + caret) instead of a fixed field width,
@@ -418,7 +409,10 @@
         letter-spacing: normal;
       }
       .app-footer {
-        padding: 16px 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
+        /* Inline padding lives on .footer-content's .container; adding it to
+           the band as well doubled the footer's gutter to 32px against the
+           page's 16px. */
+        padding-block: 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
         margin-top: 48px;
       }
       .footer-content {
@@ -435,8 +429,12 @@
     }
 
     @media (max-width: 480px) {
+      /* Block only. This used to shorten the inline padding to 12px as well,
+         which pulled the logo 4px outside the page content it is supposed to
+         line up with — on the narrowest screens, where the offset is most
+         visible. */
       .header-content {
-        padding: 10px 12px;
+        padding-block: 10px;
       }
       .logo-name {
         font-size: 18px;
@@ -447,10 +445,7 @@
       }
     }
     .standalone-prefs-container {
-      width: 100%;
-      max-width: 1152px;
-      margin: 0 auto;
-      padding: var(--space-5) var(--space-4);
+      padding-block: var(--space-5);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -464,6 +459,6 @@
        breakpoint. */
     @media (max-width: 900px) {
       .standalone-prefs-container {
-        padding: 16px 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
+        padding-block: 16px calc(16px + 56px + env(safe-area-inset-bottom, 0px));
       }
     }

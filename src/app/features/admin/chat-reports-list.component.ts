@@ -54,10 +54,10 @@ import { RegionService } from '../../core/region.service';
             <td colspan="7">
               <div class="detail-content">
                 <div *ngIf="report.detail" class="report-detail">
-                  <strong>Details:</strong> {{ report.detail }}
+                  <strong>{{ 'admin.reportDetailLabel' | t }}</strong> {{ report.detail }}
                 </div>
                 <ui-button variant="ghost" (onClick)="loadMessages(report.id)" [disabled]="loadingMessages">
-                  {{ loadingMessages ? 'Loading...' : 'View Messages' }}
+                  {{ (loadingMessages ? 'common.loading' : 'admin.viewMessages') | t }}
                 </ui-button>
                 <div *ngIf="messages" class="messages-preview">
                   <div *ngFor="let msg of messages" class="msg-line">

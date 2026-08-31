@@ -49,7 +49,9 @@ export type MeetupMessageType = 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'CANCEL' | 'C
       border-radius: 10px;
       padding: 14px 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      transition: all 0.2s ease;
+      /* Enumerated, not 'all': the card's height changes when the status line
+         wraps, and 'all' animated that as a resize. */
+      transition: background-color var(--motion-base) ease, border-color var(--motion-base) ease;
       border: 1px solid var(--line);
     }
     

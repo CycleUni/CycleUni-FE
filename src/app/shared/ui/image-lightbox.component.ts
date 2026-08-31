@@ -57,7 +57,7 @@ import { TPipe } from '../../core/i18n.service';
       font-size: 24px;
       line-height: 36px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background-color var(--motion-base);
     }
     .image-modal-close:hover {
       background: rgba(255, 255, 255, 0.4);

@@ -55,7 +55,7 @@ const CONDITION_NONE = 'none';
   imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiPagination, UiBookTile, UiFacetList, UiRadioGroup, TPipe],
   template: `
       <div class="search-header">
-        <div class="header-inner">
+        <div class="header-inner container">
           <div class="search-page-input-wrap">
             <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
               <circle cx="10.5" cy="10.5" r="6.5"/>
@@ -72,7 +72,7 @@ const CONDITION_NONE = 'none';
         </div>
       </div>
 
-      <div class="container">
+      <div class="container search-layout">
         <button
           type="button"
           class="filter-toggle"
@@ -206,8 +206,10 @@ const CONDITION_NONE = 'none';
       </div>
   `,
   styles: [`
-    .search-header { background-color: var(--paper-warm); border-bottom: 1px solid var(--line); padding: 24px 16px; margin-bottom: 32px; }
-    .header-inner { max-width: 1120px; margin: 0 auto; display: flex; gap: 8px; }
+    /* The band is full-bleed and its inner element carries .container, so the
+       gutter is the shared one rather than a second 16px added on top of it. */
+    .search-header { background-color: var(--paper-warm); border-bottom: 1px solid var(--line); padding-block: 24px; margin-bottom: 32px; }
+    .header-inner { display: flex; gap: 8px; }
     .search-page-input-wrap { position: relative; width: 400px; max-width: 100%; }
     .search-page-input-wrap .search-icon { position: absolute; left: 2px; bottom: 10px; color: var(--muted); pointer-events: none; }
     .search-page-input { display: inline-block !important; width: 100%; }
@@ -226,7 +228,10 @@ const CONDITION_NONE = 'none';
     }
     .search-button { flex-shrink: 0; }
     .search-button .submit-icon { display: none; }
-    .container { max-width: 1120px; margin: 0 auto; padding: 0 16px; display: flex; gap: 48px; }
+    /* Layout only. This used to redeclare .container at 1120px, which with
+       border-box padding yields a 1088px column — 16px narrower than the
+       header above it, so the filter rail started 16px inside the logo. */
+    .search-layout { display: flex; gap: 48px; }
     .filter-toggle { display: none; }
     .sidebar { width: 240px; flex-shrink: 0; }
     .filter-group { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
@@ -283,12 +288,12 @@ const CONDITION_NONE = 'none';
       .search-button { flex: 0 0 44px; }
       .search-button ::ng-deep .ui-btn.md { padding-inline: 0; }
       .search-button .submit-icon { display: block; }
-      .container { flex-direction:column; gap:0; }
+      .search-layout { flex-direction:column; gap:0; }
       /* --line-strong, not --line: this is a real button, i.e. an
          interactive boundary, and --line is 1.48:1 — below the 3:1
          WCAG 1.4.11 asks of non-text UI. */
       .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line-strong); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; }
-      .filter-toggle-caret { flex-shrink:0; color:var(--muted); transition:transform .2s; }
+      .filter-toggle-caret { flex-shrink:0; color:var(--muted); transition:transform var(--motion-base); }
       .filter-toggle-caret.open { transform:rotate(180deg); }
       .sidebar { width:100%; display:flex; flex-wrap:wrap; gap:0 24px; border-bottom:1px solid var(--line); margin-bottom:24px; }
       .sidebar.mobile-collapsed { display:none; }

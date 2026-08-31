@@ -121,7 +121,7 @@ export interface UserReportItem {
       cursor: pointer;
       color: var(--muted);
       border-bottom: 2px solid transparent;
-      transition: color 0.15s ease, border-color 0.15s ease;
+      transition: color var(--motion-fast) ease, border-color var(--motion-fast) ease;
     }
     .tab.active {
       color: var(--accent);
@@ -143,7 +143,7 @@ export interface UserReportItem {
       margin-bottom: 24px;
     }
     .report-card {
-      background: var(--paper);
+      background: var(--surface-card);
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 16px 20px;
