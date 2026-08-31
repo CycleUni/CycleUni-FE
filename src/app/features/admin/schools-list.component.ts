@@ -7,6 +7,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminSchool, Paginated } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
 
@@ -99,6 +101,8 @@ export class AdminSchoolsListComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
 
   schoolsData?: Paginated<AdminSchool>;
   currentPage = 1;
@@ -134,19 +138,22 @@ export class AdminSchoolsListComponent implements OnInit {
     this.loadPage(1);
   }
 
-  deleteSchool(school: AdminSchool) {
+  async deleteSchool(school: AdminSchool) {
     if (school.user_count) {
-      alert(this.i18n.t('admin.deleteSchoolBlocked', { n: school.user_count }));
+      this.toast.error(this.i18n.t('admin.deleteSchoolBlocked', { n: school.user_count }));
       return;
     }
-    if (!confirm(this.i18n.t('admin.deleteSchoolConfirm'))) return;
+    const confirmed = await this.confirms.askDanger(this.i18n.t('admin.deleteSchoolConfirm'), {
+      confirmLabel: this.i18n.t('common.delete'),
+    });
+    if (!confirmed) return;
     this.adminService.deleteSchool(school.id).subscribe({
       next: () => {
         this.loadPage(this.currentPage);
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(err?.error?.detail || this.i18n.t('admin.errDeleteFailed'));
+        this.toast.error(err?.error?.detail || this.i18n.t('admin.errDeleteFailed'));
         this.cdr.markForCheck();
       }
     });

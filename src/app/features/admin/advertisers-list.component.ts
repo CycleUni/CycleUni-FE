@@ -9,6 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { AdminService, AdminAdvertiser, Paginated } from '../../core/services/admin.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 
 @Component({
@@ -120,6 +122,8 @@ export class AdminAdvertisersListComponent implements OnInit {
   private adminService = inject(AdminService);
   private metadataService = inject(MetadataService);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   private cdr = inject(ChangeDetectorRef);
   
   schools: any[] = [];
@@ -178,7 +182,7 @@ export class AdminAdvertisersListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -222,7 +226,7 @@ export class AdminAdvertisersListComponent implements OnInit {
 
   save() {
     if (!this.formData.company_name || !this.formData.contact_email) {
-      alert(this.i18n.t('admin.errFillRequired'));
+      this.toast.error(this.i18n.t('admin.errFillRequired'));
       return;
     }
 
@@ -240,18 +244,21 @@ export class AdminAdvertisersListComponent implements OnInit {
         this.closeModal();
         this.loadPage(this.currentPage);
       },
-      error: (err) => alert(parseAdminError(err, this.i18n, 'admin.errSaveFailed'))
+      error: (err) => this.toast.error(parseAdminError(err, this.i18n, 'admin.errSaveFailed'))
     });
   }
 
-  deleteAdvertiser(id: string | number) {
-    if (confirm(this.i18n.t('admin.confirmDeleteAdvertiser'))) {
+  async deleteAdvertiser(id: string | number) {
+    const confirmed = await this.confirms.askDanger(this.i18n.t('admin.confirmDeleteAdvertiser'), {
+      confirmLabel: this.i18n.t('common.delete'),
+    });
+    if (confirmed) {
       this.adminService.deleteAdvertiser(id).subscribe({
         next: () => {
           this.loadPage(this.currentPage);
         },
         error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errDeleteFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errDeleteFailed'));
         }
       });
     }

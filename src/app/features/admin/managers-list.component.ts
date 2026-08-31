@@ -6,6 +6,8 @@ import { AdminService, AdminUser } from '../../core/services/admin.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { AccountService } from '../../core/services/account.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -107,6 +109,8 @@ export class AdminManagersListComponent implements OnInit {
   private adminService = inject(AdminService);
   private accountService = inject(AccountService);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   private cdr = inject(ChangeDetectorRef);
 
   users: AdminUser[] = [];
@@ -159,7 +163,7 @@ export class AdminManagersListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -170,14 +174,19 @@ export class AdminManagersListComponent implements OnInit {
     return this.isSuperuser && !targetUser.is_superuser;
   }
 
-  toggleAdmin(user: AdminUser) {
+  async toggleAdmin(user: AdminUser) {
     if (!this.canManage(user)) return;
     
     const newStaffStatus = !user.is_staff;
     const action = newStaffStatus ? this.i18n.t('admin.grantAdmin') : this.i18n.t('admin.revokeAdmin');
-    if (!confirm(`Are you sure you want to ${action} for ${user.email}?`)) {
-        return;
-    }
+    // Granting can be walked back from this same screen; revoking can lock the
+    // last other admin out of it, so only the revoke half gets the red button.
+    const confirmed = await this.confirms.ask({
+      message: this.i18n.t('admin.confirmToggleAdmin', { action, email: user.email }),
+      confirmLabel: action,
+      variant: newStaffStatus ? 'primary' : 'danger',
+    });
+    if (!confirmed) return;
 
     this.adminService.toggleManager(user.id, newStaffStatus).subscribe({
       next: (updatedUser) => {
@@ -186,7 +195,7 @@ export class AdminManagersListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to toggle admin status', err);
-        alert('Action failed.');
+        this.toast.error(parseAdminError(err, this.i18n));
       }
     });
   }

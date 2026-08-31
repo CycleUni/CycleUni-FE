@@ -4,6 +4,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminRegion, AdminCurrency } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { Lang } from '../../core/i18n';
 import { RegionLinkDirective } from '../../core/region-link.directive';
@@ -110,6 +111,7 @@ export class AdminRegionDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
 
   item?: AdminRegion;
   currencies: AdminCurrency[] = [];
@@ -227,12 +229,12 @@ export class AdminRegionDetailComponent implements OnInit {
     this.adminService.updateRegion(this.item.code, payload).subscribe({
       next: () => {
         this.saving = false;
-        alert(this.i18n.t('admin.saved'));
+        this.toast.success(this.i18n.t('admin.saved'));
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.saving = false;
-        alert(parseAdminError(err, this.i18n));
+        this.toast.error(parseAdminError(err, this.i18n));
         this.cdr.markForCheck();
       }
     });

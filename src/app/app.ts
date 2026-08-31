@@ -4,6 +4,8 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { I18nService, TPipe } from './core/i18n.service';
 import { UiLayout } from './shared/ui/layout.component';
+import { UiToastHost } from './shared/ui/toast-host.component';
+import { UiConfirmDialog } from './shared/ui/confirm-dialog.component';
 import { NavigationHistoryService } from './core/services/navigation-history.service';
 import { GoogleAuthService } from './core/services/google-auth.service';
 import { GoogleAnalyticsService } from './core/services/google-analytics.service';
@@ -20,11 +22,20 @@ export const VISIBILITY_CHECK_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
  * whole chrome. */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, UiLayout, TPipe],
+  imports: [RouterOutlet, UiLayout, UiToastHost, UiConfirmDialog, TPipe],
   template: `
     <ui-layout>
       <router-outlet />
     </ui-layout>
+    <!-- Outside <ui-layout>, not inside it: both hosts are position:fixed, and
+         a fixed descendant is still clipped by an ancestor's overflow or
+         transform. The layout owns full-bleed routes and its own scroll
+         containers, so anchoring these to the shell keeps them pinned to the
+         real viewport on every route — the same reason .update-prompt below
+         lives here. Mounted once so a toast survives the navigation that a
+         per-page host would take down with it. -->
+    <ui-toast-host />
+    <ui-confirm-dialog />
     @if (updateReady()) {
       <div class="update-prompt">
         <span>{{ 'app.updateAvailable' | t }}</span>

@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { AdminService, AdminOrder } from '../../core/services/admin.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { ForceCancelModalComponent } from './force-cancel-modal.component';
 import { PricePipe } from '../../shared/pipes/price.pipe';
@@ -58,6 +59,7 @@ export class AdminOrderDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private adminService = inject(AdminService);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   order: AdminOrder | null = null;
@@ -79,7 +81,7 @@ export class AdminOrderDetailComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }

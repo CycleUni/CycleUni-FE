@@ -15,6 +15,7 @@ import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
 import { PricePipe } from '../../shared/pipes/price.pipe';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { RegionLinkService } from '../../core/region-link.service';
+import { ToastService } from '../../core/services/toast.service';
 
 
 @Component({
@@ -236,6 +237,7 @@ export class OrdersComponent implements OnInit {
   private regionLink = inject(RegionLinkService);
   private route = inject(ActivatedRoute);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
   private ga = inject(GoogleAnalyticsService);
 
   get filteredBoughtOrders() {
@@ -445,7 +447,7 @@ export class OrdersComponent implements OnInit {
         this.currentReviewOrderRef.has_reviewed = true;
       }
       this.ga.trackSubmitReview(this.currentReviewOrderRef?.id);
-      alert(this.i18n.t('order.reviewSubmitted'));
+      this.toast.success(this.i18n.t('order.reviewSubmitted'));
       this.cdr.markForCheck();
     }
   }

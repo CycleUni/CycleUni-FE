@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminChatReport } from '../../core/services/admin.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
@@ -92,6 +93,7 @@ export class AdminChatReportsListComponent implements OnInit {
   private adminService = inject(AdminService);
   private http = inject(HttpClient);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private authStore = inject(AuthStore);
   private regionService = inject(RegionService);
@@ -149,7 +151,7 @@ export class AdminChatReportsListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errGeneric'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errGeneric'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -164,7 +166,7 @@ export class AdminChatReportsListComponent implements OnInit {
         this.reload();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errGeneric'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errGeneric'));
         this.actingId = null;
         this.cdr.markForCheck();
       }
@@ -189,14 +191,14 @@ export class AdminChatReportsListComponent implements OnInit {
             this.cdr.markForCheck();
           },
           error: (err) => {
-            alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+            this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
             this.loadingMessages = false;
             this.cdr.markForCheck();
           }
         });
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loadingMessages = false;
         this.cdr.markForCheck();
       }

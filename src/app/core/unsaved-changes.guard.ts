@@ -18,11 +18,11 @@ export interface HasUnsavedChanges {
 /**
  * Blocks route changes while a component reports unsaved changes.
  *
- * Uses the native `confirm()` on purpose: it is what the rest of the app uses
- * today, and a router guard has to answer synchronously (or with a promise
- * resolved by a dialog this guard does not own). Swapping every native
- * confirm for a custom modal is tracked separately — when that lands, this is
- * the single place the sell flow needs changing.
+ * Keeps the native `confirm()` on purpose, now that everywhere else has moved
+ * to `ConfirmService`: a `CanDeactivate` guard has to answer while the
+ * browser's back gesture is still on the stack, and an awaited dialog resolves
+ * a tick too late — by then the navigation has already been let through. Do
+ * not "finish" the migration here.
  *
  * Tab close / reload is a different mechanism entirely and cannot be covered
  * here; components pair this with their own `beforeunload` listener.

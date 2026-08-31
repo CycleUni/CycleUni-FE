@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { AdminService, AdminAd, AdminAdvertiser, Paginated } from '../../core/services/admin.service';
 import { ListingService } from '../../core/services/listing.service';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../core/auth.store';
@@ -180,6 +182,8 @@ export class AdminAdsListComponent implements OnInit {
   private listingService = inject(ListingService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   private authStore = inject(AuthStore);
   private regionService = inject(RegionService);
   
@@ -246,7 +250,7 @@ export class AdminAdsListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }
@@ -313,7 +317,7 @@ export class AdminAdsListComponent implements OnInit {
       this.formData.image_url = res.url;
       this.formData.is_internal_image = true;
     } catch (e) {
-      alert(this.i18n.t('admin.errUploadFailed'));
+      this.toast.error(this.i18n.t('admin.errUploadFailed'));
     } finally {
       this.uploadingImage = false;
       event.target.value = '';
@@ -331,12 +335,12 @@ export class AdminAdsListComponent implements OnInit {
 
   save() {
     if (!this.formData.advertiser || !this.formData.title || !this.formData.image_url || !this.formData.start_date || !this.formData.end_date || !this.formData.slot_index) {
-      alert(this.i18n.t('admin.errFillRequired'));
+      this.toast.error(this.i18n.t('admin.errFillRequired'));
       return;
     }
 
     if (this.formData.target_url && !this.formData.target_url.startsWith('http://') && !this.formData.target_url.startsWith('https://')) {
-      alert(this.i18n.t('admin.errUrlScheme'));
+      this.toast.error(this.i18n.t('admin.errUrlScheme'));
       return;
     }
 
@@ -344,12 +348,12 @@ export class AdminAdsListComponent implements OnInit {
     
     const parsedLabels = this.labelsInput.split(',').map(s => s.trim()).filter(s => s);
     if (parsedLabels.length > 3) {
-      alert("最多只能有 3 個標籤");
+      this.toast.error(this.i18n.t('admin.errTooManyLabels', { max: 3 }));
       return;
     }
     for (let l of parsedLabels) {
       if (l.length > 15) {
-        alert("單一標籤長度不可超過 15 個字");
+        this.toast.error(this.i18n.t('admin.errLabelTooLong', { max: 15 }));
         return;
       }
     }
@@ -359,7 +363,7 @@ export class AdminAdsListComponent implements OnInit {
     if (payload.end_date) payload.end_date = new Date(payload.end_date).toISOString();
 
     if (new Date(payload.start_date!).getTime() >= new Date(payload.end_date!).getTime()) {
-      alert(this.i18n.t('admin.errEndDateBeforeStart'));
+      this.toast.error(this.i18n.t('admin.errEndDateBeforeStart'));
       return;
     }
 
@@ -372,18 +376,21 @@ export class AdminAdsListComponent implements OnInit {
         this.closeModal();
         this.loadPage(this.currentPage);
       },
-      error: (err) => alert(parseAdminError(err, this.i18n, 'admin.errSaveFailed'))
+      error: (err) => this.toast.error(parseAdminError(err, this.i18n, 'admin.errSaveFailed'))
     });
   }
 
-  deleteAd(id: string | number) {
-    if (confirm(this.i18n.t('admin.confirmDelete'))) {
+  async deleteAd(id: string | number) {
+    const confirmed = await this.confirms.askDanger(this.i18n.t('admin.confirmDelete'), {
+      confirmLabel: this.i18n.t('common.delete'),
+    });
+    if (confirmed) {
       this.adminService.deleteAd(id).subscribe({
         next: () => {
           this.loadPage(this.currentPage);
         },
         error: (err) => {
-          alert(parseAdminError(err, this.i18n, 'admin.errDeleteFailed'));
+          this.toast.error(parseAdminError(err, this.i18n, 'admin.errDeleteFailed'));
         }
       });
     }

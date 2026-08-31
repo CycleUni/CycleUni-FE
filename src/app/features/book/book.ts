@@ -18,6 +18,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 import { RegionLinkService } from '../../core/region-link.service';
+import { ToastService } from '../../core/services/toast.service';
 
 
 @Component({
@@ -278,6 +279,7 @@ export class Book implements OnInit {
   private regionService = inject(RegionService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
   private schoolStateService = inject(SchoolStateService);
 
   private isFirstSchoolEmission = true;
@@ -421,7 +423,7 @@ export class Book implements OnInit {
         // A silent fetch only supplements an already-rendered preview;
         // keep showing the preview instead of alarming the user
         if (!silent) {
-          alert(this.i18n.t('alert.bookNotFound'));
+          this.toast.error(this.i18n.t('alert.bookNotFound'));
         }
         this.cdr.markForCheck();
       }
@@ -472,7 +474,7 @@ export class Book implements OnInit {
           this.showUnverifiedPrompt = true;
           this.cdr.markForCheck();
         } else {
-          alert(err.error?.error || this.i18n.t('alert.conversationFailed'));
+          this.toast.error(err.error?.error || this.i18n.t('alert.conversationFailed'));
         }
       }
     });
@@ -492,14 +494,14 @@ export class Book implements OnInit {
 
   subscribeBook() {
     if (!this.auth.isLoggedIn()) {
-      alert(this.i18n.t('alert.loginToSubscribe'));
+      this.toast.info(this.i18n.t('alert.loginToSubscribe'));
       this.router.navigate(this.regionLink.path(['/account']));
       return;
     }
     if (this.bookId) {
       this.bookService.subscribe(this.bookId).subscribe({
         next: (res) => {
-          alert(this.i18n.t('alert.subscribed'));
+          this.toast.success(this.i18n.t('alert.subscribed'));
           if (this.book) {
             this.book.waiting_count++;
             this.book.is_subscribed = true;
@@ -507,7 +509,7 @@ export class Book implements OnInit {
             this.cdr.markForCheck();
           }
         },
-        error: () => alert(this.i18n.t('alert.subscribeFailed'))
+        error: () => this.toast.error(this.i18n.t('alert.subscribeFailed'))
       });
     }
   }
@@ -516,13 +518,13 @@ export class Book implements OnInit {
     if (this.book && this.book.subscription_id) {
       this.bookService.unsubscribe(this.book.subscription_id).subscribe({
         next: () => {
-          alert(this.i18n.t('alert.unsubscribed'));
+          this.toast.success(this.i18n.t('alert.unsubscribed'));
           this.book.waiting_count--;
           this.book.is_subscribed = false;
           this.book.subscription_id = null;
           this.cdr.markForCheck();
         },
-        error: () => alert(this.i18n.t('alert.unsubscribeFailed'))
+        error: () => this.toast.error(this.i18n.t('alert.unsubscribeFailed'))
       });
     }
   }

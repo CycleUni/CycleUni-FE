@@ -22,6 +22,7 @@ import { UiFacetList, FacetOption } from '../../shared/ui/facet-list.component';
 import { combineLatest, Subscription } from 'rxjs';
 import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { RegionLinkService } from '../../core/region-link.service';
+import { ToastService } from '../../core/services/toast.service';
 
 type ConditionKey = 'new' | 'like_new' | 'noted' | 'damaged';
 const CONDITION_KEYS: ConditionKey[] = ['new', 'like_new', 'noted', 'damaged'];
@@ -416,6 +417,7 @@ export class Search implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
   private schoolStateService = inject(SchoolStateService);
   private metadataService = inject(MetadataService);
   private ga = inject(GoogleAnalyticsService);
@@ -628,23 +630,23 @@ export class Search implements OnInit {
 
   subscribeBook(item: any) {
     if (!this.auth.isLoggedIn()) {
-      alert(this.i18n.t('alert.loginToSubscribe')); this.router.navigate(this.regionLink.path(['/account'])); return;
+      this.toast.info(this.i18n.t('alert.loginToSubscribe')); this.router.navigate(this.regionLink.path(['/account'])); return;
     }
     const doSubscribe = (id: string) => {
       this.bookService.subscribe(id).subscribe({
         next: res => {
-          alert(this.i18n.t('alert.subscribed'));
+          this.toast.success(this.i18n.t('alert.subscribed'));
           item.waitlistCount++; item.is_subscribed = true; item.subscription_id = res.id; item.id = id;
           this.cdr.markForCheck();
         },
-        error: () => alert(this.i18n.t('alert.unsubscribeFailed'))
+        error: () => this.toast.error(this.i18n.t('alert.unsubscribeFailed'))
       });
     };
     if (item.id) { doSubscribe(item.id); } else {
       const bookData = { isbn13: item.isbn || '', title: item.title, authors: item.author || '', publisher: item.publisher || '', published_date: item.published_date || '', cover_url: item.coverUrl || '', source: item.source || 'manual' };
       this.bookService.createManualBook(bookData).subscribe({
         next: created => doSubscribe(created.id),
-        error: () => alert(this.i18n.t('alert.subscribeFailed'))
+        error: () => this.toast.error(this.i18n.t('alert.subscribeFailed'))
       });
     }
   }
@@ -653,11 +655,11 @@ export class Search implements OnInit {
     if (item.subscription_id) {
       this.bookService.unsubscribe(item.subscription_id).subscribe({
         next: () => {
-          alert(this.i18n.t('alert.unsubscribed'));
+          this.toast.success(this.i18n.t('alert.unsubscribed'));
           item.waitlistCount--; item.is_subscribed = false; item.subscription_id = null;
           this.cdr.markForCheck();
         },
-        error: () => alert(this.i18n.t('alert.unsubscribeFailed'))
+        error: () => this.toast.error(this.i18n.t('alert.unsubscribeFailed'))
       });
     }
   }

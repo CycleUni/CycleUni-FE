@@ -8,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCategory, Paginated } from '../../core/services/admin.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { TranslationEditorComponent, TranslationField } from './translation-editor.component';
 import { BulkImportModalComponent } from './bulk-import-modal.component';
 import { UiTextarea } from '../../shared/ui/textarea.component';
@@ -144,6 +146,8 @@ export class AdminCategoriesListComponent implements OnInit {
   private adminService = inject(AdminService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   private authStore = inject(AuthStore);
   private regionService = inject(RegionService);
 
@@ -183,7 +187,7 @@ export class AdminCategoriesListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.cdr.markForCheck();
       }
     });
@@ -228,8 +232,11 @@ export class AdminCategoriesListComponent implements OnInit {
   }
 
   
-  deleteCategory(id: number) {
-    if (confirm(this.i18n.t('admin.deleteCategoryConfirm'))) {
+  async deleteCategory(id: number) {
+    const confirmed = await this.confirms.askDanger(this.i18n.t('admin.deleteCategoryConfirm'), {
+      confirmLabel: this.i18n.t('common.delete'),
+    });
+    if (confirmed) {
       this.adminService.deleteCategory(id).subscribe(() => {
         this.loadPage(this.currentPage);
         this.cdr.markForCheck();

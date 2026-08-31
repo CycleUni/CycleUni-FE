@@ -16,6 +16,8 @@ import { MetadataService } from '../../core/services/metadata.service';
 
 import { AccountService } from '../../core/services/account.service';
 import { RegionLinkService } from '../../core/region-link.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 
 @Component({
@@ -183,6 +185,8 @@ export class ListingsComponent implements OnInit {
   private regionLink = inject(RegionLinkService);
   readonly i18n = inject(I18nService);
 
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   ngOnInit() {
     this.metadataService.getMetadata().subscribe({
       next: (data) => {
@@ -227,7 +231,7 @@ export class ListingsComponent implements OnInit {
     this.loadMyListings();
   }
 
-  onListingAction(event: {type: string, id: number | string}) {
+  async onListingAction(event: {type: string, id: number | string}) {
     if (event.type === 'edit') {
       const listing = this.myListings.find(l => l.id === event.id);
       if (listing) {
@@ -254,7 +258,7 @@ export class ListingsComponent implements OnInit {
         },
         error: (err) => {
           const code = err.error?.error?.code;
-          alert(this.i18n.t('acct.errUpdate') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.message)));
+          this.toast.error(this.i18n.t('acct.errUpdate') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.message)));
         }
       });
     } else if (event.type === 'mark_active') {
@@ -265,11 +269,14 @@ export class ListingsComponent implements OnInit {
         },
         error: (err) => {
           const code = err.error?.error?.code;
-          alert(this.i18n.t('acct.errUpdate') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.message)));
+          this.toast.error(this.i18n.t('acct.errUpdate') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.message)));
         }
       });
     } else if (event.type === 'delete') {
-      if (confirm(this.i18n.t('acct.confirmDelete'))) {
+      const confirmed = await this.confirms.askDanger(this.i18n.t('acct.confirmDelete'), {
+        confirmLabel: this.i18n.t('common.delete'),
+      });
+      if (confirmed) {
         this.listingService.deleteListing(event.id).subscribe({
           next: () => {
             this.accountService.clearProfileCache();
@@ -294,7 +301,7 @@ export class ListingsComponent implements OnInit {
         this.editForm.photos = [url];
       } catch (err) {
         console.error('Upload failed', err);
-        alert(this.i18n.t('acct.uploadFailed'));
+        this.toast.error(this.i18n.t('acct.uploadFailed'));
       } finally {
         this.isUploadingPhoto = false;
         this.cdr.markForCheck();
@@ -329,7 +336,7 @@ export class ListingsComponent implements OnInit {
         this.loadMyListings();
       },
       error: () => {
-        alert(this.i18n.t('acct.updateFailed'));
+        this.toast.error(this.i18n.t('acct.updateFailed'));
       }
     });
   }
