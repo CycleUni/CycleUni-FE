@@ -1,6 +1,8 @@
     <main class="container">
       <ui-back-button></ui-back-button>
 
+      <ui-breadcrumb [items]="breadcrumbItems"></ui-breadcrumb>
+
       <div *ngIf="isLoading" class="loading">{{ 'sell.searching' | t }}</div>
       
       <div *ngIf="!isLoading && listing" class="product-layout">
@@ -91,14 +93,19 @@
             (onDismiss)="showUnverifiedPrompt = false">
           </ui-verification-prompt>
 
+          <!-- Chatting is the real first step: the order endpoint rejects a
+               meetup request from a buyer who has never messaged the seller
+               (checkout.errNoChat), so contacting is the primary action and
+               arranging the meetup the secondary one. -->
           <div class="action-buttons">
-            <ui-button style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="buyNow()">
-              {{ 'checkout.buyNow' | t }}
-            </ui-button>
-            <ui-button variant="white" style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="contactSeller()">
+            <ui-button style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="contactSeller()">
               {{ 'checkout.contactSeller' | t }}
             </ui-button>
+            <ui-button variant="white" style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="buyNow()">
+              {{ 'checkout.arrangeMeetup' | t }}
+            </ui-button>
           </div>
+          <p class="chat-first-hint">{{ 'checkout.chatFirstHint' | t }}</p>
 
           <button
             *ngIf="canReport()"

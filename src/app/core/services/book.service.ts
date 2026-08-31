@@ -3,8 +3,6 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SKIP_LANG_PARAM } from '../api-url.interceptor';
 import { SKIP_AUTH } from '../auth.interceptor';
-import { I18nService } from '../i18n.service';
-import { RegionService } from '../region.service';
 
 const PUBLIC_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true).set(SKIP_AUTH, true);
 const OPTIONAL_AUTH_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
@@ -14,8 +12,6 @@ const OPTIONAL_AUTH_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
 })
 export class BookService {
   private http = inject(HttpClient);
-  private regionService = inject(RegionService);
-  private i18n = inject(I18nService);
 
   searchBooks(query: string, category?: string, course?: string, school?: string, page: number = 1, engine?: string): Observable<any> {
     let url = `/search/books/?q=${encodeURIComponent(query)}&page=${page}`;
@@ -64,18 +60,5 @@ export class BookService {
 
   unsubscribe(subscriptionId: string | number): Observable<any> {
     return this.http.delete<any>(`/subscriptions/${subscriptionId}/`);
-  }
-
-  getEngineOptions() {
-    const region = this.regionService.currentRegionObj();
-    const available = region ? region.search_engines : ['googlebooks', 'openlibrary', 'isbnnet'];
-    
-    const all = [
-      { label: this.i18n.t('search.engineGoogle'), value: 'googlebooks' },
-      { label: this.i18n.t('search.engineOpenLibrary'), value: 'openlibrary' },
-      { label: this.i18n.t('search.engineIsbnNet'), value: 'isbnnet' }
-    ];
-    
-    return all.filter(opt => available.includes(opt.value));
   }
 }

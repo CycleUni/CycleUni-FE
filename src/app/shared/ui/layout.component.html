@@ -99,6 +99,16 @@
       </main>
 
       <nav class="bottom-tab-bar" *ngIf="!mobileLayout.hideBottomNav()">
+        <!-- Home has no mobile entry point otherwise: the header logo is the
+             only one on desktop, and it is not part of this bar. -->
+        <a regionLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
+            <path d="M3.5 11 12 4l8.5 7"/>
+            <path d="M5.5 10.5V20h13v-9.5"/>
+            <path d="M10 20v-5.5h4V20"/>
+          </svg>
+          <span class="tab-label">{{ 'nav.home' | t }}</span>
+        </a>
         <a regionLink="/search" routerLinkActive="active-tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true">
             <circle cx="10.5" cy="10.5" r="6.5"/>

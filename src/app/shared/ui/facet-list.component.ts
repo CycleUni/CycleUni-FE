@@ -8,14 +8,19 @@ export interface FacetOption {
   selected: boolean;
 }
 
+let nextId = 0;
+
 /**
  * `facet-list`: a plain-text filter/facet list — a lighter "editorial"
  * alternative to boxed dropdowns/checkboxes. Each option renders as a row
- * with a small circular dot indicator, label, and optional trailing count.
+ * with a small indicator, label, and optional trailing count.
  *
- * Presentational only: it does not own selection state or single/multi
- * behavior — the parent listens to `optionToggle` and decides how to
- * mutate `options` (radio-like single-select or checkbox-like multi-select).
+ * Selection state still lives with the parent (it listens to `optionToggle`
+ * and mutates `options`), but `selectionMode` is now declared rather than
+ * merely implied: every group used to draw the same round dot, so nothing on
+ * screen told the user whether clicking an option *adds* a condition or
+ * *replaces* the current one. The mode drives both the marker shape and the
+ * ARIA roles, so the two can never drift apart.
  */
 @Component({
   selector: 'ui-facet-list',
@@ -23,15 +28,30 @@ export interface FacetOption {
   imports: [CommonModule],
   template: `
     <div class="facet-group">
-      <h4 class="facet-title" *ngIf="title">{{ title }}</h4>
-      <ul class="facet-list">
+      <h4 class="facet-title" *ngIf="title" [id]="titleId">{{ title }}</h4>
+      <ul
+        class="facet-list"
+        [class.single]="selectionMode === 'single'"
+        [attr.role]="selectionMode === 'single' ? 'radiogroup' : 'group'"
+        [attr.aria-labelledby]="title ? titleId : null"
+      >
+        <!-- role/tabindex rather than a bare <li (click)>: the options are the
+             only way to filter, and a plain list item is unreachable by
+             keyboard and announced as static text. The <ul>'s own role
+             overrides its list semantics, which is why the items carry
+             radio/checkbox roles instead of listitem. -->
         <li
           class="facet-option"
           *ngFor="let option of options"
           [class.selected]="option.selected"
-          (click)="optionToggle.emit(option.value)"
+          [attr.role]="selectionMode === 'single' ? 'radio' : 'checkbox'"
+          [attr.aria-checked]="option.selected"
+          tabindex="0"
+          (click)="select(option.value)"
+          (keydown.enter)="select(option.value, $event)"
+          (keydown.space)="select(option.value, $event)"
         >
-          <span class="facet-dot"></span>
+          <span class="facet-marker"></span>
           <span class="facet-label">{{ option.label }}</span>
           <span class="facet-count" *ngIf="option.count !== undefined">{{ option.count }}</span>
         </li>
@@ -66,17 +86,51 @@ export interface FacetOption {
       cursor: pointer;
       font-size: 14px;
       color: var(--ink);
+      /* Not --tap-min: a sidebar of 20 courses at 44px a row would scroll off
+         the screen. 24px is the WCAG 2.5.8 minimum target and keeps the list
+         as dense as the editorial treatment intends. */
+      min-height: 24px;
     }
-    .facet-dot {
+    /* Square = checkbox = "adds a condition"; round = radio = "replaces the
+       current one". Same recipe as ui-checkbox / ui-radio-group so the two
+       vocabularies read identically wherever they appear. */
+    .facet-marker {
       flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--line-strong);
+      border-radius: var(--radius-xs);
+      background-color: var(--paper);
+      box-sizing: border-box;
+      display: grid;
+      place-content: center;
+    }
+    .facet-list.single .facet-marker {
+      border-radius: 50%;
+    }
+    .facet-marker::before {
+      content: "";
       width: 10px;
       height: 10px;
-      border-radius: 50%;
-      border: 1.5px solid var(--line);
-      box-sizing: border-box;
+      background-color: var(--btn-primary-ink);
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      transform: scale(0);
+      transition: transform 0.1s ease-in-out;
     }
-    .facet-option.selected .facet-dot {
-      background: var(--accent);
+    .facet-list.single .facet-marker::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      clip-path: none;
+    }
+    .facet-option.selected .facet-marker {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    .facet-option.selected .facet-marker::before {
+      transform: scale(1);
+    }
+    .facet-option:hover .facet-marker {
       border-color: var(--accent);
     }
     .facet-option.selected .facet-label {
@@ -95,6 +149,21 @@ export interface FacetOption {
 export class UiFacetList {
   @Input() title: string = '';
   @Input() options: FacetOption[] = [];
+  /**
+   * Defaults to 'single' because that is what the list already looked like —
+   * one round dot — so an existing call site that says nothing keeps
+   * rendering exactly as before instead of silently turning into checkboxes.
+   */
+  @Input() selectionMode: 'single' | 'multiple' = 'single';
 
   @Output() optionToggle = new EventEmitter<string>();
+
+  titleId = `ui-facet-list-title-${nextId++}`;
+
+  select(value: string, event?: Event) {
+    // Space scrolls the page on any focusable element; the user pressing it
+    // here means "tick this", not "page down".
+    event?.preventDefault();
+    this.optionToggle.emit(value);
+  }
 }

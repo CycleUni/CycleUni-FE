@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiBackButton } from '../../shared/ui/back-button.component';
+import { UiBreadcrumb, BreadcrumbItem } from '../../shared/ui/breadcrumb.component';
 import { RegionService } from '../../core/region.service';
 import { BookService } from '../../core/services/book.service';
 import { MessageService } from '../../core/services/message.service';
@@ -22,10 +23,12 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-book',
   standalone: true,
-  imports: [CommonModule, RouterModule, UiButton, UiBackButton, TPipe, UiListingCard, UiBookCover, UiPagination, UiEmpty, UiVerificationPrompt],
+  imports: [CommonModule, RouterModule, UiButton, UiBackButton, UiBreadcrumb, TPipe, UiListingCard, UiBookCover, UiPagination, UiEmpty, UiVerificationPrompt],
   template: `
       <div class="container" *ngIf="book">
         <ui-back-button></ui-back-button>
+
+        <ui-breadcrumb [items]="breadcrumbItems"></ui-breadcrumb>
 
         <ui-verification-prompt
           *ngIf="showUnverifiedPrompt"
@@ -256,6 +259,16 @@ export class Book implements OnInit {
 
   get currentSchoolLabel(): string {
     return this.schoolStateService.getSchoolLabel(this.currentSchool);
+  }
+
+  /** Home › <book title>. No category level: the book payload carries no
+   *  readable category, and fetching one would mean an extra request. */
+  get breadcrumbItems(): BreadcrumbItem[] {
+    if (!this.book) return [];
+    return [
+      { labelKey: 'nav.home', link: '/' },
+      { label: this.book.title }
+    ];
   }
 
   private bookService = inject(BookService);

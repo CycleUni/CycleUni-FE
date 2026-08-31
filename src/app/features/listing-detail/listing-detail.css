@@ -318,6 +318,16 @@
       }
     }
 
+    /* Standing note under the CTAs: a meetup request is only accepted after
+       buyer and seller have chatted, so say so before the button is pressed
+       instead of letting the checkout page reject it afterwards. */
+    .chat-first-hint {
+      margin: var(--space-2) 0 0;
+      color: var(--muted);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+
     .report-link {
       align-self: flex-start;
       margin-top: 16px;

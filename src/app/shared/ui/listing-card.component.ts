@@ -28,9 +28,14 @@ import { PricePipe } from '../pipes/price.pipe';
         <div class="listing-note" *ngIf="item.description">
           {{ item.description }}
         </div>
+        <!-- Contacting the seller leads, and the meetup request follows. The
+             order used to be reversed, but the backend rejects an order from a
+             buyer with no conversation on this listing (checkout.errNoChat), so
+             the leading button was sending every first-time buyer into a page
+             that could only fail. -->
         <div class="button-group" style="display: flex; gap: 8px; margin-top: auto; padding-top: 16px;">
-          <ui-button style="flex: 1;" (onClick)="onBuyNowClick($event)">{{ 'checkout.buyNow' | t }}</ui-button>
-          <ui-button variant="ghost" style="flex: 1;" (onClick)="onContactSellerClick($event)">{{ 'book.contactSeller' | t }}</ui-button>
+          <ui-button style="flex: 1;" (onClick)="onContactSellerClick($event)">{{ 'book.contactSeller' | t }}</ui-button>
+          <ui-button variant="ghost" style="flex: 1;" (onClick)="onBuyNowClick($event)">{{ 'checkout.arrangeMeetup' | t }}</ui-button>
         </div>
       </div>
     </div>

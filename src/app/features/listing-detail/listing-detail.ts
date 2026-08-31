@@ -7,6 +7,7 @@ import { BookService } from '../../core/services/book.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiErrorState } from '../../shared/ui/error-state.component';
 import { UiBackButton } from '../../shared/ui/back-button.component';
+import { UiBreadcrumb, BreadcrumbItem } from '../../shared/ui/breadcrumb.component';
 import { UiListingCard } from '../../shared/ui/listing-card.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AuthStore } from '../../core/auth.store';
@@ -22,7 +23,7 @@ import { RegionLinkService } from '../../core/region-link.service';
 @Component({
   selector: 'app-listing-detail',
   standalone: true,
-  imports: [RegionLinkDirective, CommonModule, RouterModule, UiButton, UiErrorState, UiBackButton, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
+  imports: [RegionLinkDirective, CommonModule, RouterModule, UiButton, UiErrorState, UiBackButton, UiBreadcrumb, UiListingCard, TPipe, PricePipe, ReportModalComponent, UiVerificationPrompt],
   templateUrl: './listing-detail.html',
   styleUrls: ['./listing-detail.css']
 })
@@ -38,6 +39,17 @@ export class ListingDetail implements OnInit, OnDestroy {
   selectedIndex: number = 0;
   otherListings: any[] = [];
   brokenPhotos = new Set<number>();
+
+  /** Home › <book title>. The school/college category is deliberately left
+   *  out: the listing payload carries only the category *slug*, and turning
+   *  that into a readable name would cost a metadata request per page view. */
+  get breadcrumbItems(): BreadcrumbItem[] {
+    if (!this.listing) return [];
+    return [
+      { labelKey: 'nav.home', link: '/' },
+      { label: this.listing.book_title }
+    ];
+  }
 
   showReportModal = false;
   reportConfirmationMsg = '';
@@ -185,11 +197,26 @@ export class ListingDetail implements OnInit, OnDestroy {
     });
   }
 
-  buyNow() {
+  /** Both checkout entrances and contactSeller() share this gate. Only
+   *  contactSeller() used to run the verification half of it: the two buy
+   *  paths sent an unverified buyer all the way into /checkout to be refused
+   *  there, instead of showing the prompt that says what to do about it. */
+  private canStartTransaction(): boolean {
     if (!this.auth.isLoggedIn()) {
       this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
-      return;
+      return false;
     }
+    const user = this.auth.getUser();
+    if (user && this.listing && !this.auth.isVerifiedIn(this.listing?.region)) {
+      this.showUnverifiedPrompt = true;
+      this.cdr.markForCheck();
+      return false;
+    }
+    return true;
+  }
+
+  buyNow() {
+    if (!this.canStartTransaction()) return;
     if (this.listing?.id) {
       this.ga.trackEvent('click_buy_now', { item_id: this.listing.id });
       this.router.navigate(this.regionLink.path(['/checkout', this.listing.id]));
@@ -197,24 +224,12 @@ export class ListingDetail implements OnInit, OnDestroy {
   }
 
   buyNowOther(id: string) {
-    if (!this.auth.isLoggedIn()) {
-      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
-      return;
-    }
+    if (!this.canStartTransaction()) return;
     this.router.navigate(this.regionLink.path(['/checkout', id]));
   }
 
   contactSeller() {
-    if (!this.auth.isLoggedIn()) {
-      this.router.navigate(this.regionLink.path(['/account']), { queryParams: { returnUrl: this.router.url } });
-      return;
-    }
-    const user = this.auth.getUser();
-    if (user && this.listing && !this.auth.isVerifiedIn(this.listing?.region)) {
-      this.showUnverifiedPrompt = true;
-      this.cdr.markForCheck();
-      return;
-    }
+    if (!this.canStartTransaction()) return;
     if (this.listing?.id) {
       this.ga.trackContactSeller(this.listing.id);
       this.router.navigate(this.regionLink.path(['/messages']), { queryParams: { listing: this.listing.id } });

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Sell, cleanAndValidateIsbn, clean_and_validate_isbn, isValidIsbnChecksum, selectBestRearCamera } from './sell';
+import { Sell, SELL_DRAFT_STORAGE_KEY, SELL_DRAFT_MAX_AGE_MS, cleanAndValidateIsbn, clean_and_validate_isbn, isValidIsbnChecksum, selectBestRearCamera } from './sell';
+import { unsavedChangesGuard } from '../../core/unsaved-changes.guard';
 import { provideRouter } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { I18nService } from '../../core/i18n.service';
@@ -308,5 +309,342 @@ describe('Sell Component Barcode Scanner Validation', () => {
     component.handleScanResult('9786264140720');
     expect(component.cameraError).toBe('');
     expect(component.searchQuery).toBe('9786264140720');
+  });
+});
+
+describe('unsavedChangesGuard', () => {
+  const call = (component: any) =>
+    unsavedChangesGuard(component, null as any, null as any, null as any);
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('lets navigation through when the component reports nothing unsaved', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    expect(call({ hasUnsavedChanges: () => false, unsavedChangesMessage: () => 'msg' })).toBe(true);
+    expect(confirmSpy).not.toHaveBeenCalled();
+  });
+
+  it('asks for confirmation with the component message when there are unsaved changes', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const result = call({ hasUnsavedChanges: () => true, unsavedChangesMessage: () => 'leave?' });
+    expect(confirmSpy).toHaveBeenCalledWith('leave?');
+    expect(result).toBe(false);
+  });
+
+  it('allows the navigation when the user confirms', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    expect(call({ hasUnsavedChanges: () => true, unsavedChangesMessage: () => 'leave?' })).toBe(true);
+  });
+
+  it('never traps the user when the component does not implement the interface', () => {
+    expect(call(null)).toBe(true);
+    expect(call({})).toBe(true);
+  });
+});
+
+describe('Sell listing form guarding, drafts and field validation', () => {
+  let fixture: ComponentFixture<Sell>;
+  let component: Sell;
+
+  const mockI18n = {
+    t: vi.fn((key: string) => key),
+    lang: () => 'en'
+  };
+
+  /** Builds a fixture on demand so a test can seed localStorage first. */
+  const create = () => {
+    fixture = TestBed.createComponent(Sell);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    return component;
+  };
+
+  beforeEach(async () => {
+    localStorage.clear();
+    await TestBed.configureTestingModule({
+      imports: [Sell, HttpClientTestingModule],
+      providers: [
+        { provide: RegionService, useValue: { regions: () => [{ code: 'tw', currency: { code: 'TWD', decimal_places: 0 } }], currency: () => ({ code: 'TWD', decimal_places: 0, symbol: 'NT$' }), region: () => 'tw', currentRegionObj: () => ({ search_engines: ['googlebooks'] }) } },
+        provideRouter([]),
+        {
+          provide: BookService,
+          useValue: {
+            getEngineOptions: vi.fn().mockReturnValue([{ label: 'Google Books', value: 'googlebooks' }]),
+            searchBooks: vi.fn().mockReturnValue(of({ results: [] })),
+            createManualBook: vi.fn().mockReturnValue(of({ id: 'book-1' }))
+          }
+        },
+        { provide: I18nService, useValue: mockI18n },
+        { provide: AuthStore, useValue: { isLoggedIn: () => true, user: () => ({ id: 'user-1' }), isVerifiedIn: () => true } },
+        { provide: AccountService, useValue: { getMyProfile: vi.fn().mockReturnValue(of({ verified_at: '2026-01-01' })) } },
+        { provide: ListingService, useValue: { uploadPhoto: vi.fn(), deletePhoto: vi.fn().mockReturnValue(of({})), createListing: vi.fn() } },
+        { provide: MetadataService, useValue: { getMetadata: vi.fn().mockReturnValue(of({ categories: [{ title: 'Engineering', slug: 'engineering' }] })) } },
+        { provide: GoogleAnalyticsService, useValue: { trackEvent: vi.fn(), trackPublishListing: vi.fn() } }
+      ]
+    }).compileComponents();
+  });
+
+  afterEach(() => {
+    component?.ngOnDestroy();
+    localStorage.clear();
+  });
+
+  describe('hasUnsavedChanges', () => {
+    it('does not intercept an untouched step 1', () => {
+      create();
+      expect(component.step).toBe(1);
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('does not intercept a typed-but-unselected ISBN', () => {
+      create();
+      component.searchQuery = '9786264140720';
+      component.onSearchQueryChange();
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('does not intercept manual entry that is still completely blank', () => {
+      create();
+      component.enterManually();
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('intercepts once a book has been selected', () => {
+      create();
+      component.selectBook({ id: 'b1', title: 'Clean Code', author: 'Robert C. Martin' });
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('intercepts once manual entry has any content', () => {
+      create();
+      component.enterManually();
+      component.bookPreview.title = 'Untitled draft';
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('intercepts on step 2 details and uploaded photos', () => {
+      create();
+      component.course = 'CS101';
+      expect(component.hasUnsavedChanges()).toBe(true);
+
+      component.course = '';
+      component.uploadedPhotos = ['https://cdn.example/photo.jpg'];
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('intercepts once a price has been entered, free included', () => {
+      create();
+      component.setFree();
+      expect(component.price).toBe(0);
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('does not intercept the success screen even with a full form', () => {
+      create();
+      component.selectBook({ id: 'b1', title: 'Clean Code' });
+      component.course = 'CS101';
+      component.price = 300;
+      component.step = 4;
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('uses the sell.leaveConfirm key for the confirmation message', () => {
+      create();
+      expect(component.unsavedChangesMessage()).toBe('sell.leaveConfirm');
+      expect(mockI18n.t).toHaveBeenCalledWith('sell.leaveConfirm');
+    });
+  });
+
+  describe('draft persistence', () => {
+    it('stores nothing for an empty form', () => {
+      create();
+      component.saveDraft();
+      expect(localStorage.getItem(SELL_DRAFT_STORAGE_KEY)).toBeNull();
+    });
+
+    it('stores the form state once there is something to keep', () => {
+      create();
+      component.selectBook({ id: 'b1', title: 'Clean Code', author: 'Robert C. Martin' });
+      component.course = 'CS101';
+      component.professor = 'Chen';
+      component.uploadedPhotos = ['https://cdn.example/photo.jpg'];
+      component.price = 250;
+      component.step = 3;
+      component.saveDraft();
+
+      const stored = JSON.parse(localStorage.getItem(SELL_DRAFT_STORAGE_KEY)!);
+      expect(stored.step).toBe(3);
+      expect(stored.course).toBe('CS101');
+      expect(stored.professor).toBe('Chen');
+      expect(stored.price).toBe(250);
+      expect(stored.uploadedPhotos).toEqual(['https://cdn.example/photo.jpg']);
+      expect(stored.bookPreview.title).toBe('Clean Code');
+    });
+
+    it('offers a found draft instead of restoring it silently', () => {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, JSON.stringify({
+        version: 1, savedAt: Date.now(), step: 2, searchQuery: '', engine: 'googlebooks',
+        bookPreview: { title: 'Clean Code', authors: 'Robert C. Martin', isManual: false },
+        condition: 'like_new', category: 'engineering', course: 'CS101', professor: 'Chen',
+        privateNote: '', description: '', price: 250, uploadedPhotos: ['https://cdn.example/photo.jpg']
+      }));
+
+      create();
+      expect(component.showDraftPrompt).toBe(true);
+      // Nothing applied until the user chooses.
+      expect(component.course).toBe('');
+      expect(component.step).toBe(1);
+
+      component.resumeDraft();
+      expect(component.showDraftPrompt).toBe(false);
+      expect(component.step).toBe(2);
+      expect(component.course).toBe('CS101');
+      expect(component.condition).toBe('like_new');
+      expect(component.category).toBe('engineering');
+      expect(component.price).toBe(250);
+      expect(component.uploadedPhotos).toEqual(['https://cdn.example/photo.jpg']);
+    });
+
+    it('drops a category that no longer exists in this region', () => {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, JSON.stringify({
+        version: 1, savedAt: Date.now(), step: 2, searchQuery: '', engine: 'googlebooks',
+        bookPreview: null, condition: 'new', category: 'retired-slug', course: 'CS101',
+        professor: '', privateNote: '', description: '', price: null, uploadedPhotos: []
+      }));
+
+      create();
+      component.resumeDraft();
+      expect(component.category).toBe('');
+      expect(component.course).toBe('CS101');
+    });
+
+    it('discards the draft on "start over"', () => {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, JSON.stringify({
+        version: 1, savedAt: Date.now(), step: 2, searchQuery: '', engine: 'googlebooks',
+        bookPreview: null, condition: 'new', category: '', course: 'CS101',
+        professor: '', privateNote: '', description: '', price: null, uploadedPhotos: []
+      }));
+
+      create();
+      component.discardDraft();
+      expect(component.showDraftPrompt).toBe(false);
+      expect(component.course).toBe('');
+      expect(localStorage.getItem(SELL_DRAFT_STORAGE_KEY)).toBeNull();
+    });
+
+    it('ignores and clears an expired draft', () => {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, JSON.stringify({
+        version: 1, savedAt: Date.now() - SELL_DRAFT_MAX_AGE_MS - 1000, step: 2,
+        searchQuery: '', engine: 'googlebooks', bookPreview: null, condition: 'new',
+        category: '', course: 'CS101', professor: '', privateNote: '', description: '',
+        price: null, uploadedPhotos: []
+      }));
+
+      create();
+      expect(component.showDraftPrompt).toBe(false);
+      expect(localStorage.getItem(SELL_DRAFT_STORAGE_KEY)).toBeNull();
+    });
+
+    it('ignores and clears unparseable draft data', () => {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, 'not json');
+      create();
+      expect(component.showDraftPrompt).toBe(false);
+      expect(localStorage.getItem(SELL_DRAFT_STORAGE_KEY)).toBeNull();
+    });
+
+    it('treats typing into a fresh form as an implicit "start over"', () => {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, JSON.stringify({
+        version: 1, savedAt: Date.now(), step: 2, searchQuery: '', engine: 'googlebooks',
+        bookPreview: null, condition: 'new', category: '', course: 'Old course',
+        professor: '', privateNote: '', description: '', price: null, uploadedPhotos: []
+      }));
+
+      create();
+      expect(component.showDraftPrompt).toBe(true);
+
+      component.course = 'New course';
+      component.onFormChange();
+
+      expect(component.showDraftPrompt).toBe(false);
+      expect(JSON.parse(localStorage.getItem(SELL_DRAFT_STORAGE_KEY)!).course).toBe('New course');
+    });
+
+    it('marks a photo broken rather than breaking the layout, and drops it from the payload', () => {
+      create();
+      component.uploadedPhotos = ['https://cdn.example/gone.jpg', 'https://cdn.example/ok.jpg'];
+      component.onPhotoError('https://cdn.example/gone.jpg');
+
+      expect(component.isPhotoBroken('https://cdn.example/gone.jpg')).toBe(true);
+      expect(component.isPhotoBroken('https://cdn.example/ok.jpg')).toBe(false);
+      expect(component.uploadedPhotos.length).toBe(2);
+    });
+  });
+
+  describe('inline field validation', () => {
+    it('stays quiet until the field is touched or the step is attempted', () => {
+      create();
+      component.enterManually();
+      expect(component.titleErrorKey).toBe('');
+      expect(component.authorErrorKey).toBe('');
+
+      component.markTouched('title');
+      expect(component.titleErrorKey).toBe('sell.errTitleRequired');
+      expect(component.authorErrorKey).toBe('');
+    });
+
+    it('blocks step 1 and reveals both messages when the manual fields are empty', () => {
+      create();
+      component.enterManually();
+      component.nextStep();
+
+      expect(component.step).toBe(1);
+      expect(component.titleErrorKey).toBe('sell.errTitleRequired');
+      expect(component.authorErrorKey).toBe('sell.errAuthorRequired');
+    });
+
+    it('clears the messages and advances once the manual fields are filled', () => {
+      create();
+      component.enterManually();
+      component.nextStep();
+      component.bookPreview.title = 'Clean Code';
+      component.bookPreview.authors = 'Robert C. Martin';
+
+      expect(component.titleErrorKey).toBe('');
+      expect(component.authorErrorKey).toBe('');
+
+      component.nextStep();
+      expect(component.step).toBe(2);
+    });
+
+    it('does not validate title/author for a book picked from search results', () => {
+      create();
+      component.selectBook({ id: 'b1', title: 'Clean Code', author: 'Robert C. Martin' });
+      component.nextStep();
+      expect(component.step).toBe(2);
+      expect(component.titleErrorKey).toBe('');
+    });
+
+    it('reports an empty price as required and a negative price as invalid', () => {
+      create();
+      component.step = 3;
+      expect(component.priceErrorKey).toBe('');
+
+      component.markTouched('price');
+      expect(component.priceErrorKey).toBe('sell.errPriceRequired');
+
+      component.price = -5;
+      expect(component.priceErrorKey).toBe('sell.errPriceInvalid');
+    });
+
+    it('accepts free (0) as a valid price', () => {
+      create();
+      component.step = 3;
+      component.markTouched('price');
+      component.setFree();
+      expect(component.price).toBe(0);
+      expect(component.priceErrorKey).toBe('');
+    });
   });
 });
