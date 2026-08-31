@@ -25,6 +25,8 @@ import { MobileLayoutService } from '../../core/services/mobile-layout.service';
 import { formatMessageTime, isMeetupRequest, cleanMeetupBody, IMAGE_PREVIEW_TOKEN } from './message-formatting.util';
 import { PricePipe } from '../../shared/pipes/price.pipe';
 import { RegionLinkService } from '../../core/region-link.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 
 @Component({
@@ -76,6 +78,8 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
   private authStore = inject(AuthStore);
   private orderService = inject(OrderService);
   readonly i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   private theme = inject(ThemeService);
   private router = inject(Router);
   private regionLink = inject(RegionLinkService);
@@ -205,7 +209,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
       }
       // Check for system message forbidden error from CFEdgeChat DO
       if (errMsg && errMsg.includes('FORBIDDEN_SYSTEM_MESSAGE')) {
-        alert(this.i18n.t('msg.errSystemMessageForbidden'));
+        this.toast.error(this.i18n.t('msg.errSystemMessageForbidden'));
       }
     });
 
@@ -336,7 +340,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
                   if (err?.status === 403 || err?.error?.error?.code === 'auth.errNotVerified' || err?.error?.error?.code === 'acct.errUnverified') {
                     this.showUnverifiedPrompt = true;
                   } else {
-                    alert(this.i18n.t('msg.chatOpenFailed') || 'Failed to open chat');
+                    this.toast.error(this.i18n.t('msg.chatOpenFailed') || 'Failed to open chat');
                   }
                   this.cdr.markForCheck();
                 }
@@ -424,7 +428,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
       error: (err) => {
         console.error('Failed to fetch chat token', err);
         if (this.activeChat?.id !== chat.id) return;
-        alert(this.i18n.t('msg.chatOpenFailed'));
+        this.toast.error(this.i18n.t('msg.chatOpenFailed'));
         this.activeChat = null;
         this.cdr.markForCheck();
       }
@@ -514,14 +518,14 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert(this.i18n.t('msg.errInvalidImageType'));
+      this.toast.error(this.i18n.t('msg.errInvalidImageType'));
       input.value = '';
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      alert(this.i18n.t('msg.errImageTooLarge'));
+      this.toast.error(this.i18n.t('msg.errImageTooLarge'));
       input.value = '';
       return;
     }
@@ -563,7 +567,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         input.value = '';
         this.cdr.markForCheck();
         console.error('Image upload failed', err);
-        alert(this.i18n.t('msg.uploadFailed'));
+        this.toast.error(this.i18n.t('msg.uploadFailed'));
       }
     });
   }
@@ -886,7 +890,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         },
         error: (err) => {
           const msg = err.error?.detail || err.error?.status || err.message || 'Failed to accept meetup order';
-          alert(this.i18n.t('msg.orderActionFailed', { msg }));
+          this.toast.error(this.i18n.t('msg.orderActionFailed', { msg }));
           console.error('Failed to accept meetup order', err);
         }
       });
@@ -902,7 +906,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         },
         error: (err) => {
           const msg = err.error?.detail || err.error?.status || err.message || 'Failed to decline meetup order';
-          alert(this.i18n.t('msg.orderActionFailed', { msg }));
+          this.toast.error(this.i18n.t('msg.orderActionFailed', { msg }));
           console.error('Failed to decline meetup order', err);
         }
       });
@@ -918,7 +922,7 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         },
         error: (err) => {
           const msg = err.error?.detail || err.error?.status || err.message || 'Failed to cancel meetup order';
-          alert(this.i18n.t('msg.orderActionFailed', { msg }));
+          this.toast.error(this.i18n.t('msg.orderActionFailed', { msg }));
           console.error('Failed to cancel meetup order', err);
         }
       });
@@ -935,8 +939,11 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
       : this.activeChat?.buyer_id;
   }
 
-  deleteConversation(chat: any) {
-    if (!confirm(this.i18n.t('msg.confirmDeleteConversation'))) return;
+  async deleteConversation(chat: any) {
+    const confirmed = await this.confirms.askDanger(this.i18n.t('msg.confirmDeleteConversation'), {
+      confirmLabel: this.i18n.t('common.delete'),
+    });
+    if (!confirmed) return;
     this.messageService.deleteConversation(chat.id).subscribe({
       next: () => {
         // Remove from sidebar

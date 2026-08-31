@@ -30,7 +30,7 @@ import { SchoolStateService } from '../../core/services/school-state.service';
           <ui-recent-listings [school]="currentSchool" [ads]="activeAds" (adClick)="onAdClick($event)"></ui-recent-listings>
         </section>
 
-        <section class="col-side" aria-labelledby="waitlist-heading">
+        <section class="col-side" [class.is-empty]="waitlistBandEmpty" aria-labelledby="waitlist-heading">
           <h2 class="section-heading" id="waitlist-heading">{{ 'home.waitlistTitle' | t }}</h2>
           <ui-skeleton *ngIf="metadataLoading && !metadataError" variant="row" [count]="4"></ui-skeleton>
           <!-- This branch used to contain only a spinner guarded by
@@ -114,22 +114,21 @@ import { SchoolStateService } from '../../core/services/school-state.service';
     
     .step-card h3 { font-size: var(--text-lg); }
 
-    /* ---- two-column band ---------------------------------------------- */
-    /* align-items: start, not the flex default of stretch. The waitlist card
-       is ~100px tall next to a 535px listing grid; stretching it produced
-       400px of dead column. */
+    /* ---- listings + waitlist band -------------------------------------- */
+    /* One column at every width. Putting the waitlist in a real second column
+       is what the 'display: none' below used to be papering over: a ~100px
+       card beside a 535px listing grid leaves 400px of dead column, and the
+       ~300px it costs .col-main drops the listing grid under the 800px
+       container query ui-recent-listings needs for its feature tile — from
+       five tiles a row to three. The waitlist reads across instead (see the
+       desktop rules further down), so it costs the grid nothing.
+       align-items: start keeps each row content-height regardless. */
     .two-cols {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       align-items: start;
       gap: var(--space-7);
       margin-bottom: var(--space-7);
-    }
-    /* The waitlist panel is explicitly for mobile, as the hero stack takes over
-       its job on desktop. It was previously popping up an empty box on desktop
-       if the hero had no data. */
-    @media (min-width: 769px) {
-      .col-side { display: none; }
     }
     .col-main, .col-side { min-width: 0; }
 
@@ -199,6 +198,29 @@ import { SchoolStateService } from '../../core/services/school-state.service';
       white-space: nowrap;
     }
     .waitlist-cta { margin-top: var(--space-4); display: block; }
+
+    /* Desktop: the same panel, read across instead of down. The hero stack
+       shows three of these covers but never says how many people are waiting
+       for one unless you hover it, so hiding this panel above 768px left the
+       "N 人在等" number — the one thing on the page that argues a seller has
+       a buyer already — as mobile-only. Rows go into columns rather than a
+       rail so the band stays two rows tall and .col-main keeps its width. */
+    @media (min-width: 769px) {
+      .col-side { padding: var(--space-5) var(--space-6); }
+      /* Nothing to show but the heading and an empty note would be a
+         page-wide empty box; the narrow mobile panel can carry that note. */
+      .col-side.is-empty { display: none; }
+      .waitlist-card {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        column-gap: var(--space-6);
+      }
+      /* Every row keeps its rule, including the last: in a grid the rules read
+         as the ledger lines the mobile list already uses, and dropping one
+         arbitrary cell's line just looks like a missing border. */
+      .waitlist-row:last-of-type { border-bottom: 1px dashed var(--line); }
+      .waitlist-cta { grid-column: 1 / -1; justify-self: start; }
+    }
 
     .sell-band {
       display: flex;
@@ -281,6 +303,16 @@ export class Home implements OnInit, OnDestroy {
   metadataLoading = false;
   categoriesError = false;
   metadataError = false;
+
+  /**
+   * Whether the waitlist panel has nothing but its empty note to render.
+   * Skeleton and error state both count as content — a band that vanishes
+   * while loading and reappears with data is a layout jump, and a load that
+   * fails silently on desktop is how the retry button went missing before.
+   */
+  get waitlistBandEmpty(): boolean {
+    return !this.metadataLoading && !this.metadataError && this.waitlist?.length === 0;
+  }
 
   private metadataService = inject(MetadataService);
   private schoolStateService = inject(SchoolStateService);

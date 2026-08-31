@@ -7,6 +7,8 @@ import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
 import { RegionLinkService } from '../../core/region-link.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 
 @Component({
@@ -80,6 +82,8 @@ export class SubscriptionsComponent implements OnInit {
   private regionLink = inject(RegionLinkService);
   readonly i18n = inject(I18nService);
 
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   ngOnInit() {
     this.loadSubscriptions();
   }
@@ -97,25 +101,25 @@ export class SubscriptionsComponent implements OnInit {
     });
   }
 
-  cancelSubscription(id: string) {
-    if (confirm(this.i18n.t('acct.confirmCancelSub'))) {
+  async cancelSubscription(id: string) {
+    if (await this.confirms.askDanger(this.i18n.t('acct.confirmCancelSub'))) {
       this.accountService.unsubscribe(id).subscribe({
         next: () => this.loadSubscriptions(),
         error: (err) => {
           console.error('Failed to unsubscribe', err);
-          alert(this.i18n.t('acct.unsubscribeFailed'));
+          this.toast.error(this.i18n.t('acct.unsubscribeFailed'));
         }
       });
     }
   }
 
-  cancelAllSubscriptions() {
-    if (confirm(this.i18n.t('acct.confirmCancelAllSubs'))) {
+  async cancelAllSubscriptions() {
+    if (await this.confirms.askDanger(this.i18n.t('acct.confirmCancelAllSubs'))) {
       this.accountService.unsubscribeAll().subscribe({
         next: () => this.loadSubscriptions(),
         error: (err) => {
           console.error('Failed to unsubscribe all', err);
-          alert(this.i18n.t('acct.unsubscribeFailed'));
+          this.toast.error(this.i18n.t('acct.unsubscribeFailed'));
         }
       });
     }

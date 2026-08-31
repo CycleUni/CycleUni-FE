@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminService, AdminOrder } from '../../core/services/admin.service';
 import { parseAdminError } from '../../core/admin-error.util';
 import { TPipe, I18nService } from '../../core/i18n.service';
+import { ToastService } from '../../core/services/toast.service';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
@@ -65,6 +66,7 @@ import { RegionService } from '../../core/region.service';
 export class AdminOrdersListComponent implements OnInit {
   private adminService = inject(AdminService);
   private i18n = inject(I18nService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private authStore = inject(AuthStore);
   private regionService = inject(RegionService);
@@ -119,7 +121,7 @@ export class AdminOrdersListComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        alert(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
+        this.toast.error(parseAdminError(err, this.i18n, 'admin.errLoadFailed'));
         this.loading = false;
         this.cdr.markForCheck();
       }

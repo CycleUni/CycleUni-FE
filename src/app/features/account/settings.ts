@@ -8,6 +8,8 @@ import { RegionService, Region } from '../../core/region.service';
 import { AccountService } from '../../core/services/account.service';
 import { AuthStore } from '../../core/auth.store';
 import { isSameRegion } from '../../core/region-path';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-account-settings',
@@ -102,6 +104,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
   public regionService = inject(RegionService);
   private cdr = inject(ChangeDetectorRef);
   readonly i18n = inject(I18nService);
+  private toast = inject(ToastService);
+  private confirms = inject(ConfirmService);
   private resendCountdownTimer: ReturnType<typeof setInterval> | null = null;
   private profileUserId: string | null = null;
 
@@ -175,12 +179,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  onRequestVerification() {
+  async onRequestVerification() {
     const verifiedRegion = this.getVerifiedRegionForEmail(this.eduEmail);
     if (verifiedRegion) {
-      if (!confirm(this.i18n.t('acct.regionAlreadyVerifiedConfirm', { region: verifiedRegion.localized_name }))) {
-        return;
-      }
+      const proceed = await this.confirms.ask(
+        this.i18n.t('acct.regionAlreadyVerifiedConfirm', { region: verifiedRegion.localized_name })
+      );
+      if (!proceed) return;
     }
     this.submitEduVerification(this.eduEmail);
   }
@@ -394,8 +399,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  onUnbindEduEmail(regionCode: string) {
-    if (!confirm(this.i18n.t('acct.unbindConfirm'))) {
+  async onUnbindEduEmail(regionCode: string) {
+    if (!await this.confirms.askDanger(this.i18n.t('acct.unbindConfirm'))) {
       return;
     }
     
@@ -415,7 +420,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading = false;
-        alert(this.i18n.t('acct.updateFailed') + (err.error?.detail ? ': ' + err.error.detail : ''));
+        this.toast.error(this.i18n.t('acct.updateFailed') + (err.error?.detail ? ': ' + err.error.detail : ''));
         this.cdr.markForCheck();
       }
     });
@@ -562,8 +567,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return `${this.verifyCooldownUntilStorageKeyLegacy}.${this.profileUserId}`;
   }
 
-  onDeleteAccount() {
-    if (!confirm(this.i18n.t('acct.deleteAccountConfirm'))) {
+  async onDeleteAccount() {
+    if (!await this.confirms.askDanger(this.i18n.t('acct.deleteAccountConfirm'), {
+      confirmLabel: this.i18n.t('common.delete'),
+    })) {
       return;
     }
     
@@ -578,7 +585,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading = false;
-        alert(this.i18n.t('acct.updateFailed') + (err.error?.detail ? ': ' + err.error.detail : ''));
+        this.toast.error(this.i18n.t('acct.updateFailed') + (err.error?.detail ? ': ' + err.error.detail : ''));
         this.cdr.markForCheck();
       }
     });
