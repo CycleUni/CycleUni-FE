@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TPipe } from '../../core/i18n.service';
 import { NavigationHistoryService } from '../../core/services/navigation-history.service';
+import { RegionLinkService } from '../../core/region-link.service';
 
 @Component({
   selector: 'ui-back-button',
@@ -10,6 +12,13 @@ import { NavigationHistoryService } from '../../core/services/navigation-history
   template: `
     <button *ngIf="navHistory.canGoBack" type="button" class="go-back-btn" (click)="goBack()">
       ← {{ 'common.back' | t }}
+    </button>
+    <!-- Arriving straight from a shared link, a search engine or a social post
+         leaves no in-app history to go back to, and the control used to vanish
+         entirely — the page became a dead end. Degrade to search instead of
+         disappearing. -->
+    <button *ngIf="!navHistory.canGoBack" type="button" class="go-back-btn" (click)="goToSearch()">
+      ← {{ 'common.backToSearch' | t }}
     </button>
   `,
   styles: [`
@@ -36,8 +45,14 @@ import { NavigationHistoryService } from '../../core/services/navigation-history
 })
 export class UiBackButton {
   readonly navHistory = inject(NavigationHistoryService);
+  private router = inject(Router);
+  private regionLink = inject(RegionLinkService);
 
   goBack() {
     this.navHistory.goBack();
+  }
+
+  goToSearch() {
+    this.router.navigate(this.regionLink.path(['/search']));
   }
 }

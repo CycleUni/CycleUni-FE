@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { authGuard, accountIndexGuard } from './core/auth.guard';
 import { adminGuard } from './features/admin/admin.guard';
 import { regionGuard, rootRedirectGuard } from './core/region.guard';
+import { unsavedChangesGuard } from './core/unsaved-changes.guard';
 
 const featureRoutes: Routes = [
   {
@@ -19,6 +20,7 @@ const featureRoutes: Routes = [
   },
   {
     path: 'sell',
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./features/sell/sell').then((m) => m.Sell),
   },
   {

@@ -357,14 +357,20 @@
         background-color: var(--paper);
         padding-bottom: env(safe-area-inset-bottom, 0px);
       }
+      /* `flex: 1 1 0` + `min-width: 0`, not plain `flex: 1`: the bar now holds
+         five tabs (six for staff), and with an auto basis the widest label
+         ("Messages" in English) claimed more room than its share and pushed
+         the last tab off the edge on a 320px screen. */
       .bottom-tab-bar a {
-        flex: 1;
+        flex: 1 1 0;
+        min-width: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 2px;
         min-height: 56px;
+        padding-inline: 2px;
         color: var(--muted);
         text-decoration: none;
         position: relative;
@@ -373,8 +379,19 @@
         color: var(--accent);
       }
       .bottom-tab-bar .tab-label {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         font-size: 11px;
         font-weight: 500;
+      }
+      /* Narrow phones: six tabs leave ~53px each, which clips the longer
+         English labels. Shrinking the label buys back the few pixels. */
+      @media (max-width: 360px) {
+        .bottom-tab-bar .tab-label {
+          font-size: 10px;
+        }
       }
       .bottom-tab-bar .tab-with-badge {
         position: relative;

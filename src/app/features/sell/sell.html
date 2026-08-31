@@ -17,6 +17,14 @@
           [message]="'sell.unverifiedDesc' | t:{suffix: (regionService.currentRegionObj()?.edu_email_suffix?.join(', ') || '.edu')}">
         </ui-verification-prompt>
 
+        <div class="draft-banner" *ngIf="showDraftPrompt">
+          <p class="draft-banner-text">{{ 'sell.draftFound' | t }}</p>
+          <div class="draft-banner-actions">
+            <ui-button variant="ghost" (onClick)="discardDraft()">{{ 'sell.draftDiscard' | t }}</ui-button>
+            <ui-button (onClick)="resumeDraft()">{{ 'sell.draftResume' | t }}</ui-button>
+          </div>
+        </div>
+
         <div class="stepper">
         <div class="step" [class.active]="step === 1">{{ 'sell.step1' | t }}</div>
         <div class="step" [class.active]="step === 2">{{ 'sell.step2' | t }}</div>
@@ -30,9 +38,6 @@
           <ui-input [placeholder]="'sell.isbnPlaceholder' | t" [(ngModel)]="searchQuery" (ngModelChange)="onSearchQueryChange()"></ui-input>
 
           <div style="margin-top: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 150px;" *ngIf="!hideSearchButtonForNow && (!bookPreview && searchResults.length === 0 || isSearchQueryDirty)">
-              <ui-dropdown [options]="engineOptions" [(ngModel)]="engine" [searchable]="false" style="width: 100%; display: block;"></ui-dropdown>
-            </div>
             <ui-button variant="ghost" (onClick)="toggleScanner()" *ngIf="!hideSearchButtonForNow && (!bookPreview && searchResults.length === 0 || isSearchQueryDirty)">
               {{ (isScanning ? 'sell.stopScan' : 'sell.scanBarcode') | t }}
             </ui-button>
@@ -83,8 +88,10 @@
               </div>
             </div>
             <div class="info" *ngIf="bookPreview.isManual" style="flex: 1;">
-              <ui-input [placeholder]="'sell.titlePlaceholder' | t" [(ngModel)]="bookPreview.title" style="margin-bottom: 8px;"></ui-input>
-              <ui-input [placeholder]="'sell.authorPlaceholder' | t" [(ngModel)]="bookPreview.authors"></ui-input>
+              <ui-input [placeholder]="'sell.titlePlaceholder' | t" [(ngModel)]="bookPreview.title" (ngModelChange)="onFormChange()" (focusout)="markTouched('title')" style="margin-bottom: 8px;"></ui-input>
+              <div *ngIf="titleErrorKey" class="inline-msg error field-msg">{{ titleErrorKey | t }}</div>
+              <ui-input [placeholder]="'sell.authorPlaceholder' | t" [(ngModel)]="bookPreview.authors" (ngModelChange)="onFormChange()" (focusout)="markTouched('authors')"></ui-input>
+              <div *ngIf="authorErrorKey" class="inline-msg error field-msg">{{ authorErrorKey | t }}</div>
               <div style="margin-top: 8px;">
                 <ui-button variant="ghost" (onClick)="clearSelection()" style="padding: 4px 8px; font-size: 12px; height: auto;">{{ 'sell.reselect' | t }}</ui-button>
               </div>
@@ -96,7 +103,7 @@
           </div>
 
           <div class="actions">
-            <ui-button (onClick)="nextStep()" *ngIf="bookPreview" [disabled]="bookPreview.isManual && (!bookPreview.title || !bookPreview.authors)">
+            <ui-button (onClick)="nextStep()" *ngIf="bookPreview">
               {{ (bookPreview.isManual ? 'sell.confirmManual' : 'sell.confirmBook') | t }}
             </ui-button>
           </div>
@@ -104,18 +111,24 @@
 
         <!-- Step 2 -->
         <div *ngIf="step === 2" class="step-content">
-          <ui-condition-picker [label]="'acct.conditionLabel' | t" [(value)]="condition" [options]="conditionOptions"></ui-condition-picker>
-          <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="category" [options]="categoryOptions"></ui-dropdown>
-          <ui-input [label]="'sell.courseLabel' | t" [placeholder]="'sell.coursePlaceholder' | t" [(ngModel)]="course"></ui-input>
-          <ui-input [label]="'sell.professorLabel' | t" [placeholder]="'sell.professorPlaceholder' | t" [(ngModel)]="professor"></ui-input>
-          <ui-input [label]="'sell.privateNoteLabel' | t" [placeholder]="'sell.privateNotePlaceholder' | t" [(ngModel)]="privateNote"></ui-input>
-          <ui-input [label]="'sell.descriptionLabel' | t" [placeholder]="'sell.descriptionPlaceholder' | t" [(ngModel)]="description"></ui-input>
+          <ui-condition-picker [label]="'acct.conditionLabel' | t" [(value)]="condition" (valueChange)="onFormChange()" [options]="conditionOptions"></ui-condition-picker>
+          <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="category" (ngModelChange)="onFormChange()" [options]="categoryOptions"></ui-dropdown>
+          <ui-input [label]="'sell.courseLabel' | t" [placeholder]="'sell.coursePlaceholder' | t" [(ngModel)]="course" (ngModelChange)="onFormChange()"></ui-input>
+          <ui-input [label]="'sell.professorLabel' | t" [placeholder]="'sell.professorPlaceholder' | t" [(ngModel)]="professor" (ngModelChange)="onFormChange()"></ui-input>
+          <ui-input [label]="'sell.privateNoteLabel' | t" [placeholder]="'sell.privateNotePlaceholder' | t" [(ngModel)]="privateNote" (ngModelChange)="onFormChange()"></ui-input>
+          <ui-input [label]="'sell.descriptionLabel' | t" [placeholder]="'sell.descriptionPlaceholder' | t" [(ngModel)]="description" (ngModelChange)="onFormChange()"></ui-input>
 
           <div class="photo-upload">
             <label>{{ 'sell.photoLabel' | t }}</label>
             <div class="upload-container">
               <div class="preview-box" *ngFor="let url of uploadedPhotos; let i = index">
-                <img [src]="url" alt="Uploaded photo">
+                <img *ngIf="!isPhotoBroken(url)" [src]="url" alt="Uploaded photo" (error)="onPhotoError(url)">
+                <div class="preview-missing" *ngIf="isPhotoBroken(url)" role="img" [attr.aria-label]="'sell.photoUnavailable' | t">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <path d="M4 19L20 5"></path>
+                  </svg>
+                </div>
                 <button class="remove-btn" (click)="removePhoto(i)">×</button>
               </div>
               <div class="dropzone" *ngIf="uploadedPhotos.length < 3"
@@ -150,8 +163,9 @@
           <label class="price-field-label">{{ 'acct.priceLabel' | t:{currency: regionService.currency().symbol} }}</label>
           <div class="price-field">
             <span class="price-currency">{{ regionService.currency().symbol }}</span>
-            <input class="price-input focus-no-ring" type="number" min="0" [(ngModel)]="price" name="price" />
+            <input class="price-input focus-no-ring" type="number" min="0" [(ngModel)]="price" (ngModelChange)="onFormChange()" (blur)="markTouched('price')" name="price" />
           </div>
+          <div *ngIf="priceErrorKey" class="inline-msg error field-msg">{{ priceErrorKey | t }}</div>
 
           <div class="free-btn">
             <ui-button variant="ghost" (onClick)="setFree()">{{ 'sell.free' | t }}</ui-button>

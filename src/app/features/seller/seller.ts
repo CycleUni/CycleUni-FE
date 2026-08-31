@@ -8,6 +8,7 @@ import { AccountService } from '../../core/services/account.service';
 import { ListingService } from '../../core/services/listing.service';
 import { UiListingRow } from '../../shared/ui/listing-row.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
+import { UiBreadcrumb, BreadcrumbItem } from '../../shared/ui/breadcrumb.component';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { RegionLinkService } from '../../core/region-link.service';
 import { isSameRegion } from '../../core/region-path';
@@ -16,9 +17,11 @@ import { isUserVerifiedIn } from '../../core/verification';
 @Component({
   selector: 'app-seller-page',
   standalone: true,
-  imports: [CommonModule, UiListingRow, UiPagination, TPipe],
+  imports: [CommonModule, UiListingRow, UiPagination, UiBreadcrumb, TPipe],
   template: `
     <div class="seller-page" *ngIf="seller">
+      <ui-breadcrumb [items]="breadcrumbItems"></ui-breadcrumb>
+
       <div class="seller-header">
         <div class="seller-avatar" *ngIf="!avatarUrl">
           {{ getAvatarInitial() }}
@@ -211,6 +214,15 @@ export class SellerPageComponent implements OnInit {
   avatarUrl = '';
   
   private currentId: string | null = null;
+
+  /** Home › <seller name>. */
+  get breadcrumbItems(): BreadcrumbItem[] {
+    if (!this.seller) return [];
+    return [
+      { labelKey: 'nav.home', link: '/' },
+      { label: this.seller.display_name }
+    ];
+  }
 
   constructor() {
     effect(() => {

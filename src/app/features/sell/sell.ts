@@ -18,6 +18,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { RegionLinkService } from '../../core/region-link.service';
+import { HasUnsavedChanges } from '../../core/unsaved-changes.guard';
 
 
 /**
@@ -121,6 +122,40 @@ export function selectBestRearCamera(devices: { id: string; label: string }[] | 
   return preferred ? preferred.id : normalBackCameras[0].id;
 }
 
+/**
+ * Draft storage for the multi-step listing form. Same `unibooks.<feature>.<thing>`
+ * prefix scheme the rest of the app uses (`unibooks.chat.draft.*`,
+ * `unibooks.verification_prompt.sell`).
+ */
+export const SELL_DRAFT_STORAGE_KEY = 'unibooks.sell.draft';
+
+/**
+ * Drafts older than this are dropped on load. Photos are stored as server URLs
+ * rather than blobs, and those URLs are the part most likely to have been
+ * cleaned up server-side by the time a very old draft is opened again.
+ */
+export const SELL_DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Default condition — also the "user has not touched this" baseline. */
+const DEFAULT_CONDITION = 'new';
+
+export interface SellDraft {
+  version: 1;
+  savedAt: number;
+  step: number;
+  searchQuery: string;
+  engine: 'googlebooks' | 'openlibrary';
+  bookPreview: any;
+  condition: string;
+  category: string;
+  course: string;
+  professor: string;
+  privateNote: string;
+  description: string;
+  price: number | null;
+  uploadedPhotos: string[];
+}
+
 @Component({
   selector: 'app-sell',
   standalone: true,
@@ -128,7 +163,7 @@ export function selectBestRearCamera(devices: { id: string; label: string }[] | 
   templateUrl: './sell.html',
   styleUrls: ['./sell.css']
 })
-export class Sell implements OnInit, OnDestroy {
+export class Sell implements OnInit, OnDestroy, HasUnsavedChanges {
   step = 1;
   searchQuery = '';
   searchResults: any[] = [];
@@ -148,6 +183,27 @@ export class Sell implements OnInit, OnDestroy {
   cameraError = '';
   private html5QrCode: Html5Qrcode | null = null;
 
+  /** Shown when a saved draft is found on entry — never restored silently. */
+  showDraftPrompt = false;
+
+  /** The draft behind `showDraftPrompt`, held until the user picks an option. */
+  private pendingDraft: SellDraft | null = null;
+
+  /**
+   * Fields the user has blurred out of, and steps they have tried to advance
+   * past. An error message needs one of the two before it appears, so landing
+   * on a fresh step never greets the user with red text.
+   */
+  touchedFields: Record<string, boolean> = {};
+  attemptedSteps: Record<number, boolean> = {};
+
+  /**
+   * Photo URLs that failed to load — typically a restored draft whose files
+   * the server has since cleaned up. They render as a placeholder instead of
+   * a broken image, and are left out of the submitted payload.
+   */
+  brokenPhotos: string[] = [];
+
   private authStore = inject(AuthStore);
   regionService = inject(RegionService);
   private accountService = inject(AccountService);
@@ -163,11 +219,7 @@ export class Sell implements OnInit, OnDestroy {
   category = '';
   categoryOptions: any[] = [];
 
-  get engineOptions() {
-    return this.bookService.getEngineOptions();
-  }
-
-  condition = 'new';
+  condition = DEFAULT_CONDITION;
   get conditionOptions() {
     return ['new', 'like_new', 'noted', 'damaged'].map(value => ({
       value,
@@ -226,6 +278,7 @@ export class Sell implements OnInit, OnDestroy {
         this.uploadedPhotos.push(res.url);
         this.ga.trackEvent('upload_listing_photo');
         this.isUploading = false;
+        this.saveDraft();
         this.cdr.markForCheck();
       },
       error: () => {
@@ -239,7 +292,9 @@ export class Sell implements OnInit, OnDestroy {
   removePhoto(index: number) {
     const url = this.uploadedPhotos[index];
     this.uploadedPhotos.splice(index, 1);
-    
+    this.brokenPhotos = this.brokenPhotos.filter(u => u !== url);
+    this.saveDraft();
+
     // Asynchronously tell the server to delete the physical file
     this.listingService.deletePhoto(url).subscribe({
       next: () => console.log('Successfully deleted orphaned photo from server'),
@@ -247,7 +302,31 @@ export class Sell implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * A restored draft can point at photos the server no longer has. Swap the
+   * broken <img> for a neutral placeholder rather than letting the layout show
+   * a torn-image icon, and stop sending the dead URL on submit — the user can
+   * still see the slot and remove or replace it.
+   */
+  onPhotoError(url: string) {
+    if (!this.brokenPhotos.includes(url)) {
+      this.brokenPhotos.push(url);
+      this.cdr.markForCheck();
+    }
+  }
+
+  isPhotoBroken(url: string): boolean {
+    return this.brokenPhotos.includes(url);
+  }
+
   ngOnInit() {
+    this.pendingDraft = this.readDraft();
+    this.showDraftPrompt = !!this.pendingDraft;
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', this.onBeforeUnload);
+    }
+
     this.metadataService.getMetadata().subscribe({
       next: (data) => {
         if (data.categories) {
@@ -286,6 +365,68 @@ export class Sell implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopScanner();
+    if (typeof window !== 'undefined') {
+      // Must come off the window, or every later page in the session keeps
+      // asking to confirm reloads on behalf of a component that is long gone.
+      window.removeEventListener('beforeunload', this.onBeforeUnload);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Leaving the flow
+  // ---------------------------------------------------------------------
+
+  /**
+   * Arrow property so the same reference goes to addEventListener and
+   * removeEventListener — a bound method would not be removable.
+   */
+  private readonly onBeforeUnload = (event: BeforeUnloadEvent) => {
+    if (!this.hasUnsavedChanges()) return;
+    // Persist first: this is the last chance before the tab goes away.
+    this.saveDraft();
+    event.preventDefault();
+    // Legacy browsers only raise the native prompt when returnValue is set.
+    event.returnValue = '';
+  };
+
+  /**
+   * Consumed by `unsavedChangesGuard` on the `sell` route.
+   *
+   * Intercepts only when there is real work to lose: an untouched step 1 and
+   * the step 4 success screen (where the listing is created and the draft
+   * already cleared) both pass through without a prompt.
+   */
+  hasUnsavedChanges(): boolean {
+    if (this.step >= 4) return false;
+    return this.hasFormContent();
+  }
+
+  unsavedChangesMessage(): string {
+    return this.i18n.t('sell.leaveConfirm');
+  }
+
+  /**
+   * Whether anything beyond the initial defaults has been entered. A typed but
+   * unsubmitted ISBN in the search box deliberately does not count — nothing
+   * has been chosen yet and re-typing it costs the user nothing.
+   */
+  private hasFormContent(): boolean {
+    const preview = this.bookPreview;
+    const hasBook = !!preview && (
+      !preview.isManual ||
+      !!String(preview.title || '').trim() ||
+      !!String(preview.authors || '').trim()
+    );
+
+    return hasBook
+      || this.condition !== DEFAULT_CONDITION
+      || !!this.category
+      || !!this.course.trim()
+      || !!this.professor.trim()
+      || !!this.privateNote.trim()
+      || !!this.description.trim()
+      || this.uploadedPhotos.length > 0
+      || this.price !== null;
   }
 
   async toggleScanner() {
@@ -426,6 +567,7 @@ export class Sell implements OnInit, OnDestroy {
     this.isSearchQueryDirty = true;
     this.hideSearchButtonForNow = false;
     this.apiError = '';
+    this.saveDraft();
   }
 
   selectBook(book: any) {
@@ -433,31 +575,114 @@ export class Sell implements OnInit, OnDestroy {
     this.bookPreview.authors = this.bookPreview.author || this.bookPreview.authors;
     this.bookPreview.isManual = false;
     this.hideSearchButtonForNow = true;
+    this.saveDraft();
   }
 
   clearSelection() {
     this.bookPreview = null;
     this.hideSearchButtonForNow = false;
     this.apiError = '';
+    // Re-picking a book starts that step over; the old messages no longer apply.
+    this.touchedFields['title'] = false;
+    this.touchedFields['authors'] = false;
+    this.attemptedSteps[1] = false;
+    this.saveDraft();
   }
 
   enterManually() {
     this.bookPreview = { title: '', authors: '', coverUrl: '', isManual: true };
     this.hideSearchButtonForNow = true;
+    this.touchedFields['title'] = false;
+    this.touchedFields['authors'] = false;
+    this.attemptedSteps[1] = false;
   }
 
   nextStep() {
     this.apiError = '';
+    this.attemptedSteps[this.step] = true;
+    if (!this.isStepValid(this.step)) {
+      this.cdr.markForCheck();
+      return;
+    }
     this.step++;
+    this.saveDraft();
   }
 
   prevStep() {
     this.apiError = '';
     this.step--;
+    this.saveDraft();
   }
 
   setFree() {
+    // Free is a legitimate price, so this counts as answering the field.
     this.price = 0;
+    this.markTouched('price');
+    this.onFormChange();
+  }
+
+  // ---------------------------------------------------------------------
+  // Field validation
+  // ---------------------------------------------------------------------
+
+  /** Called from `(focusout)` so a field only turns red once it has been left. */
+  markTouched(field: string) {
+    this.touchedFields[field] = true;
+  }
+
+  private shouldShowError(field: string, step: number): boolean {
+    return !!this.touchedFields[field] || !!this.attemptedSteps[step];
+  }
+
+  /** i18n key for the message under the manual-entry title field, or ''. */
+  get titleErrorKey(): string {
+    if (!this.bookPreview?.isManual) return '';
+    if (!this.shouldShowError('title', 1)) return '';
+    return String(this.bookPreview.title || '').trim() ? '' : 'sell.errTitleRequired';
+  }
+
+  /** i18n key for the message under the manual-entry author field, or ''. */
+  get authorErrorKey(): string {
+    if (!this.bookPreview?.isManual) return '';
+    if (!this.shouldShowError('authors', 1)) return '';
+    return String(this.bookPreview.authors || '').trim() ? '' : 'sell.errAuthorRequired';
+  }
+
+  /** i18n key for the message under the price field, or ''. */
+  get priceErrorKey(): string {
+    if (!this.shouldShowError('price', 3)) return '';
+    return this.priceProblem();
+  }
+
+  /**
+   * Price validity independent of whether the message is being shown yet.
+   * `0` is valid — that is what the "free" button produces. A number input
+   * hands back null when empty, and NaN when the typed text is unparseable.
+   */
+  private priceProblem(): string {
+    const price = this.price;
+    if (price === null || price === undefined || (price as any) === '') {
+      return 'sell.errPriceRequired';
+    }
+    const numeric = Number(price);
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      return 'sell.errPriceInvalid';
+    }
+    return '';
+  }
+
+  /** Whether the given step's required fields are filled in correctly. */
+  private isStepValid(step: number): boolean {
+    if (step === 1) {
+      if (!this.bookPreview) return false;
+      if (!this.bookPreview.isManual) return true;
+      return !!String(this.bookPreview.title || '').trim()
+        && !!String(this.bookPreview.authors || '').trim();
+    }
+    if (step === 3) {
+      return !this.priceProblem();
+    }
+    return true;
   }
 
   async submit() {
@@ -469,8 +694,9 @@ export class Sell implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.price === null || this.price < 0) {
-      this.apiError = this.i18n.t('sell.priceRequired');
+    this.attemptedSteps[3] = true;
+    if (!this.isStepValid(3)) {
+      this.cdr.markForCheck();
       return;
     }
 
@@ -490,7 +716,7 @@ export class Sell implements OnInit, OnDestroy {
         private_note: this.privateNote,
         description: this.description,
         price: this.price,
-        photos: this.uploadedPhotos
+        photos: this.uploadedPhotos.filter(url => !this.isPhotoBroken(url))
       };
 
       this.listingService.createListing(payload).subscribe({
@@ -498,6 +724,8 @@ export class Sell implements OnInit, OnDestroy {
           this.ga.trackPublishListing(this.category, this.condition, this.price);
           this.isSubmitting = false;
           this.step = 4;
+          // Submitted for real — nothing left to restore or warn about.
+          this.clearDraft();
           this.cdr.markForCheck();
         },
         error: (err) => {
@@ -545,6 +773,148 @@ export class Sell implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Draft persistence
+  // ---------------------------------------------------------------------
+
+  /** Bound to `(ngModelChange)` on the form fields to keep the draft current. */
+  onFormChange() {
+    this.saveDraft();
+  }
+
+  /**
+   * Writes the current form to localStorage. An emptied form clears the draft
+   * rather than storing an empty one.
+   */
+  saveDraft() {
+    if (typeof localStorage === 'undefined') return;
+    if (this.step >= 4) return;
+
+    if (!this.hasFormContent()) {
+      // While the restore prompt is still up the stored draft is the one being
+      // offered — an untouched blank form must not wipe it.
+      if (!this.showDraftPrompt) this.clearDraft();
+      return;
+    }
+
+    // Typing into a fresh form instead of answering the prompt is an implicit
+    // "start over"; from here on this form is the draft.
+    if (this.showDraftPrompt) {
+      this.showDraftPrompt = false;
+      this.pendingDraft = null;
+    }
+
+    const draft: SellDraft = {
+      version: 1,
+      savedAt: Date.now(),
+      step: this.step,
+      searchQuery: this.searchQuery,
+      engine: this.engine,
+      bookPreview: this.bookPreview,
+      condition: this.condition,
+      category: this.category,
+      course: this.course,
+      professor: this.professor,
+      privateNote: this.privateNote,
+      description: this.description,
+      price: this.price,
+      uploadedPhotos: this.uploadedPhotos
+    };
+
+    try {
+      localStorage.setItem(SELL_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch (err) {
+      // Quota or private-browsing failure: losing the draft is acceptable,
+      // breaking the form the user is typing into is not.
+      console.error('Failed to persist sell draft to localStorage', err);
+    }
+  }
+
+  /** Reads and sanity-checks a stored draft. Returns null when there is none. */
+  private readDraft(): SellDraft | null {
+    if (typeof localStorage === 'undefined') return null;
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(SELL_DRAFT_STORAGE_KEY);
+    } catch (err) {
+      console.error('Failed to read sell draft from localStorage', err);
+      return null;
+    }
+    if (!raw) return null;
+
+    try {
+      const draft = JSON.parse(raw) as SellDraft;
+      if (!draft || draft.version !== 1) {
+        this.clearDraft();
+        return null;
+      }
+      if (!Number.isFinite(draft.savedAt) || Date.now() - draft.savedAt > SELL_DRAFT_MAX_AGE_MS) {
+        this.clearDraft();
+        return null;
+      }
+      // A draft of the success screen, or of an empty form, is nothing to offer.
+      if (!draft.step || draft.step >= 4) {
+        this.clearDraft();
+        return null;
+      }
+      return draft;
+    } catch (err) {
+      console.error('Failed to parse sell draft, discarding it', err);
+      this.clearDraft();
+      return null;
+    }
+  }
+
+  /** "Continue where I left off" — applies the stored draft to the form. */
+  resumeDraft() {
+    const draft = this.pendingDraft;
+    this.showDraftPrompt = false;
+    this.pendingDraft = null;
+    if (!draft) return;
+
+    this.step = Math.min(Math.max(draft.step || 1, 1), 3);
+    this.searchQuery = draft.searchQuery || '';
+    this.engine = draft.engine === 'openlibrary' ? 'openlibrary' : 'googlebooks';
+    this.bookPreview = draft.bookPreview ?? null;
+    this.condition = draft.condition || DEFAULT_CONDITION;
+    this.course = draft.course || '';
+    this.professor = draft.professor || '';
+    this.privateNote = draft.privateNote || '';
+    this.description = draft.description || '';
+    this.price = (draft.price === null || draft.price === undefined) ? null : draft.price;
+    this.uploadedPhotos = Array.isArray(draft.uploadedPhotos) ? [...draft.uploadedPhotos] : [];
+    this.brokenPhotos = [];
+
+    // Categories are per-region, so a slug from another region (or one since
+    // retired) would leave the dropdown showing a value it cannot label.
+    const category = draft.category || '';
+    const categoryIsKnown = !category
+      || this.categoryOptions.length === 0
+      || this.categoryOptions.some(option => option.value === category);
+    this.category = categoryIsKnown ? category : '';
+
+    // A book picked from search results hides the search controls again.
+    this.hideSearchButtonForNow = !!this.bookPreview;
+    this.cdr.markForCheck();
+  }
+
+  /** "Start over" — drops the draft and leaves the freshly initialised form. */
+  discardDraft() {
+    this.showDraftPrompt = false;
+    this.pendingDraft = null;
+    this.clearDraft();
+    this.cdr.markForCheck();
+  }
+
+  private clearDraft() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.removeItem(SELL_DRAFT_STORAGE_KEY);
+    } catch (err) {
+      console.error('Failed to clear sell draft from localStorage', err);
     }
   }
 

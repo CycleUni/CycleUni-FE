@@ -15,7 +15,6 @@ import { SchoolStateService } from '../../core/services/school-state.service';
 import { MetadataService } from '../../core/services/metadata.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
 import { UiRecentListings } from '../../shared/ui/recent-listings.component';
-import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiBookTile } from '../../shared/ui/book-tile.component';
 import { UiRadioGroup } from '../../shared/ui/radio-group.component';
@@ -24,11 +23,35 @@ import { combineLatest, Subscription } from 'rxjs';
 import { map, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { RegionLinkService } from '../../core/region-link.service';
 
+type ConditionKey = 'new' | 'like_new' | 'noted' | 'damaged';
+const CONDITION_KEYS: ConditionKey[] = ['new', 'like_new', 'noted', 'damaged'];
+
+/**
+ * 搜尋條件的完整形狀。存在的理由是「網址就是唯一狀態來源」：每個 handler 都
+ * 以目前這一整組狀態為底、只覆寫自己那幾格，才不會像以前各自 `const params:
+ * any = {}` 重建一份時把沒寫到的條件無聲清掉。
+ */
+interface SearchUrlState {
+  q: string;
+  category: string;
+  course: string;
+  engine: 'googlebooks' | 'openlibrary' | 'isbnnet';
+  page: number;
+  /** 已勾選的書況。四個全勾等於沒有篩選。 */
+  conditions: ConditionKey[];
+  priceMin: string;
+  priceMax: string;
+  inStock: boolean;
+}
+
+/** 「一個書況都沒勾」的哨兵值 —— 空字串在網址裡和「沒有這個參數」分不出來，
+ *  但兩者的意思相反（沒有參數＝全選，沒有勾＝結果為空）。 */
+const CONDITION_NONE = 'none';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiDropdown, UiPagination, UiBookTile, UiFacetList, UiRadioGroup, TPipe],
+  imports: [CommonModule, RouterModule, FormsModule, UiInput, UiButton, UiSkeleton, UiRecentListings, UiPagination, UiBookTile, UiFacetList, UiRadioGroup, TPipe],
   template: `
       <div class="search-header">
         <div class="header-inner">
@@ -65,6 +88,7 @@ import { RegionLinkService } from '../../core/region-link.service';
             <ui-facet-list
               [title]="'search.conditionTitle' | t"
               [options]="conditionFacetOptions"
+              selectionMode="multiple"
               (optionToggle)="toggleCondition($event)"
             ></ui-facet-list>
           </div>
@@ -72,6 +96,7 @@ import { RegionLinkService } from '../../core/region-link.service';
             <ui-facet-list
               [title]="'search.categoryTitle' | t"
               [options]="categoryFacetOptions"
+              selectionMode="single"
               (optionToggle)="onCategoryChange($event)"
             ></ui-facet-list>
           </div>
@@ -79,36 +104,33 @@ import { RegionLinkService } from '../../core/region-link.service';
             <ui-facet-list
               [title]="'search.courseTitle' | t"
               [options]="courseFacetOptions"
+              selectionMode="single"
               (optionToggle)="onCourseChange($event)"
             ></ui-facet-list>
           </div>
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.stockTitle' | t }}</h4>
-            <ui-radio-group [options]="stockOptions" [(ngModel)]="stockFilter"></ui-radio-group>
+            <!-- 單向綁定 + 明確的 handler：狀態由網址還原，radio 只負責發動導頁。 -->
+            <ui-radio-group [options]="stockOptions" [ngModel]="stockFilter" (ngModelChange)="onStockChange($event)"></ui-radio-group>
           </div>
           <div class="filter-group">
             <h4 class="filter-title">{{ 'search.priceTitle' | t }}</h4>
+            <!-- ngModel 留著讓輸入當下就能重排目前這頁，但只有離開欄位或按
+                 Enter 才寫進網址 —— 每個字元都 navigate 一次會塞爆上一頁紀錄，
+                 而且 "1" / "12" / "120" 會各觸發一次狀態還原。
+                 blur 不會冒泡，所以聽的是 ui-input 主機元素上的 focusout。 -->
             <div class="price-range">
-              <ui-input [placeholder]="'search.priceMinPlaceholder' | t" [(ngModel)]="priceMin" class="price-input"></ui-input>
+              <ui-input [placeholder]="'search.priceMinPlaceholder' | t" [(ngModel)]="priceMin" (focusout)="commitPriceRange()" (keyup.enter)="commitPriceRange()" class="price-input"></ui-input>
               <span>-</span>
-              <ui-input [placeholder]="'search.priceMaxPlaceholder' | t" [(ngModel)]="priceMax" class="price-input"></ui-input>
+              <ui-input [placeholder]="'search.priceMaxPlaceholder' | t" [(ngModel)]="priceMax" (focusout)="commitPriceRange()" (keyup.enter)="commitPriceRange()" class="price-input"></ui-input>
             </div>
-          </div>
-          <div class="filter-group">
-            <h4 class="filter-title">{{ 'search.engineTitle' | t }}</h4>
-            <ui-dropdown
-              [(ngModel)]="engine"
-              [options]="engineOptions"
-              [searchable]="false"
-              [appendToBody]="true"
-              style="width: 100%; display: block;"
-            ></ui-dropdown>
-            <p class="engine-hint" *ngIf="engine === 'isbnnet'">{{ 'search.isbnNetHint' | t }}</p>
-            <p class="engine-hint" *ngIf="googleUnavailable">{{ 'search.googleUnavailable' | t }}</p>
           </div>
         </aside>
 
         <main class="results">
+          <!-- 保留在結果欄而不是側欄：這不是使用者選出來的條件，是後端自動降級
+               後的通知，跟哪個篩選器都無關。 -->
+          <p class="fallback-hint" *ngIf="googleUnavailable">{{ 'search.googleUnavailable' | t }}</p>
           <h2 class="section-heading" *ngIf="activeQuery">{{ 'search.resultsFor' | t:{q: activeQuery} }}</h2>
           <h2 class="section-heading" *ngIf="!activeQuery && category">{{ 'search.categoryResults' | t }}</h2>
           <p class="scoped-count" *ngIf="(activeQuery || category) && !loading && !fetchError && filteredResults.length > 0">
@@ -211,7 +233,7 @@ import { RegionLinkService } from '../../core/region-link.service';
     .filter-title { font-size: 14px; font-weight: 500; margin-top: 0; margin-bottom: 12px; color: var(--ink); }
     .filter-label { display: block; margin-bottom: 12px; font-size: 14px; color: var(--ink); cursor: pointer; }
     .filter-label input { margin-right: 8px; }
-    .engine-hint { margin: 8px 0 0; font-size: 12px; color: var(--flag); }
+    .fallback-hint { margin: 0 0 16px; font-size: 12px; color: var(--flag); }
     .price-range { display: flex; gap: 8px; align-items: center; }
     /* Price stays a plain numeric range, not a facet list — strip ui-input's
        boxed border for an underline look consistent with the lighter facet
@@ -283,6 +305,9 @@ export class Search implements OnInit {
   filtersOpen = false;
   results: any[] = []; categories: any[] = []; courses: string[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
   private searchSub?: Subscription;
+  /** 上一次真的送進 API 的那組欄位。書況／價格／庫存純前端過濾，現在也會寫進
+   *  網址，若不比對這個 key，每勾一個書況都會多打一次回傳完全相同的請求。 */
+  private lastFetchKey?: string;
 
   get currentSchoolLabel(): string {
     return this.schoolStateService.getSchoolLabel(this.currentSchool);
@@ -301,7 +326,6 @@ export class Search implements OnInit {
       ...this.courses.map(c => ({ label: c, value: c }))
     ];
   }
-  get engineOptions() { return this.bookService.getEngineOptions(); }
 
   conditionFilters = { new: true, like_new: true, noted: true, damaged: true };
   stockFilter: 'all' | 'inStock' = 'all';
@@ -324,10 +348,33 @@ export class Search implements OnInit {
   }
 
   toggleCondition(value: string) {
-    const key = value as keyof typeof this.conditionFilters;
-    if (key in this.conditionFilters) {
-      this.conditionFilters[key] = !this.conditionFilters[key];
-    }
+    const key = value as ConditionKey;
+    if (!CONDITION_KEYS.includes(key)) return;
+    // 刻意不直接改 conditionFilters：勾選狀態一律由網址還原回來，元件自己先
+    // 改一份會讓兩邊各有一個真相，重整後又對不起來。
+    const next = { ...this.conditionFilters, [key]: !this.conditionFilters[key] };
+    this.navigateWithState({ conditions: CONDITION_KEYS.filter(k => next[k]) });
+  }
+
+  onStockChange(value: 'all' | 'inStock') {
+    this.navigateWithState({ inStock: value === 'inStock' });
+  }
+
+  /** 價格改由 blur / Enter 提交，見樣板中的說明。 */
+  commitPriceRange() {
+    const min = this.normalizePrice(this.priceMin);
+    const max = this.normalizePrice(this.priceMax);
+    const current = this.route.snapshot.queryParams;
+    // 只是點進點出輸入框不算改條件。少了這道判斷，使用者在第 3 頁碰一下價格
+    // 欄就會因為「改條件回第 1 頁」的規則被丟回第 1 頁。
+    if (min === (current['price_min'] || '') && max === (current['price_max'] || '')) return;
+    this.navigateWithState({ priceMin: min, priceMax: max });
+  }
+
+  /** 只有真的是數字才進網址：打到一半的 "1a" 沒有篩選意義，寫進去只是噪音。 */
+  private normalizePrice(value: string): string {
+    const n = parseInt((value || '').trim(), 10);
+    return isNaN(n) || n < 0 ? '' : String(n);
   }
 
   get categoryFacetOptions(): FacetOption[] {
@@ -411,12 +458,16 @@ export class Search implements OnInit {
     combineLatest([this.route.queryParams, this.schoolStateService.selectedSchool$]).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(([params, school]) => {
-      this.currentSchool = school; this.cdr.markForCheck();
-      this.searchQuery = params['q'] || ''; this.activeQuery = this.searchQuery;
-      this.category = params['category'] || '';
-      this.course = params['course'] || '';
-      this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : params['engine'] === 'isbnnet' ? 'isbnnet' : 'googlebooks';
-      this.currentPage = parseInt(params['page'] || '1', 10);
+      this.currentSchool = school;
+      this.restoreStateFromParams(params);
+
+      // 書況／價格／庫存只在 filteredResults 裡做前端過濾，重打 API 會拿回
+      // 一模一樣的那頁資料。只有真正送進 searchBooks() 的欄位變了才重查。
+      // 用 JSON 而不是 join()：關鍵字本身可能含有分隔字元，"a b" 配沒有分類
+      // 和 "a" 配分類 "b" 會串成同一個 key，然後該重查的時候不重查。
+      const fetchKey = JSON.stringify([school, this.activeQuery, this.category, this.course, this.engine, this.currentPage]);
+      if (fetchKey === this.lastFetchKey) { this.cdr.markForCheck(); return; }
+      this.lastFetchKey = fetchKey;
 
       if (this.activeQuery || this.category || this.course) {
         this.fetchResults();
@@ -425,6 +476,80 @@ export class Search implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  /**
+   * 網址 → 元件狀態。這條路徑只讀不導頁（navigate 一律由使用者操作的 handler
+   * 發動），所以「寫入網址 → 訂閱觸發 → 還原狀態」不會繞回自己形成迴圈。
+   */
+  private restoreStateFromParams(params: Record<string, any>) {
+    const q = params['q'] || '';
+    // 只有 q 真的變了才覆寫輸入框。現在勾書況、改價格也會導頁，若無條件覆寫，
+    // 使用者打到一半還沒按 Enter 的字會被自己按下的篩選吃掉。
+    if (q !== this.activeQuery) this.searchQuery = q;
+    this.activeQuery = q;
+    this.category = params['category'] || '';
+    this.course = params['course'] || '';
+    this.engine = params['engine'] === 'openlibrary' ? 'openlibrary' : params['engine'] === 'isbnnet' ? 'isbnnet' : 'googlebooks';
+    // 壞掉的 ?page=abc 當第 1 頁，別讓 NaN 一路傳到 API。
+    this.currentPage = Math.max(1, parseInt(params['page'], 10) || 1);
+
+    // 沒有 condition 參數＝四個全選＝不篩選；有參數就只認得出來的值，因此
+    // 序列化時用的 'none' 會如預期還原成「一個都沒勾」。
+    const raw = params['condition'];
+    const picked: string[] = (raw === undefined || raw === null)
+      ? [...CONDITION_KEYS]
+      : String(raw).split(',').filter(v => (CONDITION_KEYS as string[]).includes(v));
+    CONDITION_KEYS.forEach(k => { this.conditionFilters[k] = picked.includes(k); });
+
+    this.priceMin = params['price_min'] || '';
+    this.priceMax = params['price_max'] || '';
+    this.stockFilter = params['in_stock'] === '1' ? 'inStock' : 'all';
+  }
+
+  /** 目前畫面上完整的搜尋條件，navigateWithState() 以它為底。 */
+  private get urlState(): SearchUrlState {
+    return {
+      q: this.activeQuery,
+      category: this.category,
+      course: this.course,
+      engine: this.engine,
+      page: this.currentPage,
+      conditions: CONDITION_KEYS.filter(k => this.conditionFilters[k]),
+      priceMin: this.normalizePrice(this.priceMin),
+      priceMax: this.normalizePrice(this.priceMax),
+      inStock: this.stockFilter === 'inStock',
+    };
+  }
+
+  /**
+   * 所有導頁的唯一入口：以目前完整狀態為底，只覆寫呼叫端指名的欄位。
+   *
+   * 沒有指名 page 就一律回到第 1 頁 —— 換了篩選條件之後第 3 頁的內容跟原本
+   * 完全無關，留在第 3 頁只會看到空結果。這是刻意的決定，寫在這裡而不是散在
+   * 各個 handler，才不會像以前那樣分不清是規則還是忘了帶 page。
+   */
+  private navigateWithState(patch: Partial<SearchUrlState>) {
+    const state: SearchUrlState = { ...this.urlState, page: 1, ...patch };
+    this.router.navigate(this.regionLink.path(['/search']), { queryParams: this.serializeState(state) });
+  }
+
+  /** 預設值不寫進網址：網址是要能貼給別人的，塞滿 engine=googlebooks&page=1
+   *  之類的噪音只會讓人看不出哪些條件才是真的有在作用。 */
+  private serializeState(state: SearchUrlState): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (state.q) params['q'] = state.q;
+    if (state.category) params['category'] = state.category;
+    if (state.course) params['course'] = state.course;
+    if (state.engine !== 'googlebooks') params['engine'] = state.engine;
+    if (state.page > 1) params['page'] = String(state.page);
+    if (state.conditions.length < CONDITION_KEYS.length) {
+      params['condition'] = state.conditions.length ? state.conditions.join(',') : CONDITION_NONE;
+    }
+    if (state.priceMin) params['price_min'] = state.priceMin;
+    if (state.priceMax) params['price_max'] = state.priceMax;
+    if (state.inStock) params['in_stock'] = '1';
+    return params;
   }
 
   fetchResults() {
@@ -457,37 +582,26 @@ export class Search implements OnInit {
     });
   }
 
+  /** 換頁是唯一「不重設 page」的操作，所以它是唯一要明講 page 的呼叫端。 */
   onPageChange(page: number) {
-    const params: any = {}; if (this.activeQuery) params.q = this.activeQuery;
-    if (this.category) params.category = this.category;
-    if (this.course) params.course = this.course;
-    params.engine = this.engine;
-    params.page = page;
-    this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
+    this.navigateWithState({ page });
   }
+
   onSearch() {
-    if (this.searchQuery.trim()) {
-      const params: any = { q: this.searchQuery.trim() };
-      params.engine = this.engine;
-      this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
-    }
+    const q = this.searchQuery.trim();
+    // 保留 category / course：在某個分類底下再打關鍵字，使用者的預期是
+    // 「在這個分類裡找」，而不是被丟回全站搜尋。
+    if (q) this.navigateWithState({ q });
   }
+
   onCategoryChange(cat: string) {
-    const params: any = {};
-    if (this.activeQuery) params.q = this.activeQuery;
-    if (cat) params.category = cat;
-    // We intentionally drop this.course when category changes
-    params.engine = this.engine;
-    this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
+    // course 仍然刻意清掉：課程清單是依 category 重新載入的，換了分類之後
+    // 舊課程多半不在新清單裡，留著會變成一個選不掉的隱形條件。
+    this.navigateWithState({ category: cat, course: '' });
   }
 
   onCourseChange(course: string) {
-    const params: any = {};
-    if (this.activeQuery) params.q = this.activeQuery;
-    if (this.category) params.category = this.category;
-    if (course) params.course = course;
-    params.engine = this.engine;
-    this.router.navigate(this.regionLink.path(['/search']), { queryParams: params });
+    this.navigateWithState({ course });
   }
 
   /** Route params for a result tile; the tile's own anchor does the navigating. */

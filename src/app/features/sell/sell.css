@@ -222,6 +222,60 @@
       margin-bottom: 12px;
     }
 
+    /* Draft restore bar. Sits above the stepper so the choice is made before
+       the form is touched, but stays a notice rather than a blocking modal —
+       ignoring it and typing simply starts a new listing. */
+    .draft-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      background-color: var(--warn-bg);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-xs);
+      color: var(--warn-ink);
+    }
+    .draft-banner-text {
+      margin: 0;
+      font-size: 14px;
+      flex: 1;
+      min-width: 180px;
+    }
+    .draft-banner-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Field-level variant of the global .inline-msg: same colours, tightened
+       up so the message reads as belonging to the input directly above it. */
+    .inline-msg.field-msg {
+      margin: 4px 0 12px;
+    }
+    /* Both the input component and the price row already reserve a bottom gap
+       for whatever follows them; a message that belongs to the field above
+       has to close that gap or it reads as a separate block. */
+    ui-input + .inline-msg.field-msg,
+    .price-field + .inline-msg.field-msg {
+      margin-top: -8px;
+    }
+
+    /* A restored draft can reference a photo the server has since removed;
+       the slot keeps its shape instead of collapsing to a torn-image icon. */
+    .preview-missing {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--paper-warm);
+      border-radius: 4px;
+    }
+
     @media (max-width: 768px) {
       .container {
         margin: 24px auto;
