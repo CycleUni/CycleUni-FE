@@ -31,6 +31,13 @@
   --surface-raised:        #FFFFFF;
   --surface-raised-border: #D9D4CB;
 
+  /* The card face: the ground of anything that reads as a card sitting *on*
+     the page (listing cards, tables, admin panels, the checkout summary) as
+     opposed to floating above it. Separate from --paper because the two only
+     coincide in light mode; see the dark palette for why they must not be the
+     same value there. */
+  --surface-card: #FFFFFF;
+
   --accent:      #1E5C46; /* primary action color (deep green: links, primary buttons, prices) */
   --accent-ink:  #14402F; /* darkened hover state */
   --accent-soft: #E7F0EA; /* accent-tinted ground: selected chips, hover fills */
@@ -138,6 +145,18 @@
      Controls may look smaller than this via transparent padding, but the
      box that receives the tap must not be. */
   --tap-min: 44px;
+
+  /* Two transition durations, not five. The app had 0.1s / 0.15s / 0.2s /
+     0.3s / .2s scattered across 41 declarations with nothing deciding which
+     applied where, so a listing card and a book tile — which sit side by side
+     in the same grid — lifted at 0.1s and 0.15s and visibly raced each other.
+     --motion-fast is for a control acknowledging a pointer (hover tint, focus
+     border, a checkmark popping in); --motion-base is for anything that moves
+     or resizes a box (card lift, drawer, caret flip). Both are durations only:
+     easing stays at the call site, since ease-in-out on a checkmark and ease
+     on a slide are genuinely different intents. */
+  --motion-fast: 0.15s;
+  --motion-base: 0.2s;
 }
 
 /* Dark palette: follows OS/browser preference by default. */
@@ -151,6 +170,19 @@
     --line-strong: #706A5A; /* 3.3:1 on --paper and 3.1:1 on --paper-warm */
     --surface-raised:        #26282B;
     --surface-raised-border: #46484D;
+    /* A card cannot be --paper here. The page ground *is* --paper, so a card
+       painted with it differs from the page by exactly 1.00:1, leaving the
+       shadow to do the separating — and the shadow is black on near-black:
+       its outermost rgba(0, 0, 0, 0.6) over #17181A composites to #090A0A,
+       1.12:1. Elevation in a dark UI has to be carried by a lighter surface,
+       not a darker shadow. #242629 is 1.17:1 above the page by WCAG contrast
+       and 2.11:1 by relative luminance, across the card's whole area rather
+       than a 24px gradient at its edge. It is also the brightest step that
+       keeps every on-card token at AA: one step further, to --surface-raised's
+       #26282B, drops --accent to 4.46:1. Staying below --surface-raised is
+       deliberate — dropdowns and modals still have somewhere to sit above a
+       card. */
+    --surface-card:          #242629;
     --accent:      #4B9C7B; /* brighter green for contrast on a dark ground */
     --accent-ink:  #7FC4A6; /* lighter emphasis variant of accent on dark */
     --accent-soft: #1E2B25;
@@ -206,6 +238,8 @@
   --line-strong: #706A5A;
   --surface-raised:        #26282B;
   --surface-raised-border: #46484D;
+  /* See the same token in the prefers-color-scheme block above. */
+  --surface-card:          #242629;
   --accent:      #4B9C7B;
   --accent-ink:  #7FC4A6;
   --accent-soft: #1E2B25;
@@ -296,11 +330,16 @@ body {
   outline: 2px solid transparent;
 }
 
-/* Raised surface shared by the auth box and the sell form. In dark mode --paper
-   sits close to the page ground, so the shadow is what separates the card from
-   the background. Component rules keep their own padding / max-width. */
+/* Raised surface shared by the auth box and the sell form. It used to say the
+   shadow was what separated the card from the page in dark mode; it was not.
+   Both were --paper, i.e. the same colour, and the shadow between them
+   composites to 1.12:1 — the card and the page were one flat plane. The
+   separation now comes from --surface-card being a lighter surface than the
+   page ground, which is how a dark UI expresses elevation; the shadow is a
+   supporting cue, not the mechanism. Component rules keep their own padding /
+   max-width. */
 .surface-card {
-  background-color: var(--paper);
+  background-color: var(--surface-card);
   border: 1px solid var(--line);
   border-radius: 4px;
   box-shadow: var(--shadow-card-lg);
@@ -310,6 +349,17 @@ body {
  * Respect the OS "reduce motion" setting. The app animates skeleton pulses
  * continuously and translates/rotates tiles on hover; for users who ask for
  * reduced motion these are exactly the effects that need to stop.
+ *
+ * Two things this block does NOT do, both of which have to be handled at the
+ * call site:
+ *   - `scroll-behavior: auto` only overrides the CSS property. A behavior
+ *     passed to scrollTo/scrollBy/scrollIntoView is a script argument and
+ *     wins over it, so JS-driven scrolling must read the preference itself —
+ *     see core/reduced-motion.ts.
+ *   - collapsing animation-duration to 0.01ms erases an animation entirely.
+ *     Where the animation *is* the message (the pulse marking which order you
+ *     just came back to), the component has to opt out of this rule and hold
+ *     a static state instead of playing nothing.
  */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -337,6 +387,36 @@ body {
   margin-inline: auto;
   padding-inline: var(--space-4);
 }
+
+/*
+ * There are exactly three legal content widths, and a page picks one; it does
+ * not invent a number. Seven features had re-declared `.container` inside
+ * their own component styles — five as content columns at 1120 / 1000 / 960 /
+ * 800 / 600, and two (sign-in, order-success) as centring wrappers that were
+ * not columns at all — and because a component rule carries an _ngcontent
+ * attribute it outranks the global rule above and silently replaced it. The
+ * result was that the header logo and the page content shared a left edge on
+ * home, missed by 16px on search and by 96px on a book page, so the column
+ * visibly stepped sideways on every navigation. The widths below are
+ * modifiers, never redeclarations, so "narrower" has to be chosen out loud.
+ *
+ *   default   1120px — browse surfaces: a grid several cards wide (home,
+ *                      search, the account dashboard, admin). Also what the
+ *                      header and footer bands produce, so this is the width
+ *                      the page's left edge is measured against.
+ *   --narrow   960px — one subject plus its supporting media column: a book,
+ *                      a listing, a seller. Wide enough for a 200px cover and
+ *                      a three-card grid underneath, narrow enough that the
+ *                      description does not run to a 1120px measure.
+ *   --form     720px — one task, one form (checkout, sell, sign-in). Keeps a
+ *                      full-width input near a readable measure instead of
+ *                      stretching it across the page.
+ *
+ * Vertical rhythm is deliberately not set here: each page keeps its own block
+ * margin under its own class, so this stays a horizontal concern only.
+ */
+.container--narrow { max-width: 992px; } /* 960px column + 2 × 16px gutter */
+.container--form   { max-width: 752px; } /* 720px column + 2 × 16px gutter */
 
 /*
  * Serif exception for book titles (the interface's only serif usage):
@@ -403,7 +483,7 @@ body {
 .stamp-tag {
   position: absolute;
   border: 1px solid var(--line-strong);
-  background: var(--paper);
+  background: var(--surface-card);
   box-shadow: var(--shadow-card);
   border-radius: var(--radius-xs);
   padding: var(--space-1) var(--space-2);
@@ -529,7 +609,7 @@ body {
  * 書卡與廣告卡共用的 hover 效果
  */
 .hover-card {
-  transition: transform 0.15s ease;
+  transition: transform var(--motion-base) ease;
 }
 .hover-card:hover {
   transform: translateY(-2px);
@@ -574,7 +654,7 @@ body {
  * 後台共用的表格容器
  */
 .table-container {
-  background: var(--paper);
+  background: var(--surface-card);
   border: 1px solid var(--line);
   border-radius: 8px;
   overflow-x: auto;

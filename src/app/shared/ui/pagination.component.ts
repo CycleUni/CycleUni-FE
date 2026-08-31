@@ -40,7 +40,9 @@ import { CommonModule } from '@angular/common';
       cursor: pointer;
       font-size: 14px;
       color: var(--ink);
-      transition: all 0.2s;
+      /* Enumerated, not 'all': the button's min-width tracks the digit count,
+         so 'all' animated its width every time the page number changed. */
+      transition: background-color var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
     }
     .page-btn:hover:not(:disabled) {
       border-color: var(--accent);

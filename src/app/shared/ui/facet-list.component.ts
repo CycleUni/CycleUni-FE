@@ -115,7 +115,7 @@ let nextId = 0;
       background-color: var(--btn-primary-ink);
       clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
       transform: scale(0);
-      transition: transform 0.1s ease-in-out;
+      transition: transform var(--motion-fast) ease-in-out;
     }
     .facet-list.single .facet-marker::before {
       width: 7px;

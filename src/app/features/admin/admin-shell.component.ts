@@ -12,7 +12,7 @@ import { AuthStore } from '../../core/auth.store';
   standalone: true,
   imports: [RegionLinkDirective, CommonModule, RouterModule, TPipe],
   template: `
-    <div class="admin-layout">
+    <div class="container admin-layout">
       <!-- Desktop Sidebar / Mobile Drawer Menu -->
       <nav class="admin-sidebar" [class.drawer-open]="isDrawerOpen" [attr.aria-label]="'admin.ariaNav' | t" #sidebar (keydown)="onKeyDown($event)">
         <div class="sidebar-header">
@@ -86,12 +86,13 @@ import { AuthStore } from '../../core/auth.store';
     </div>
   `,
   styles: [`
+    /* Width comes from the global .container. Stating 1120px with 24px
+       padding here made the admin column 1072px and pushed its left edge 8px
+       inside every other page's. */
     .admin-layout {
       display: flex;
       align-items: flex-start;
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 24px;
+      padding-block: var(--space-5);
     }
     
     /* Sidebar (Desktop) */
@@ -168,9 +169,9 @@ import { AuthStore } from '../../core/auth.store';
     @media (max-width: 768px) {
       .admin-layout {
         display: block;
-        padding: 16px;
+        padding-block: var(--space-4);
         /* Fix padding-bottom so content isn't covered by bottom tab bar (57px) */
-        padding-bottom: calc(16px + 57px);
+        padding-bottom: calc(var(--space-4) + 57px);
       }
       
       .mobile-header {
@@ -202,9 +203,11 @@ import { AuthStore } from '../../core/auth.store';
         left: -280px;
         width: 280px;
         height: 100vh;
-        background: var(--paper);
+        /* An off-canvas drawer floats over the page, so it takes the raised
+           surface rather than the page ground it slides across. */
+        background: var(--surface-raised);
         z-index: 1000; /* above bottom-tab-bar */
-        transition: transform 0.3s ease;
+        transition: transform var(--motion-base) ease;
         padding: 0;
         margin: 0;
         border-right: none;

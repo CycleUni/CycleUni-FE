@@ -3,6 +3,7 @@ import { Component, Input, ViewChild, ElementRef, HostListener, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TPipe } from '../../core/i18n.service';
+import { scrollBehavior } from '../../core/reduced-motion';
 
 @Component({
   selector: 'ui-category-rail',
@@ -32,7 +33,7 @@ import { TPipe } from '../../core/i18n.service';
       z-index: 1;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity var(--motion-base);
     }
     .categories-wrapper::before { left: 48px; background: linear-gradient(to right, var(--paper) 0%, transparent 100%); }
     .categories-wrapper::after { right: 48px; background: linear-gradient(to left, var(--paper) 0%, transparent 100%); }
@@ -56,7 +57,7 @@ import { TPipe } from '../../core/i18n.service';
       z-index: 2;
       color: var(--ink);
       box-shadow: var(--shadow-card);
-      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      transition: background-color var(--motion-base), color var(--motion-base), border-color var(--motion-base);
     }
     .scroll-btn:hover, .tag-btn:hover { color: var(--accent); border-color: var(--accent); }
     .scroll-btn:hover { background-color: var(--paper-warm); }
@@ -76,11 +77,11 @@ import { TPipe } from '../../core/i18n.service';
       flex-direction: column;
       border: 1px solid var(--line-strong);
       border-radius: var(--radius-xs);
-      background-color: var(--paper);
+      background-color: var(--surface-card);
       padding: var(--space-5);
       text-decoration: none;
       color: var(--ink);
-      transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+      transition: background-color var(--motion-base), border-color var(--motion-base), box-shadow var(--motion-base);
       flex: 0 0 240px;
     }
     .category-card:hover {
@@ -132,7 +133,7 @@ export class UiCategoryRail {
   scrollCategories(direction: number) {
     if (!this.categoriesGrid) return;
     const el = this.categoriesGrid.nativeElement;
-    el.scrollBy({ left: el.clientWidth * 0.8 * direction, behavior: 'smooth' });
+    el.scrollBy({ left: el.clientWidth * 0.8 * direction, behavior: scrollBehavior() });
   }
 
   trackBySlug(idx: number, cat: any): string { return cat.slug; }

@@ -1,23 +1,9 @@
-    .app-header {
-      border-bottom: 1px solid var(--line);
-      padding: 16px 0;
-      background-color: var(--paper);
-    }
-    .header-content {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
-    .logo a {
-      text-decoration: none;
-      color: var(--ink);
-      font-weight: 700;
-      font-size: 20px;
-    }
-    .container {
-      max-width: 600px;
-      margin: 48px auto;
-      padding: 0 16px;
+    /* Width comes from .container--form. The page also carried a dead
+       standalone header (.app-header/.header-content/.logo, nothing in
+       sell.html renders them) whose .header-content was a third private copy
+       of the content-column arithmetic; it is gone with the redeclaration. */
+    .sell-page {
+      margin-block: var(--space-7);
     }
     h2 {
       text-align: center;
@@ -68,7 +54,7 @@
        redraw the row. width/text-align restore the block layout the div had. */
     .book-match.selectable {
       cursor: pointer;
-      transition: border-color 0.2s, transform 0.2s;
+      transition: border-color var(--motion-base), transform var(--motion-base);
       width: 100%;
       text-align: left;
       font: inherit;
@@ -138,7 +124,7 @@
       gap: 8px;
       min-height: 100px;
       border-radius: var(--radius-xs);
-      transition: background-color 0.2s, border-color 0.2s;
+      transition: background-color var(--motion-base), border-color var(--motion-base);
     }
     .dropzone.drag-over {
       background-color: var(--paper-warm);
@@ -193,7 +179,7 @@
       padding-bottom: 8px;
       border-bottom: 1.5px solid var(--line-strong);
       margin-bottom: 16px;
-      transition: border-color 0.15s;
+      transition: border-color var(--motion-fast);
     }
     .price-field:focus-within {
       border-bottom-color: var(--accent);
@@ -297,8 +283,8 @@
     }
 
     @media (max-width: 768px) {
-      .container {
-        margin: 24px auto;
+      .sell-page {
+        margin-block: var(--space-5);
       }
       .stepper {
         gap: 8px;

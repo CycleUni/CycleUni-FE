@@ -189,7 +189,7 @@ import { SchoolStateService } from '../../core/services/school-state.service';
       font-weight: 700;
       font-size: var(--text-base);
       line-height: 1.4;
-      transition: color 0.2s;
+      transition: color var(--motion-base);
     }
     .waitlist-row .wcount {
       color: var(--flag);

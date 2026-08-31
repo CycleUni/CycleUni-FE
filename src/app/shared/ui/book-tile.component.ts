@@ -140,10 +140,10 @@ import { UiBookCover } from './book-cover.component';
       display: block;
       aspect-ratio: 5 / 7;
       border-radius: var(--radius-xs);
-      background-color: var(--paper-warm);
+      background-color: var(--surface-card);
       box-shadow: var(--shadow-card);
       margin-bottom: var(--space-3);
-      transition: box-shadow 0.15s ease, transform 0.15s ease;
+      transition: box-shadow var(--motion-base) ease, transform var(--motion-base) ease;
     }
     /* The "feature" tile is meant to look larger/more prominent than a
        regular tile, not differently-shaped: real book covers are portrait

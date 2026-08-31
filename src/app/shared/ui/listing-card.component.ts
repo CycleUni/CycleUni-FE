@@ -82,8 +82,11 @@ import { PricePipe } from '../pipes/price.pipe';
       border: 1px solid var(--line-strong);
       border-radius: var(--radius-xs);
       padding: 16px;
-      background-color: var(--paper);
-      transition: transform 0.1s, box-shadow 0.1s;
+      background-color: var(--surface-card);
+      /* --motion-base, matching .hover-card in styles.css. This was 0.1s while
+         the book tiles beside it in the same grid lifted at 0.15s, so two
+         adjacent cards moved at visibly different speeds. */
+      transition: transform var(--motion-base), box-shadow var(--motion-base);
       display: flex;
       flex-direction: column;
     }

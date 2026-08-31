@@ -40,7 +40,7 @@ import { TPipe } from '../../core/i18n.service';
       background: var(--paper-warm);
       color: var(--ink);
       box-sizing: border-box;
-      transition: border-color 0.2s;
+      transition: border-color var(--motion-base);
     }
     .search-input::placeholder {
       color: var(--muted);

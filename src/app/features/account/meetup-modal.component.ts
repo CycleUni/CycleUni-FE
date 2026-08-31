@@ -156,7 +156,7 @@ import { UiInput } from '../../shared/ui/input.component';
       border-radius: 4px;
       cursor: pointer;
       color: var(--ink);
-      transition: background-color 0.15s;
+      transition: background-color var(--motion-fast);
     }
     .day-cell:hover {
       background: var(--paper-warm);

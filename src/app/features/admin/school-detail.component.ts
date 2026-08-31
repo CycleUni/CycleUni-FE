@@ -52,7 +52,7 @@ import { TranslationEditorComponent, TranslationField } from './translation-edit
     .header-actions h2 { margin-bottom: 8px; }
     .header-actions a { text-decoration: none; }
     .detail-grid { max-width: 600px; }
-    .panel { background: var(--paper); padding: 24px; border-radius: 8px; border: 1px solid var(--line); box-shadow: var(--shadow-card-lg); }
+    .panel { background: var(--surface-card); padding: 24px; border-radius: 8px; border: 1px solid var(--line); box-shadow: var(--shadow-card-lg); }
     .panel h3 { margin-top: 0; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }

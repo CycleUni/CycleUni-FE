@@ -54,7 +54,7 @@ import { RouterModule } from '@angular/router';
       line-height: 1.2;
       border-radius: var(--radius-control);
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      transition: background-color var(--motion-base), color var(--motion-base), border-color var(--motion-base);
       border: 1px solid transparent;
     }
     /* Touch devices get the full 44pt/48dp target; pointer devices keep the

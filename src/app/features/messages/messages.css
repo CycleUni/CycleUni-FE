@@ -318,7 +318,7 @@
       font-size: 14px;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.15s;
+      transition: opacity var(--motion-fast);
     }
     .msg-bubble:hover .msg-delete-btn {
       opacity: 1;
@@ -537,7 +537,7 @@
       color: var(--ink);
       cursor: pointer;
       flex-shrink: 0;
-      transition: all 0.15s;
+      transition: background-color var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
     }
     .attach-btn:hover:not(:disabled) {
       background: var(--paper-warm);
@@ -568,6 +568,6 @@
     .progress-bar {
       height: 100%;
       background: var(--accent);
-      transition: width 0.2s;
+      transition: width var(--motion-base);
     }
 

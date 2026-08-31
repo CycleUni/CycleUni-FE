@@ -38,7 +38,7 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
   `,
   styles: [`
 
-    .detail-card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 24px; max-width: 520px; box-shadow: var(--shadow-card-lg); }
+    .detail-card { background: var(--surface-card); border: 1px solid var(--line); border-radius: 8px; padding: 24px; max-width: 520px; box-shadow: var(--shadow-card-lg); }
     .detail-card h2 { margin-top: 0; }
     .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     .field { display: flex; flex-direction: column; gap: 2px; }

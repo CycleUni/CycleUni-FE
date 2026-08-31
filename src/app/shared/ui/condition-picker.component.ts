@@ -68,7 +68,7 @@ export interface ConditionOption {
       font-size: 14px;
       font-family: inherit;
       cursor: pointer;
-      transition: border-color 0.15s;
+      transition: border-color var(--motion-fast);
     }
     .chip:hover {
       border-color: var(--accent);

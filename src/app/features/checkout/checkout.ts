@@ -19,7 +19,7 @@ import { RegionLinkService } from '../../core/region-link.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, UiButton, UiBookCover, TPipe, PricePipe],
   template: `
-      <main class="container">
+      <main class="container container--form checkout-page">
         <h2>{{ 'checkout.title' | t }}</h2>
 
         <div *ngIf="isLoading" style="padding: 40px; text-align: center;">
@@ -67,9 +67,13 @@ import { RegionLinkService } from '../../core/region-link.service';
       </main>
   `,
   styles: [`
-    .container {
-      max-width: 800px;
-      margin: 32px auto;
+    /* Width comes from .container--form; this class only carries the page's
+       vertical rhythm. The old rule redeclared .container at 800px *and*
+       omitted padding-inline, so on a phone the address fields and the price
+       ran flush into both screen edges — on the one page that takes payment
+       details. */
+    .checkout-page {
+      margin-block: var(--space-6);
     }
     .checkout-grid {
       display: grid;
@@ -77,7 +81,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       gap: 24px;
     }
     .summary-card, .form-card {
-      background: var(--paper);
+      background: var(--surface-card);
       padding: 24px;
       border: 1px solid var(--line);
       border-radius: 8px;

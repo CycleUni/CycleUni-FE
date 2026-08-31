@@ -49,7 +49,7 @@ export const VISIBILITY_CHECK_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--paper);
+      background: var(--surface-raised);
       border: 1px solid var(--line-strong);
       box-shadow: var(--shadow-card-lg);
       padding: var(--space-3) var(--space-4);

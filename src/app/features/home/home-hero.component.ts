@@ -248,7 +248,7 @@ export interface HeroCover {
       cursor: pointer;
       font-size: var(--text-sm);
       font-family: inherit;
-      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      transition: background-color var(--motion-base), color var(--motion-base), border-color var(--motion-base);
     }
     @media (pointer: coarse) {
       .tag-btn { min-height: var(--tap-min); padding-inline: var(--space-3); }
@@ -303,16 +303,16 @@ export interface HeroCover {
       margin: -147px 0 0 -105px;
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow-card-lg);
-      background-color: var(--paper);
+      background-color: var(--surface-card);
       border: 1px solid var(--line-strong);
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform var(--motion-base) ease, box-shadow var(--motion-base) ease;
       transform: translateX(var(--x)) rotate(var(--r));
     }
     /* shape comes from the global .stamp-tag */
     .demand-tag, .sponsor-tag {
       left: -8px; bottom: -8px;
-      transition: opacity 0.2s ease;
+      transition: opacity var(--motion-base) ease;
     }
     .demand-tag { color: var(--flag); }
     .sponsor-tag { color: var(--sponsor); z-index: 2; }
@@ -353,7 +353,7 @@ export interface HeroCover {
       margin-inline: auto;
     }
     .hero-cta-inner {
-      background-color: var(--paper);
+      background-color: var(--surface-card);
       border: 1px solid var(--line-strong);
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow-card-lg);

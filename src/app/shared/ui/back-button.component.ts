@@ -35,7 +35,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       padding: 6px 12px;
       margin-bottom: 16px;
       border-radius: 6px;
-      transition: all 0.2s ease;
+      transition: color var(--motion-fast) ease, background-color var(--motion-fast) ease;
     }
     .go-back-btn:hover {
       color: var(--ink);

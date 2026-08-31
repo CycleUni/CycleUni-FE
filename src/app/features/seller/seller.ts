@@ -19,7 +19,7 @@ import { isUserVerifiedIn } from '../../core/verification';
   standalone: true,
   imports: [CommonModule, UiListingRow, UiPagination, UiBreadcrumb, TPipe],
   template: `
-    <div class="seller-page" *ngIf="seller">
+    <div class="container container--narrow seller-page" *ngIf="seller">
       <ui-breadcrumb [items]="breadcrumbItems"></ui-breadcrumb>
 
       <div class="seller-header">
@@ -85,10 +85,10 @@ import { isUserVerifiedIn } from '../../core/verification';
     </div>
   `,
   styles: [`
+    /* Width comes from .container--narrow: a seller profile is one subject
+       plus its listings, the same shape as a book or a listing page. */
     .seller-page {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 24px;
+      padding-block: var(--space-5);
     }
     
     .seller-header {

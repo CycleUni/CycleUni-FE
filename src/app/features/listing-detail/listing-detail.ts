@@ -18,6 +18,7 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
 import { ReportModalComponent } from './report-modal.component';
 import { UiVerificationPrompt } from '../../shared/ui/verification-prompt.component';
 import { RegionLinkService } from '../../core/region-link.service';
+import { scrollBehavior } from '../../core/reduced-motion';
 
 
 @Component({
@@ -243,14 +244,14 @@ export class ListingDetail implements OnInit, OnDestroy {
   selectPhoto(index: number) {
     if (!this.carouselTrack) return;
     const el = this.carouselTrack.nativeElement;
-    el.scrollTo({ left: el.clientWidth * index, behavior: 'smooth' });
+    el.scrollTo({ left: el.clientWidth * index, behavior: scrollBehavior() });
   }
 
   scrollGallery(direction: number) {
     if (!this.carouselTrack) return;
     const el = this.carouselTrack.nativeElement;
     const scrollAmount = el.clientWidth;
-    el.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
+    el.scrollBy({ left: scrollAmount * direction, behavior: scrollBehavior() });
   }
 
   onScroll() {

@@ -258,7 +258,7 @@ export class ListingsComponent implements OnInit {
         },
         error: (err) => {
           const code = err.error?.error?.code;
-          this.toast.error(this.i18n.t('acct.errUpdate') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.message)));
+          this.toast.error(this.i18n.t('acct.errUpdate', { msg: code ? this.i18n.t(code) : (err.error?.error?.message || err.message) }));
         }
       });
     } else if (event.type === 'mark_active') {
@@ -269,7 +269,7 @@ export class ListingsComponent implements OnInit {
         },
         error: (err) => {
           const code = err.error?.error?.code;
-          this.toast.error(this.i18n.t('acct.errUpdate') + (code ? this.i18n.t(code) : (err.error?.error?.message || err.message)));
+          this.toast.error(this.i18n.t('acct.errUpdate', { msg: code ? this.i18n.t(code) : (err.error?.error?.message || err.message) }));
         }
       });
     } else if (event.type === 'delete') {
