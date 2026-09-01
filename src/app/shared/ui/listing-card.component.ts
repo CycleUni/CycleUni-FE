@@ -27,7 +27,7 @@ import { PricePipe } from '../pipes/price.pipe';
   standalone: true,
   imports: [CommonModule, RegionLinkDirective, UiButton, TPipe, PricePipe],
   template: `
-    <div class="listing-card">
+    <div class="listing-card hover-card hover-card-surface">
       <a
         *ngIf="link"
         class="listing-body"
@@ -83,10 +83,6 @@ import { PricePipe } from '../pipes/price.pipe';
       border-radius: var(--radius-xs);
       padding: 16px;
       background-color: var(--surface-card);
-      /* --motion-base, matching .hover-card in styles.css. This was 0.1s while
-         the book tiles beside it in the same grid lifted at 0.15s, so two
-         adjacent cards moved at visibly different speeds. */
-      transition: transform var(--motion-base), box-shadow var(--motion-base);
       display: flex;
       flex-direction: column;
     }
@@ -109,13 +105,6 @@ import { PricePipe } from '../pipes/price.pipe';
       text-decoration: none;
       cursor: pointer;
     }
-    /* Hover elevation now follows the theme. It was var(--shadow-small, ...),
-       a token that has never existed, so every card fell through to the
-       hard-coded fallback and kept a light-mode shadow on a dark ground. */
-    .listing-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-card-lg);
-    }
     .button-group {
       display: flex;
       gap: 8px;
@@ -123,7 +112,7 @@ import { PricePipe } from '../pipes/price.pipe';
     }
     .listing-photo-container {
       width: 100%;
-      height: 180px;
+      aspect-ratio: 5 / 7;
       background-color: var(--paper-warm);
       margin-bottom: 16px;
       display: flex;
@@ -131,6 +120,7 @@ import { PricePipe } from '../pipes/price.pipe';
       justify-content: center;
       color: var(--muted);
       font-size: 14px;
+      border-radius: var(--radius-xs);
       overflow: hidden;
       flex-shrink: 0;
     }

@@ -20,7 +20,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   template: `
     <h2 class="section-heading" [id]="headingId">{{ (school ? 'home.recentTitle' : 'home.recentTitleAll') | t }}</h2>
     <ng-container *ngIf="loading">
-      <ui-skeleton variant="tile-grid" [count]="4"></ui-skeleton>
+      <ui-skeleton variant="discover-grid" [count]="4"></ui-skeleton>
     </ng-container>
     <ng-container *ngIf="!loading">
       <ui-error-state
@@ -55,7 +55,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
              Filling the remaining columns with a supply-side invitation turns
              the emptiest part of the page into the one CTA the marketplace
              most needs, and keeps the grid from ending in ragged holes. -->
-        <a class="seed-tile" regionLink="/sell" *ngFor="let slot of seedSlots">
+        <a class="seed-tile hover-card hover-card-surface" regionLink="/sell" *ngFor="let slot of seedSlots">
           <span class="seed-mark" aria-hidden="true">+</span>
           <span class="seed-text">{{ 'home.seedSlot' | t }}</span>
         </a>
@@ -74,29 +74,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
        read a spine title on a desktop screen — and any book count that isn't
        a multiple of 4 left visible holes in the grid. Sizing by a 180px
        minimum instead lets the column count follow the space available. */
-    .discover-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: var(--space-6) var(--space-5);
-      align-items: start;
-    }
-    
-    @media (max-width: 768px) {
-      
-    }
-    /* The oversized first tile only reads as deliberate hierarchy when there
-       are enough siblings for it to tower over. Two conditions gate it: enough
-       books (see showFeatureTile) and enough columns. Spanning 2 of 3 columns
-       — which is what the 715px column beside the waitlist yields — is not
-       emphasis, it is one book eating two thirds of the row and pushing the
-       rest down. At 800px the grid holds four 180px tracks, so the feature
-       covers half the row and the others still sit beside it. */
-    @container (min-width: 800px) {
-      .discover-grid.has-feature > *:first-child {
-        grid-column: span 2;
-        grid-row: span 2;
-      }
-    }
     .seed-tile {
       display: flex;
       flex-direction: column;
@@ -111,11 +88,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       background-color: var(--paper-warm);
       transition: border-color var(--motion-base), color var(--motion-base), background-color var(--motion-base);
     }
-    .seed-tile:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background-color: var(--accent-soft);
-    }
     .seed-mark {
       font-family: 'Noto Serif TC', serif;
       font-size: var(--text-3xl);
@@ -125,12 +97,6 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       font-size: var(--text-sm);
       text-align: center;
       padding-inline: var(--space-3);
-    }
-    @media (max-width: 640px) {
-      .discover-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: var(--space-5) var(--space-3);
-      }
     }
   `]
 })

@@ -54,11 +54,9 @@ import { ConfirmService } from '../../core/services/confirm.service';
       margin-bottom: 24px;
     }
     .section-head-row .section-heading { margin-bottom: 0; }
-    .discover-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 32px 24px;
-    }
+    /* .discover-grid is declared once, globally. A copy here would win on
+       specificity — view encapsulation adds an attribute selector — and this
+       one silently did, with a 160px track against the global 180px. */
     .tile-actions-inner {
       display: flex;
       flex-direction: column;

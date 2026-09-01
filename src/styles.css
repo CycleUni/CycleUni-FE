@@ -606,13 +606,50 @@ body {
 }
 
 /*
+ * 共用的書卡網格系統 (Discover Grid)
+ * Auto-fill rather than a fixed 4 columns. At 1120px, 'repeat(4, 1fr)'
+ * produced covers too small to read a spine title on a desktop screen, and
+ * any book count that isn't a multiple of 4 left visible holes in the grid.
+ * Sizing by a 180px minimum instead lets the column count follow the space available.
+ */
+.discover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-6) var(--space-5);
+  align-items: start;
+  container-type: inline-size;
+}
+
+@media (max-width: 640px) {
+  .discover-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-5) var(--space-3);
+  }
+}
+
+/* The oversized first tile only reads as deliberate hierarchy when there
+   are enough siblings for it to tower over. Two conditions gate it: enough
+   books and enough columns. Spanning 2 of 3 columns is not emphasis, it is 
+   one book eating two thirds of the row and pushing the rest down. 
+   At 800px the grid holds four 180px tracks, so the feature covers half the row. */
+@container (min-width: 800px) {
+  .discover-grid.has-feature > *:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
+/*
  * 書卡與廣告卡共用的 hover 效果
  */
 .hover-card {
-  transition: transform var(--motion-base) ease;
+  transition: transform var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 .hover-card:hover {
   transform: translateY(-2px);
+}
+.hover-card.hover-card-surface:hover {
+  box-shadow: var(--shadow-card-lg);
 }
 .hover-card:hover .hover-card-cover {
   box-shadow: var(--shadow-card-lg);

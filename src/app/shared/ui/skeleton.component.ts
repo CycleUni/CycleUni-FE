@@ -17,7 +17,7 @@ import { TPipe } from '../../core/i18n.service';
   standalone: true,
   imports: [CommonModule, TPipe],
   template: `
-    <div class="skeleton" [class]="'v-' + variant" role="status" aria-busy="true">
+    <div class="skeleton" [ngClass]="variant === 'discover-grid' ? 'discover-grid' : 'v-' + variant" role="status" aria-busy="true">
       <!-- The whole block used to be aria-hidden, so a screen reader was told
            nothing at all was happening while these four call sites waited on
            the network — the plain-text "loading" states elsewhere at least
@@ -25,14 +25,6 @@ import { TPipe } from '../../core/i18n.service';
            thing to announce is this label. -->
       <span class="sr-only">{{ 'common.loading' | t }}</span>
       <ng-container [ngSwitch]="variant">
-
-        <ng-container *ngSwitchCase="'tile-grid'">
-          <div class="s-tile" *ngFor="let i of slots">
-            <div class="s-tile-cover pulse"></div>
-            <div class="s-bar pulse w-80"></div>
-            <div class="s-bar pulse w-50"></div>
-          </div>
-        </ng-container>
 
         <ng-container *ngSwitchCase="'row'">
           <div class="s-line" *ngFor="let i of slots">
@@ -47,7 +39,6 @@ import { TPipe } from '../../core/i18n.service';
             <div class="s-bar pulse w-80"></div>
           </div>
         </ng-container>
-
 
         <ng-container *ngSwitchCase="'discover-grid'">
           <div class="s-tile" *ngFor="let i of slots" [class.feature-tile]="i === 0">
@@ -103,7 +94,6 @@ import { TPipe } from '../../core/i18n.service';
         </ng-container>
 
         <ng-container *ngSwitchDefault>
-
           <div class="skeleton-row" *ngFor="let i of slots">
             <div class="s-cover pulse"></div>
             <div class="s-info">
@@ -167,17 +157,9 @@ import { TPipe } from '../../core/i18n.service';
       padding-top: var(--space-2);
     }
 
-    /* tile-grid: mirrors .discover-grid's auto-fill portrait tiles */
-    .v-tile-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: var(--space-6) var(--space-5);
-    }
+    /* discover-grid tiles */
     .s-tile { display: flex; flex-direction: column; gap: var(--space-2); }
     .s-tile-cover { aspect-ratio: 5 / 7; width: 100%; }
-    @media (max-width: 640px) {
-      .v-tile-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-5) var(--space-3); }
-    }
 
     /* row: title-left / count-right lines (waitlist) */
     .s-line {
@@ -200,25 +182,6 @@ import { TPipe } from '../../core/i18n.service';
       border-left: 1px solid var(--line);
     }
     .s-card:first-child { border-left: none; }
-
-
-    /* discover-grid: mirrors search.ts .discover-grid */
-    .v-discover-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 32px 24px;
-    }
-    .v-discover-grid .feature-tile {
-      grid-column: span 2;
-      grid-row: span 2;
-    }
-    @media (max-width: 1024px) {
-      .v-discover-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 768px) {
-      .v-discover-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
-      .v-discover-grid .feature-tile { grid-column: span 1; grid-row: span 1; }
-    }
 
     /* report: mirrors .report-card in reports.ts */
     .v-report {
@@ -266,7 +229,6 @@ import { TPipe } from '../../core/i18n.service';
     }
 
     @keyframes pulse {
-
       0% { opacity: 0.75; }
       50% { opacity: 0.5; }
       100% { opacity: 0.75; }
@@ -275,7 +237,7 @@ import { TPipe } from '../../core/i18n.service';
 })
 export class UiSkeleton {
   @Input() count: number = 3;
-  @Input() variant: 'list' | 'tile-grid' | 'row' | 'card-row' | 'discover-grid' | 'report' | 'order' | 'table' = 'list';
+  @Input() variant: 'list' | 'row' | 'card-row' | 'discover-grid' | 'report' | 'order' | 'table' = 'list';
 
   get slots(): number[] {
     return Array.from({ length: Math.max(0, this.count) }, (_, i) => i);
