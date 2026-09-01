@@ -15,7 +15,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
   imports: [CommonModule, FormsModule, UiButton, UiTextarea, TPipe, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" (click)="close()">
-      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()" uiFocusTrap="force-cancel-title" (escape)="close()">
+      <div class="app-modal w-full"  style="max-width: 400px;" (click)="$event.stopPropagation()" uiFocusTrap="force-cancel-title" (escape)="close()">
         <h3 id="force-cancel-title" class="app-modal-title">{{ 'admin.forceCancelTitle' | t }}</h3>
 
         <div class="app-modal-body">
@@ -47,7 +47,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       margin-bottom: 12px;
     }
     .textarea-wrapper label {
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
     }

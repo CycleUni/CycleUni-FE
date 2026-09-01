@@ -55,7 +55,7 @@ import { UiFocusTrapDirective } from './focus-trap.directive';
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.2);
       color: white;
-      font-size: 24px;
+      font-size: var(--text-2xl);
       line-height: 36px;
       cursor: pointer;
       transition: background-color var(--motion-base);

@@ -61,7 +61,7 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
     }
     .sidebar-header h3 {
       margin: 0;
-      font-size: 18px;
+      font-size: var(--text-lg);
     }
     .chat-list {
       flex: 1;
@@ -136,7 +136,7 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
       border: none;
       cursor: pointer;
       color: var(--muted);
-      font-size: 16px;
+      font-size: var(--text-md);
       line-height: 1;
       padding: 0 2px;
       flex-shrink: 0;
@@ -148,7 +148,7 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
       display: inline-block;
     }
     .chat-subject {
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--accent);
       margin-bottom: 8px;
       white-space: nowrap;
@@ -156,7 +156,7 @@ import { UiRoleBadge } from '../../shared/ui/role-badge.component';
       text-overflow: ellipsis;
     }
     .chat-preview {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       white-space: nowrap;
       overflow: hidden;

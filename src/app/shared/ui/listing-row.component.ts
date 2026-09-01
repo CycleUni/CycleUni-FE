@@ -91,13 +91,13 @@ import { PricePipe } from '../pipes/price.pipe';
     }
     .title {
       margin: 0;
-      font-size: 18px;
+      font-size: var(--text-lg);
       overflow-wrap: anywhere;
       word-break: break-word;
     }
     .meta, .course, .note {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       overflow-wrap: anywhere;
       word-break: break-word;
@@ -118,18 +118,18 @@ import { PricePipe } from '../pipes/price.pipe';
       flex-shrink: 0;
     }
     .price {
-      font-size: 20px;
+      font-size: var(--text-xl);
       font-weight: 700;
       color: var(--accent);
       font-variant-numeric: tabular-nums;
     }
     .price.aggregate {
-      font-size: 15px;
+      font-size: var(--text-base);
       font-weight: 600;
       color: var(--muted);
     }
     .condition-summary {
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--muted);
       text-align: right;
       overflow-wrap: anywhere;
@@ -183,7 +183,7 @@ import { PricePipe } from '../pipes/price.pipe';
         text-align: right;
       }
       .price {
-        font-size: 18px;
+        font-size: var(--text-lg);
       }
       .manage-actions {
         margin-top: 0;

@@ -36,7 +36,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
         {{ errorMsg }}
       </div>
 
-      <div class="actions" style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px;">
+      <div class="actions mt-5"  style="display: flex; justify-content: flex-end; gap: 8px;">
         <ui-button variant="ghost" (onClick)="close()" [disabled]="isSubmitting">{{ 'common.cancel' | t }}</ui-button>
         <ui-button (onClick)="submit()" [disabled]="isSubmitting">
           {{ isSubmitting ? ('moderation.submitting' | t) : ('moderation.submit' | t) }}
@@ -76,7 +76,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       margin-bottom: 12px;
     }
     .textarea-wrapper label {
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
     }

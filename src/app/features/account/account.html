@@ -13,7 +13,7 @@
               <span>{{ 'acct.statSubs' | t:{n: subscriptionsCount} }}</span>
             </p>
             <p class="email">{{ auth.getUser()?.email }}</p>
-            <ui-button variant="white" style="width: 100%; margin-top: 16px;" (onClick)="doLogout()">{{ 'acct.logout' | t }}</ui-button>
+            <ui-button variant="white"  block class="mt-4" (onClick)="doLogout()">{{ 'acct.logout' | t }}</ui-button>
           </div>
 
           <!-- Grouped rather than one flat list of five: the two halves answer

@@ -21,11 +21,11 @@ import { RegionLinkService } from '../../core/region-link.service';
             <h2>{{ 'verify.title' | t }}</h2>
             <p>{{ 'verify.hint' | t }}</p>
 
-            <div style="margin: 24px 0; text-align: left;">
+            <div  style="margin: 24px 0; text-align: left;">
               <ui-input [placeholder]="'verify.tokenPlaceholder' | t" [(ngModel)]="inputToken" [disabled]="status === 'loading'"></ui-input>
             </div>
 
-            <ui-button style="width: 100%;" (onClick)="submitVerify()" [disabled]="!inputToken || status === 'loading'">
+            <ui-button  block (onClick)="submitVerify()" [disabled]="!inputToken || status === 'loading'">
               {{ (status === 'loading' ? 'verify.verifying' : 'verify.submit') | t }}
             </ui-button>
           </ng-container>
@@ -39,15 +39,15 @@ import { RegionLinkService } from '../../core/region-link.service';
             </div>
             <h2>{{ 'verify.successTitle' | t }}</h2>
             <p>{{ (type === 'register' ? 'verify.successBodyRegister' : 'verify.successBodyEdu') | t }}</p>
-            <p style="margin-top: 16px; font-size: 14px;">{{ 'verify.redirecting' | t }}</p>
-            <ui-button style="margin-top: 24px;" (onClick)="goNext()">{{ (type === 'register' ? 'verify.goHome' : 'verify.goToLogin') | t }}</ui-button>
+            <p  class="mt-4" style="font-size: var(--text-base);">{{ 'verify.redirecting' | t }}</p>
+            <ui-button  class="mt-5" (onClick)="goNext()">{{ (type === 'register' ? 'verify.goHome' : 'verify.goToLogin') | t }}</ui-button>
           </ng-container>
 
           <ng-container *ngIf="status === 'error'">
             <h2>{{ 'verify.errorTitle' | t }}</h2>
             <p class="error-msg">{{ errorMessage }}</p>
             <p>{{ 'verify.errorHint' | t }}</p>
-            <ui-button style="margin-top: 24px;" variant="ghost" (onClick)="reset()">{{ 'verify.retry' | t }}</ui-button>
+            <ui-button  class="mt-5" variant="ghost" (onClick)="reset()">{{ 'verify.retry' | t }}</ui-button>
           </ng-container>
         </div>
       </div>
@@ -70,7 +70,7 @@ import { RegionLinkService } from '../../core/region-link.service';
     .verify-box h2 {
       margin-top: 0;
       margin-bottom: 16px;
-      font-size: 24px;
+      font-size: var(--text-2xl);
     }
     .verify-box p {
       color: var(--muted);

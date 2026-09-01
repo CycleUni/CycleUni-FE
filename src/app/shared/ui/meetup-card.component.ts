@@ -101,16 +101,16 @@ export type MeetupMessageType = 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'CANCEL' | 'C
       margin-bottom: 8px;
     }
     .meetup-icon {
-      font-size: 18px;
+      font-size: var(--text-lg);
       line-height: 1;
     }
     .meetup-title {
       font-weight: 700;
-      font-size: 14px;
+      font-size: var(--text-base);
       flex: 1;
     }
     .meetup-status-badge {
-      font-size: 11px;
+      font-size: var(--text-xs);
       padding: 2px 8px;
       border-radius: 12px;
       background: rgba(0, 0, 0, 0.06);
@@ -118,7 +118,7 @@ export type MeetupMessageType = 'REQUEST' | 'ACCEPT' | 'DECLINE' | 'CANCEL' | 'C
       font-weight: 500;
     }
     .meetup-card-body {
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--ink);
       margin: 0;
       line-height: 1.5;

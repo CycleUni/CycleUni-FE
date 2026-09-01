@@ -31,7 +31,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     </div>
 
     <ui-search-bar 
-      style="display: block; margin-bottom: 24px;"
+       class="mb-5" style="display: block;"
       [placeholder]="'acct.searchListings' | t" 
       [value]="searchQuery" 
       (search)="onSearchQuery($event)">
@@ -64,31 +64,31 @@ import { ConfirmService } from '../../core/services/confirm.service';
         <h3 class="app-modal-title">{{ 'acct.editTitle' | t }}</h3>
         
         <div class="modal-body app-modal-body">
-          <p style="margin-top: 0; color: var(--muted); margin-bottom: 16px; overflow-wrap: anywhere; word-break: break-word;">{{ editingListing.book_title }}</p>
+          <p  class="mb-4" style="margin-top: 0; color: var(--muted); overflow-wrap: anywhere; word-break: break-word;">{{ editingListing.book_title }}</p>
           
-          <div *ngIf="editingListing.book_source === 'manual'" class="manual-book-edit" style="margin-bottom: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 4px; background-color: var(--paper-warm);">
-            <p style="margin-top: 0; margin-bottom: 12px; font-weight: 500; font-size: 14px;">{{ 'acct.manualBookDesc' | t }}</p>
-            <ui-input [label]="'acct.bookTitleLabel' | t" [(ngModel)]="editForm.book_title" style="margin-bottom: 12px;"></ui-input>
-            <ui-input [label]="'acct.bookAuthorsLabel' | t" [(ngModel)]="editForm.book_authors" style="margin-bottom: 12px;"></ui-input>
+          <div *ngIf="editingListing.book_source === 'manual'" class="manual-book-edit mb-4"  style="padding: 16px; border: 1px solid var(--line); border-radius: 4px; background-color: var(--paper-warm);">
+            <p  style="margin-top: 0; margin-bottom: 12px; font-weight: 500; font-size: var(--text-base);">{{ 'acct.manualBookDesc' | t }}</p>
+            <ui-input [label]="'acct.bookTitleLabel' | t" [(ngModel)]="editForm.book_title"  style="margin-bottom: 12px;"></ui-input>
+            <ui-input [label]="'acct.bookAuthorsLabel' | t" [(ngModel)]="editForm.book_authors"  style="margin-bottom: 12px;"></ui-input>
             <ui-input [label]="'acct.isbnLabel' | t" [(ngModel)]="editForm.isbn"></ui-input>
           </div>
 
-          <ui-input type="number" [label]="'acct.priceLabel' | t:{currency: regionService.currency().symbol}" [(ngModel)]="editForm.price" style="margin-bottom: 16px;"></ui-input>
-          <ui-dropdown [label]="'common.condition' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false" style="margin-bottom: 16px;"></ui-dropdown>
-          <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions" style="margin-bottom: 16px;"></ui-dropdown>
-          <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name" style="margin-bottom: 16px;"></ui-input>
-          <ui-input [label]="'sell.professorLabel' | t" [(ngModel)]="editForm.professor_name" style="margin-bottom: 16px;"></ui-input>
-          <ui-input [label]="'sell.privateNoteLabel' | t" [(ngModel)]="editForm.private_note" style="margin-bottom: 16px;"></ui-input>
-          <ui-input [label]="'sell.descriptionLabel' | t" [(ngModel)]="editForm.description" style="margin-bottom: 16px;"></ui-input>
+          <ui-input type="number" [label]="'acct.priceLabel' | t:{currency: regionService.currency().symbol}" [(ngModel)]="editForm.price"  class="mb-4"></ui-input>
+          <ui-dropdown [label]="'common.condition' | t" [(ngModel)]="editForm.condition" [options]="conditionOptions" [searchable]="false"  class="mb-4"></ui-dropdown>
+          <ui-dropdown [label]="'sell.categoryLabel' | t" [(ngModel)]="editForm.category" [options]="categoryOptions"  class="mb-4"></ui-dropdown>
+          <ui-input [label]="'sell.courseLabel' | t" [(ngModel)]="editForm.course_name"  class="mb-4"></ui-input>
+          <ui-input [label]="'sell.professorLabel' | t" [(ngModel)]="editForm.professor_name"  class="mb-4"></ui-input>
+          <ui-input [label]="'sell.privateNoteLabel' | t" [(ngModel)]="editForm.private_note"  class="mb-4"></ui-input>
+          <ui-input [label]="'sell.descriptionLabel' | t" [(ngModel)]="editForm.description"  class="mb-4"></ui-input>
           
-          <div class="photo-upload" style="margin-bottom: 24px;">
-            <label style="display: block; font-weight: 500; font-size: 14px; margin-bottom: 8px;">{{ 'acct.photoLabel' | t }}</label>
+          <div class="photo-upload mb-5" >
+            <label  class="mb-2" style="display: block; font-weight: 500; font-size: var(--text-base);">{{ 'acct.photoLabel' | t }}</label>
             <div class="photo-preview" *ngIf="editForm.photos && editForm.photos.length > 0" style="margin-bottom: 8px; position: relative; display: inline-block;">
-              <img [src]="editForm.photos[0]" loading="lazy" style="width: 88px; height: 124px; object-fit: cover; border: 1px solid var(--line); border-radius: 4px;" />
+              <img [src]="editForm.photos[0]" loading="lazy"  style="width: 88px; height: 124px; object-fit: cover; border: 1px solid var(--line); border-radius: 4px;" />
               <button class="delete-photo-btn" (click)="editForm.photos = []" title="{{ 'common.delete' | t }}">✕</button>
             </div>
             <div>
-              <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput style="display: none;" />
+              <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput  style="display: none;" />
               <ui-button variant="ghost" (onClick)="fileInput.click()" [disabled]="isUploadingPhoto">{{ (isUploadingPhoto ? 'sell.uploading' : 'acct.uploadPhoto') | t }}</ui-button>
             </div>
           </div>
@@ -138,7 +138,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
       background-color: var(--flag);
       color: var(--on-flag);
       border: none;
-      font-size: 14px;
+      font-size: var(--text-base);
       line-height: 1;
       cursor: pointer;
       display: flex;

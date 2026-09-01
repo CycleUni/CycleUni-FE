@@ -65,7 +65,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
       margin-top: 8px;
     }
     .sub-status {
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--muted);
     }
     .sub-status.available { color: var(--flag); font-weight: 500; }

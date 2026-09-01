@@ -39,14 +39,14 @@ import { I18nService, TPipe } from '../../core/i18n.service';
       font-family: 'Noto Serif TC', serif;
     }
     .error-title {
-      font-size: 32px;
+      font-size: var(--text-3xl);
       font-weight: 700;
       color: var(--ink);
       margin: 16px 0;
       font-family: 'Noto Serif TC', serif;
     }
     .error-desc {
-      font-size: 16px;
+      font-size: var(--text-md);
       color: var(--muted);
       margin-bottom: 32px;
       line-height: 1.5;

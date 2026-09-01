@@ -25,7 +25,7 @@ import { RegionService } from '../../core/region.service';
       <div class="header-actions">
         <h2>{{ 'admin.navCategories' | t }}</h2>
         <div>
-          <ui-button variant="outline" style="margin-right: 12px;" (onClick)="showImportModal = true">{{ 'admin.bulkImport' | t }}</ui-button>
+          <ui-button variant="outline"  class="mr-3" (onClick)="showImportModal = true">{{ 'admin.bulkImport' | t }}</ui-button>
           <ui-button variant="primary" (onClick)="openCreateModal()">{{ 'admin.addCollege' | t }}</ui-button>
         </div>
       </div>
@@ -58,7 +58,7 @@ import { RegionService } from '../../core/region.service';
               </td>
               <td>
                 <ui-button size="sm" variant="outline" (onClick)="openEditModal(cat)">{{ 'common.edit' | t }}</ui-button>
-                <ui-button size="sm" variant="danger" style="margin-left: 8px;" (onClick)="deleteCategory(cat.id)">{{ 'common.delete' | t }}</ui-button>
+                <ui-button size="sm" variant="danger"  style="margin-left: 8px;" (onClick)="deleteCategory(cat.id)">{{ 'common.delete' | t }}</ui-button>
               </td>
             </tr>
             <tr *ngIf="categoriesData.results.length === 0">
@@ -136,7 +136,7 @@ import { RegionService } from '../../core/region.service';
     .panel h3 { margin-top: 0; margin-bottom: 24px; }
 
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: var(--text-base); }
     .row-group { display: flex; gap: 16px; }
     .row-group .col { flex: 1; }
     .checkbox-col label { display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 32px; cursor: pointer; }

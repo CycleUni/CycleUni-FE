@@ -38,15 +38,15 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
         <ui-checkbox [(ngModel)]="isActive" [label]="'admin.colActive' | t"></ui-checkbox>
       </div>
 
-      <div class="field-grid" style="grid-template-columns: 1fr; margin-top: 16px;">
+      <div class="field-grid mt-4"  style="grid-template-columns: 1fr;">
         <label>{{ 'admin.colVerified' | t }}</label>
         <div *ngIf="user.verifications?.length; else noVerifications">
-          <div *ngFor="let v of user.verifications" style="padding: 8px; border: 1px solid var(--line); border-radius: 4px; margin-bottom: 8px;">
-            <div style="margin-bottom: 8px;">
-              <span style="font-weight: bold;">{{ v.region }}</span>: {{ v.edu_email || '-' }}
-              <span style="color: var(--muted); font-size: 12px; margin-left: 8px;" *ngIf="v.verified_at">({{ v.verified_at | date:'yyyy/MM/dd HH:mm' }})</span>
+          <div *ngFor="let v of user.verifications"  class="mb-2" style="padding: 8px; border: 1px solid var(--line); border-radius: 4px;">
+            <div  class="mb-2">
+              <span  style="font-weight: bold;">{{ v.region }}</span>: {{ v.edu_email || '-' }}
+              <span  style="color: var(--muted); font-size: var(--text-xs); margin-left: 8px;" *ngIf="v.verified_at">({{ v.verified_at | date:'yyyy/MM/dd HH:mm' }})</span>
             </div>
-            <div style="margin-bottom: 8px;">
+            <div  class="mb-2">
               <ui-checkbox [(ngModel)]="verificationStates[v.region].verified" [label]="'admin.colVerified' | t"></ui-checkbox>
             </div>
             <ui-dropdown [label]="'admin.colSchool' | t" [options]="getSchoolOptionsForRegion(v.region)" [(ngModel)]="verificationStates[v.region].school"></ui-dropdown>
@@ -57,12 +57,12 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
         </ng-template>
 
         <div *ngIf="newRegionOptions.length > 1" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line);">
-          <div style="margin-bottom: 8px; font-weight: bold;">{{ 'admin.addVerificationRegion' | t }}</div>
-          <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <div style="flex: 1;">
+          <div  class="mb-2" style="font-weight: bold;">{{ 'admin.addVerificationRegion' | t }}</div>
+          <div  style="display: flex; gap: 8px; align-items: flex-end;">
+            <div  class="flex-1">
               <ui-dropdown [label]="'admin.colRegion' | t" [options]="newRegionOptions" [(ngModel)]="newRegion" (ngModelChange)="onNewRegionChange()"></ui-dropdown>
             </div>
-            <div style="flex: 2;" *ngIf="newRegion">
+            <div  style="flex: 2;" *ngIf="newRegion">
               <ui-dropdown [label]="'admin.colSchool' | t" [options]="getSchoolOptionsForRegion(newRegion)" [(ngModel)]="newRegionSchool"></ui-dropdown>
             </div>
             <ui-button *ngIf="newRegion" [disabled]="!newRegionSchool" (onClick)="addNewRegion()">{{ 'common.create' | t }}</ui-button>
@@ -95,8 +95,8 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
       margin-bottom: 16px;
     }
     .field { display: flex; flex-direction: column; gap: 2px; }
-    .field label { font-size: 12px; color: var(--muted); }
-    .field span { font-size: 14px; color: var(--ink); }
+    .field label { font-size: var(--text-xs); color: var(--muted); }
+    .field span { font-size: var(--text-base); color: var(--ink); }
     .toggle-row {
       display: flex;
       gap: 24px;
@@ -106,7 +106,7 @@ import { UiDropdown } from '../../shared/ui/dropdown.component';
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
+      font-size: var(--text-base);
       cursor: pointer;
     }
   `]

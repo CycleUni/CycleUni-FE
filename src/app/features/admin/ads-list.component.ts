@@ -66,13 +66,13 @@ import { RegionService } from '../../core/region.service';
                 {{ ad.is_active ? ('admin.advertiserActive' | t) : ('admin.advertiserInactive' | t) }}
               </span>
             </td>
-            <td style="font-size: 0.85em; color: var(--muted)">
+            <td  style="font-size: 0.85em; color: var(--muted);">
               {{ ad.start_date | date:'yyyy/MM/dd HH:mm' }} -<br>
               {{ ad.end_date | date:'yyyy/MM/dd HH:mm' }}
             </td>
             <td>
               <ui-button size="sm" variant="outline" (onClick)="openEditModal(ad)">{{ 'common.edit' | t }}</ui-button>
-              <ui-button size="sm" variant="outline" (onClick)="deleteAd(ad.id)" style="margin-left: 4px; color: var(--danger); border-color: var(--danger);">{{ 'common.delete' | t }}</ui-button>
+              <ui-button size="sm" variant="outline" (onClick)="deleteAd(ad.id)"  style="margin-left: 4px; color: var(--danger); border-color: var(--danger);">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>
@@ -100,13 +100,13 @@ import { RegionService } from '../../core/region.service';
           
           <div class="form-group">
             <label>{{ 'admin.adImage' | t }} *</label>
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;" *ngIf="formData.image_url">
-              <img [src]="formData.image_url" style="height: 60px; object-fit: contain; border: 1px solid var(--line); border-radius: 4px;">
+            <div  class="mb-2" style="display: flex; gap: 8px; align-items: center;" *ngIf="formData.image_url">
+              <img [src]="formData.image_url"  style="height: 60px; object-fit: contain; border: 1px solid var(--line); border-radius: 4px;">
             </div>
-            <div style="display: flex; gap: 8px;">
-              <input *ngIf="!formData.is_internal_image" type="text" class="admin-form-control" [(ngModel)]="formData.image_url" placeholder="https://..." style="flex: 1;">
-              <div *ngIf="formData.is_internal_image" style="flex: 1; display: flex; align-items: center; font-size: 14px; color: var(--success); background: var(--paper-warm); padding: 0 12px; border-radius: 4px; border: 1px solid var(--line);">{{ 'admin.uploadedViaFile' | t }}</div>
-              <input type="file" accept="image/*" style="display: none" #fileInput (change)="onImageUpload($event)">
+            <div  style="display: flex; gap: 8px;">
+              <input *ngIf="!formData.is_internal_image" type="text" class="admin-form-control flex-1" [(ngModel)]="formData.image_url" placeholder="https://..." >
+              <div *ngIf="formData.is_internal_image"  class="flex-1" style="display: flex; align-items: center; font-size: var(--text-base); color: var(--success); background: var(--paper-warm); padding: 0 12px; border-radius: 4px; border: 1px solid var(--line);">{{ 'admin.uploadedViaFile' | t }}</div>
+              <input type="file" accept="image/*"  style="display: none;" #fileInput (change)="onImageUpload($event)">
               <ui-button variant="outline" (onClick)="fileInput.click()" [disabled]="uploadingImage" [title]="'admin.uploadNewImageHint' | t">
                 {{ uploadingImage ? ('admin.uploading' | t) : (formData.is_internal_image ? ('admin.reselectFile' | t) : ('admin.selectFile' | t)) }}
               </ui-button>
@@ -116,7 +116,7 @@ import { RegionService } from '../../core/region.service';
             </div>
           </div>
           
-          <p style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 12px;">{{ 'admin.adImageSpec' | t }}</p>
+          <p  style="font-size: var(--text-xs); color: var(--muted); margin-top: 4px; margin-bottom: 12px;">{{ 'admin.adImageSpec' | t }}</p>
 
           <div class="form-group">
             <label>{{ 'admin.adTargetUrl' | t }} *</label>

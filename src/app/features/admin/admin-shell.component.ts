@@ -119,7 +119,7 @@ import { AuthStore } from '../../core/auth.store';
     }
     
     .group-title {
-      font-size: 12px;
+      font-size: var(--text-xs);
       font-weight: 600;
       color: var(--ink);
       opacity: 0.7;
@@ -133,7 +133,7 @@ import { AuthStore } from '../../core/auth.store';
       border-radius: 6px;
       color: var(--ink);
       text-decoration: none;
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     
     .nav-group a:hover, .nav-group a.active {
@@ -184,7 +184,7 @@ import { AuthStore } from '../../core/auth.store';
       }
       
       .mobile-header h1 {
-        font-size: 20px;
+        font-size: var(--text-xl);
         margin: 0;
       }
       
@@ -235,14 +235,14 @@ import { AuthStore } from '../../core/auth.store';
       }
       
       .sidebar-header h2 {
-        font-size: 18px;
+        font-size: var(--text-lg);
         margin: 0;
       }
       
       .close-btn {
         background: none;
         border: none;
-        font-size: 24px;
+        font-size: var(--text-2xl);
         cursor: pointer;
         color: var(--ink);
         padding: 4px 8px;

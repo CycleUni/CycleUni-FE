@@ -63,7 +63,7 @@ import { CommonModule } from '@angular/common';
     }
     @media (pointer: coarse) {
       textarea {
-        font-size: 16px;
+        font-size: var(--text-md);
       }
     }
     textarea:focus-visible {

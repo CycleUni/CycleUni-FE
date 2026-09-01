@@ -29,7 +29,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       background: none;
       border: none;
       color: var(--muted);
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       cursor: pointer;
       padding: 6px 12px;

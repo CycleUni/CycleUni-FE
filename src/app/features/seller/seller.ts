@@ -41,7 +41,7 @@ import { isUserVerifiedIn } from '../../core/verification';
               {{ 'seller.joined' | t }}{{ getFormattedDate(seller.created_at) }}
             </span>
           </div>
-          <div class="seller-stats" style="margin-top: 8px; font-size: 14px; color: var(--ink); display: flex; gap: 16px;">
+          <div class="seller-stats mt-2"  style="font-size: var(--text-base); color: var(--ink); display: flex; gap: 16px;">
             <span *ngIf="seller.review_count > 0">⭐️ {{ seller.average_rating }} ({{ seller.review_count }})</span>
             <span *ngIf="seller.review_count === 0" class="muted">{{ 'seller.noReviews' | t }}</span>
             <span *ngIf="seller.no_show_count > 0" style="color: var(--flag); font-weight: 500;">⚠️ {{ 'seller.noShowCount' | t:{n: seller.no_show_count} }}</span>
@@ -110,7 +110,7 @@ import { isUserVerifiedIn } from '../../core/verification';
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: var(--text-2xl);
       font-weight: 700;
     }
     .seller-avatar-image-container {
@@ -127,7 +127,7 @@ import { isUserVerifiedIn } from '../../core/verification';
 
     .seller-name {
       margin: 0 0 8px 0;
-      font-size: 28px;
+      font-size: var(--text-3xl);
       font-weight: 700;
       color: var(--ink);
     }
@@ -137,7 +137,7 @@ import { isUserVerifiedIn } from '../../core/verification';
       flex-direction: column;
       gap: 6px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: var(--text-base);
     }
 
     .seller-school {
@@ -155,12 +155,12 @@ import { isUserVerifiedIn } from '../../core/verification';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      font-size: var(--text-xs);
       margin-left: 4px;
     }
 
     .seller-listings h2 {
-      font-size: 20px;
+      font-size: var(--text-xl);
       font-weight: 600;
       margin-bottom: 20px;
       color: var(--ink);

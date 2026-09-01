@@ -81,13 +81,13 @@ import { RegionService } from '../../core/region.service';
   `,
   styles: [`
     .actions-cell { display: flex; gap: 8px; }
-    .conv-id { font-size: 12px; color: var(--muted); }
+    .conv-id { font-size: var(--text-xs); color: var(--muted); }
     .report-row { cursor: pointer; }
     .report-row:hover { background: var(--paper-warm); }
     .detail-content { padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
-    .report-detail { font-size: 14px; color: var(--muted); }
+    .report-detail { font-size: var(--text-base); color: var(--muted); }
     .messages-preview { max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
-    .msg-line { font-size: 13px; color: var(--ink); padding: 4px 0; border-bottom: 1px solid var(--line); }
+    .msg-line { font-size: var(--text-sm); color: var(--ink); padding: 4px 0; border-bottom: 1px solid var(--line); }
     .msg-line:last-child { border-bottom: none; }
     .msg-user { font-weight: 600; color: var(--accent); }
   `]

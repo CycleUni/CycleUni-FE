@@ -171,7 +171,7 @@ const CONDITION_NONE = 'none';
                 <div tile-actions class="tile-actions-inner">
                   <ng-container *ngIf="item.activeListings === 0">
                     <ui-button *ngIf="!item.is_subscribed" variant="ghost" (onClick)="$event.stopPropagation(); subscribeBook(item)">{{ 'search.notifyMe' | t }}</ui-button>
-                    <ui-button *ngIf="item.is_subscribed" variant="ghost" style="color: var(--muted); border-color: var(--muted);" (onClick)="$event.stopPropagation(); unsubscribeBook(item)">{{ 'search.cancelNotify' | t }}</ui-button>
+                    <ui-button *ngIf="item.is_subscribed" variant="ghost"  style="color: var(--muted); border-color: var(--muted);" (onClick)="$event.stopPropagation(); unsubscribeBook(item)">{{ 'search.cancelNotify' | t }}</ui-button>
                   </ng-container>
                   <ng-container *ngIf="item.activeListings > 0">
                     <ui-button>{{ 'search.viewAll' | t }}</ui-button>
@@ -220,7 +220,7 @@ const CONDITION_NONE = 'none';
       border-radius: 0;
       background: none;
       padding-left: 24px;
-      font-size: 16px;
+      font-size: var(--text-md);
     }
     .search-page-input ::ng-deep input:focus {
       border-bottom-color: var(--accent);
@@ -236,10 +236,10 @@ const CONDITION_NONE = 'none';
     .sidebar { width: 240px; flex-shrink: 0; }
     .filter-group { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
     .filter-group:last-of-type { border-bottom: none; }
-    .filter-title { font-size: 14px; font-weight: 500; margin-top: 0; margin-bottom: 12px; color: var(--ink); }
-    .filter-label { display: block; margin-bottom: 12px; font-size: 14px; color: var(--ink); cursor: pointer; }
+    .filter-title { font-size: var(--text-base); font-weight: 500; margin-top: 0; margin-bottom: 12px; color: var(--ink); }
+    .filter-label { display: block; margin-bottom: 12px; font-size: var(--text-base); color: var(--ink); cursor: pointer; }
     .filter-label input { margin-right: 8px; }
-    .fallback-hint { margin: 0 0 16px; font-size: 12px; color: var(--flag); }
+    .fallback-hint { margin: 0 0 16px; font-size: var(--text-xs); color: var(--flag); }
     .price-range { display: flex; gap: 8px; align-items: center; }
     /* Price stays a plain numeric range, not a facet list — strip ui-input's
        boxed border for an underline look consistent with the lighter facet
@@ -249,10 +249,10 @@ const CONDITION_NONE = 'none';
     .price-input ::ng-deep input { border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 4px 0; background: transparent; }
     .price-input ::ng-deep input:focus { border-color: var(--accent); }
     .results { flex: 1; }
-    .scoped-count { margin: -16px 0 24px; font-size: 14px; color: var(--muted); }
+    .scoped-count { margin: -16px 0 24px; font-size: var(--text-base); color: var(--muted); }
 
     .tile-actions-inner { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px; }
-    .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light); border-radius:4px; }
+    .local-badge { display:inline-block; padding:4px 8px; font-size: var(--text-xs); font-weight:500; color:var(--danger); background-color:var(--danger-light); border-radius:4px; }
 
     .error-box { padding: 32px 24px; text-align: center; border: 1px solid var(--flag); border-radius: var(--radius-sm); background-color: var(--warn-bg); }
     .error-box h3 { margin-top: 0; margin-bottom: 12px; color: var(--warn-ink); }
@@ -279,7 +279,7 @@ const CONDITION_NONE = 'none';
       /* --line-strong, not --line: this is a real button, i.e. an
          interactive boundary, and --line is 1.48:1 — below the 3:1
          WCAG 1.4.11 asks of non-text UI. */
-      .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line-strong); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; }
+      .filter-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:12px 16px; margin-bottom:16px; border:1px solid var(--line-strong); border-radius:4px; background-color:var(--paper); color:var(--ink); font-size: var(--text-base); font-weight:500; font-family:inherit; cursor:pointer; }
       .filter-toggle-caret { flex-shrink:0; color:var(--muted); transition:transform var(--motion-base); }
       .filter-toggle-caret.open { transform:rotate(180deg); }
       .sidebar { width:100%; display:flex; flex-wrap:wrap; gap:0 24px; border-bottom:1px solid var(--line); margin-bottom:24px; }

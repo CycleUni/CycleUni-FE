@@ -46,7 +46,7 @@ export interface ConditionOption {
     }
     .picker-label {
       display: block;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
       margin-bottom: 8px;
@@ -65,7 +65,7 @@ export interface ConditionOption {
       border-radius: var(--radius-xs);
       background: var(--paper);
       color: var(--ink);
-      font-size: 14px;
+      font-size: var(--text-base);
       font-family: inherit;
       cursor: pointer;
       transition: border-color var(--motion-fast);

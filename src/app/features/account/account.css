@@ -31,7 +31,7 @@
       background-color: var(--flag);
       color: var(--on-flag);
       border: none;
-      font-size: 14px;
+      font-size: var(--text-base);
       line-height: 1;
       cursor: pointer;
       display: flex;
@@ -48,7 +48,7 @@
       background-color: color-mix(in srgb, var(--accent) 14%, transparent);
       color: var(--accent);
       font-family: 'Noto Serif TC', serif;
-      font-size: 24px;
+      font-size: var(--text-2xl);
       font-weight: 700;
       border-radius: 50%;
       display: flex;
@@ -74,7 +74,7 @@
       font-weight: 700;
     }
     .school-name {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       margin: 0 0 12px;
     }
@@ -83,7 +83,7 @@
       justify-content: center;
       flex-wrap: wrap;
       gap: 0 8px;
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--ink);
       margin: 0 0 12px;
       padding-top: 12px;
@@ -95,7 +95,7 @@
       color: var(--muted);
     }
     .email {
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--muted);
       margin: 0;
     }
@@ -174,12 +174,12 @@
     }
     .sub-info p {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       font-family: monospace;
     }
     .sub-status {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
     }
     .sub-status.available {
@@ -207,7 +207,7 @@
     }
     .alert-box p {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .empty-state {
       padding: 48px;

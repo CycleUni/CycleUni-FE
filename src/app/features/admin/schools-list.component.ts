@@ -21,7 +21,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     <div class="header-actions">
       <h2>{{ 'admin.navSchools' | t }}</h2>
       <div>
-        <ui-button variant="outline" style="margin-right: 12px;" (onClick)="showImportModal = true">{{ 'admin.bulkImport' | t }}</ui-button>
+        <ui-button variant="outline"  class="mr-3" (onClick)="showImportModal = true">{{ 'admin.bulkImport' | t }}</ui-button>
         <ui-button variant="primary" (onClick)="openCreateModal()">{{ 'admin.addSchool' | t }}</ui-button>
       </div>
     </div>
@@ -47,7 +47,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
             <td>{{ school.email_domain }}</td>
             <td>
               <ui-button size="sm" variant="outline" [link]="[school.id]">{{ 'common.edit' | t }}</ui-button>
-              <ui-button size="sm" variant="danger" (onClick)="deleteSchool(school)" style="margin-left: 8px;" [hostClass]="!!school.user_count ? 'is-blocked' : ''" [attr.aria-disabled]="school.user_count ? 'true' : null">{{ 'common.delete' | t }}</ui-button>
+              <ui-button size="sm" variant="danger" (onClick)="deleteSchool(school)"  style="margin-left: 8px;" [hostClass]="!!school.user_count ? 'is-blocked' : ''" [attr.aria-disabled]="school.user_count ? 'true' : null">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>
@@ -57,7 +57,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     </div>
 
     <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()" uiFocusTrap="schools-modal-title" (escape)="showCreateModal = false">
+      <div class="app-modal"  style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()" uiFocusTrap="schools-modal-title" (escape)="showCreateModal = false">
         <h3 id="schools-modal-title" class="app-modal-title">{{ 'admin.addSchool' | t }}</h3>
         <div class="app-modal-body">
           <div class="form-group">
@@ -95,7 +95,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
     .translation-row { display: flex; align-items: center; gap: 8px; }
-    .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; }
+    .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: var(--text-xs); font-weight: 600; }
   `]
 })
 export class AdminSchoolsListComponent implements OnInit {

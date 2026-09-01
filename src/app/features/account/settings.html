@@ -3,12 +3,12 @@
         <!-- Campus email verifications section -->
     <div class="verify-section" *ngIf="currentRegion">
       <ng-container *ngIf="currentVerification; else unverifiedBlock">
-        <div class="alert-box success" style="margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div class="alert-box success mb-4" >
+          <div  style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
               <strong>{{ 'acct.verifiedTitle' | t }}</strong>
               <p *ngIf="currentVerification.edu_email">{{ 'acct.boundTo' | t:{email: currentVerification.edu_email} }}</p>
-              <p style="font-size: 12px; margin-top: 4px;">{{ 'acct.verifiedAtPrefix' | t }}{{ currentVerification.verified_at | date:'yyyy/MM/dd HH:mm' }}</p>
+              <p  style="font-size: var(--text-xs); margin-top: 4px;">{{ 'acct.verifiedAtPrefix' | t }}{{ currentVerification.verified_at | date:'yyyy/MM/dd HH:mm' }}</p>
             </div>
             <ui-button variant="white" (onClick)="onUnbindEduEmail(currentVerification.region)" [disabled]="isLoading">{{ 'acct.unbindEmail' | t }}</ui-button>
           </div>
@@ -16,7 +16,7 @@
       </ng-container>
 
       <ng-template #unverifiedBlock>
-        <div class="alert-box warning" style="margin-bottom: 16px;">
+        <div class="alert-box warning mb-4" >
           <strong>{{ 'acct.unverifiedTitle' | t }}</strong>
           <p>{{ 'acct.unverifiedDesc' | t:{suffix: currentRegion.edu_email_suffix.join(', ')} }}</p>
         </div>
@@ -33,10 +33,10 @@
         </div>
 
         <ng-container *ngIf="!showPendingVerification; else pendingVerificationBlock">
-          <div class="form-group" style="max-width: 400px; margin-top: 16px;">
+          <div class="form-group mt-4"  style="max-width: 400px;">
             <label>{{ 'acct.eduEmailLabel' | t:{suffixesText: ' (' + currentRegion.edu_email_suffix.join(', ') + ')'} }}</label>
-            <ui-input placeholder="student@university{{ currentRegion.edu_email_suffix[0] }}" [(ngModel)]="eduEmail" style="width: 100%;"></ui-input>
-            <ui-button style="margin-top: 8px;" (onClick)="onRequestVerification()" [disabled]="isLoading || resendCooldownSeconds > 0">
+            <ui-input placeholder="student@university{{ currentRegion.edu_email_suffix[0] }}" [(ngModel)]="eduEmail" ></ui-input>
+            <ui-button  class="mt-2" (onClick)="onRequestVerification()" [disabled]="isLoading || resendCooldownSeconds > 0">
               {{
                 isLoading
                   ? ('acct.sending' | t)
@@ -56,7 +56,7 @@
           <label>{{ 'acct.pendingEmailLabel' | t }}</label>
           <p class="pending-email">{{ pendingEduEmailDisplay }}</p>
           <p class="desc">{{ 'acct.pendingEmailDesc' | t:{email: pendingEduEmailDisplay} }}</p>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <div  style="display: flex; gap: 8px; flex-wrap: wrap;">
             <ui-button variant="white" (onClick)="onReenterEduEmail()" [disabled]="isLoading">{{ 'acct.reenterEmail' | t }}</ui-button>
             <ui-button (onClick)="onResendVerification()" [disabled]="isLoading || resendCooldownSeconds > 0">
               {{
@@ -77,26 +77,26 @@
     </div>
 
 
-    <div class="form-group" style="max-width: 400px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px;">
-      <div style="margin-bottom: 16px;">
+    <div class="form-group"  style="max-width: 400px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px;">
+      <div  class="mb-4">
         <label>{{ 'acct.loginEmailLabel' | t }}</label>
-        <ui-input [(ngModel)]="email" style="width: 100%;" [disabled]="isGoogleLinked"></ui-input>
-        <div *ngIf="isGoogleLinked" class="text-muted" style="font-size: 12px; margin-top: 4px;">
+        <ui-input [(ngModel)]="email"  [disabled]="isGoogleLinked"></ui-input>
+        <div *ngIf="isGoogleLinked" class="text-muted"  style="font-size: var(--text-xs); margin-top: 4px;">
           {{ 'acct.googleLinkedEmailDesc' | t }}
         </div>
       </div>
-      <div style="display: flex; gap: 16px;">
-        <div style="flex: 1;">
+      <div  style="display: flex; gap: 16px;">
+        <div  class="flex-1">
           <label>{{ 'auth.lastNameLabel' | t }}</label>
-          <ui-input [(ngModel)]="lastName" style="width: 100%;"></ui-input>
+          <ui-input [(ngModel)]="lastName" ></ui-input>
         </div>
-        <div style="flex: 1;">
+        <div  class="flex-1">
           <label>{{ 'auth.firstNameLabel' | t }}</label>
-          <ui-input [(ngModel)]="firstName" style="width: 100%;"></ui-input>
+          <ui-input [(ngModel)]="firstName" ></ui-input>
         </div>
       </div>
       
-      <ui-button style="margin-top: 16px;" (onClick)="onUpdateProfile()" [disabled]="isLoading">
+      <ui-button  class="mt-4" (onClick)="onUpdateProfile()" [disabled]="isLoading">
         {{ (isLoading ? 'acct.saving' : 'acct.saveProfile') | t }}
       </ui-button>
       <div *ngIf="settingsMessage" class="inline-msg" [class.error]="settingsIsError">
@@ -104,21 +104,21 @@
       </div>
     </div>
 
-    <div class="form-group" style="max-width: 400px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px;">
-      <div style="margin-bottom: 16px;" *ngIf="hasPassword">
+    <div class="form-group"  style="max-width: 400px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px;">
+      <div  class="mb-4" *ngIf="hasPassword">
         <label>{{ 'acct.currentPassword' | t }}</label>
-        <ui-input type="password" [(ngModel)]="oldPassword" style="width: 100%;"></ui-input>
+        <ui-input type="password" [(ngModel)]="oldPassword" ></ui-input>
       </div>
-      <div style="margin-bottom: 16px;">
+      <div  class="mb-4">
         <label>{{ 'acct.newPassword' | t }}</label>
-        <ui-input type="password" [(ngModel)]="newPassword" style="width: 100%;"></ui-input>
+        <ui-input type="password" [(ngModel)]="newPassword" ></ui-input>
       </div>
-      <div style="margin-bottom: 16px;">
+      <div  class="mb-4">
         <label>{{ 'acct.confirmNewPassword' | t }}</label>
-        <ui-input type="password" [(ngModel)]="confirmPassword" style="width: 100%;"></ui-input>
+        <ui-input type="password" [(ngModel)]="confirmPassword" ></ui-input>
       </div>
       
-      <ui-button style="margin-top: 8px;" (onClick)="onChangePassword()" [disabled]="isLoading">
+      <ui-button  class="mt-2" (onClick)="onChangePassword()" [disabled]="isLoading">
         {{ (hasPassword ? 'acct.changePasswordBtn' : 'acct.setPasswordBtn') | t }}
       </ui-button>
       <div *ngIf="pwdMessage" class="inline-msg" [class.error]="pwdIsError">
@@ -130,9 +130,9 @@
       <h3>{{ 'acct.removePasswordBtn' | t }}</h3>
       <p>{{ 'acct.removePasswordConfirm' | t }}</p>
       
-      <div style="margin-bottom: 16px;">
+      <div  class="mb-4">
         <label>{{ 'acct.currentPassword' | t }}</label>
-        <ui-input type="password" [(ngModel)]="removePasswordInput" style="width: 100%;"></ui-input>
+        <ui-input type="password" [(ngModel)]="removePasswordInput" ></ui-input>
       </div>
 
       <ui-button variant="white" (onClick)="onRemovePassword()" [disabled]="isLoading">

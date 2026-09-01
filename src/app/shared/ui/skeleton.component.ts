@@ -50,23 +50,23 @@ import { TPipe } from '../../core/i18n.service';
 
         <ng-container *ngSwitchCase="'report'">
           <div class="s-report-card" *ngFor="let i of slots">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div  style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <div class="s-bar pulse w-40"></div>
               <div class="s-bar pulse w-15"></div>
             </div>
             <div class="s-bar pulse w-60 h-24"></div>
-            <div class="s-bar pulse w-80" style="margin-top: 12px;"></div>
+            <div class="s-bar pulse w-80"  style="margin-top: 12px;"></div>
           </div>
         </ng-container>
 
         <ng-container *ngSwitchCase="'order'">
           <div class="s-order-card" *ngFor="let i of slots">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <div  class="mb-4" style="display: flex; justify-content: space-between;">
               <div class="s-bar pulse w-15"></div>
               <div class="s-bar pulse w-15"></div>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div  style="display: flex; justify-content: space-between;">
+              <div  class="flex-1" style="display: flex; flex-direction: column; gap: 8px;">
                 <div class="s-bar pulse w-60 h-24"></div>
                 <div class="s-bar pulse w-40"></div>
                 <div class="s-bar pulse w-40"></div>

@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
     .badge {
       display: inline-block;
       padding: 2px 6px;
-      font-size: 12px;
+      font-size: var(--text-xs);
       border-radius: 2px;
       border: 1px solid var(--line);
       background: transparent;
