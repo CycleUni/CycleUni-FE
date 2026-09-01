@@ -1,12 +1,9 @@
 import { I18nService } from './i18n.service';
 
-/** Translate `key` only if a translation exists; i18n.t() echoes the key back
- *  when it doesn't, and echoing a raw key at an admin is worse than saying
- *  nothing specific. */
+/** Was a local helper; the same guard is needed wherever a backend `error.code`
+ *  reaches `t()`, so it now lives on the service that owns the echo behaviour. */
 function translated(key: unknown, i18n: I18nService): string | null {
-  if (typeof key !== 'string' || !key) return null;
-  const text = i18n.t(key);
-  return text === key ? null : text;
+  return i18n.tOrNull(key);
 }
 
 export function parseAdminError(err: any, i18n: I18nService, fallbackKey = 'admin.errGeneric'): string {

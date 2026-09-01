@@ -80,17 +80,25 @@ export class AuthFormComponent implements OnInit, AfterViewInit {
     const err = this.lastAuthError;
     if (this.lastAuthAction === 'login') {
       const code = err.error?.error?.code;
-      return code ? this.i18n.t(code) : (err.error?.error?.message || this.i18n.t('auth.errLoginFailed'));
+      // tOrNull, not t: the backend can return a code no locale declares, and
+      // t() would echo it, putting a raw key on the sign-in screen.
+      return this.i18n.tOrNull(code)
+        ?? err.error?.error?.message
+        ?? this.i18n.t('auth.errLoginFailed');
     } else {
       const msg = this.i18n.t('auth.errRegisterFailed');
       let errorDetails = '';
       const fields = err.error?.error?.fields;
+      // Field errors come back as i18n keys when the backend has one and as
+      // plain prose when it doesn't, so each falls back to itself.
+      const field = (messages: string[]) =>
+        messages.map((e: string) => this.i18n.tOrNull(e) ?? e).join(', ');
       if (fields) {
-        if (fields.email) errorDetails += this.i18n.t('auth.errEmailField', {msg: fields.email.map((e: string) => this.i18n.t(e) === e ? e : this.i18n.t(e)).join(', ')});
-        if (fields.password) errorDetails += this.i18n.t('auth.errPasswordField', {msg: fields.password.map((e: string) => this.i18n.t(e) === e ? e : this.i18n.t(e)).join(', ')});
-        if (fields.first_name) errorDetails += this.i18n.t('auth.errNameField', {msg: fields.first_name.map((e: string) => this.i18n.t(e) === e ? e : this.i18n.t(e)).join(', ')});
-        if (fields.last_name) errorDetails += this.i18n.t('auth.errNameField', {msg: fields.last_name.map((e: string) => this.i18n.t(e) === e ? e : this.i18n.t(e)).join(', ')});
-        if (fields.non_field_errors) errorDetails += ` ${fields.non_field_errors.map((e: string) => this.i18n.t(e) === e ? e : this.i18n.t(e)).join(', ')}`;
+        if (fields.email) errorDetails += this.i18n.t('auth.errEmailField', {msg: field(fields.email)});
+        if (fields.password) errorDetails += this.i18n.t('auth.errPasswordField', {msg: field(fields.password)});
+        if (fields.first_name) errorDetails += this.i18n.t('auth.errNameField', {msg: field(fields.first_name)});
+        if (fields.last_name) errorDetails += this.i18n.t('auth.errNameField', {msg: field(fields.last_name)});
+        if (fields.non_field_errors) errorDetails += ` ${field(fields.non_field_errors)}`;
       }
       return `${msg}${errorDetails}`;
     }

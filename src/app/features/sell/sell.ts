@@ -734,7 +734,13 @@ export class Sell implements OnInit, OnDestroy, HasUnsavedChanges {
           if (err.status === 403 || code === 'acct.errUnverified' || code === 'auth.errNotVerified') {
             this.showUnverifiedPrompt = true;
           } else {
-            this.apiError = this.i18n.t('sell.listFailed', { msg: code ? this.i18n.t(code) : (err.error?.error?.message || err.error?.detail || this.i18n.t('sell.unknownError')) });
+            // tOrNull, not t: an unrecognised backend code would otherwise be
+            // pasted into the sentence verbatim, showing the user a raw key.
+            const detail = this.i18n.tOrNull(code)
+              ?? err.error?.error?.message
+              ?? err.error?.detail
+              ?? this.i18n.t('sell.unknownError');
+            this.apiError = this.i18n.t('sell.listFailed', { msg: detail });
           }
           this.cdr.markForCheck();
         }
@@ -765,7 +771,9 @@ export class Sell implements OnInit, OnDestroy, HasUnsavedChanges {
         error: (err) => {
           this.isSubmitting = false;
           const code = err.error?.error?.code;
-          let details = code ? this.i18n.t(code) : (err.error?.error?.message || err.error?.detail || '');
+          // tOrNull, not t: an unrecognised backend code would otherwise be
+          // pasted into the sentence verbatim, showing the user a raw key.
+          let details = this.i18n.tOrNull(code) ?? (err.error?.error?.message || err.error?.detail || '');
           if (!details && err.error) {
             details = JSON.stringify(err.error);
           }

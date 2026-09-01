@@ -78,6 +78,22 @@ export class I18nService {
     }
     return text;
   }
+
+  /**
+   * `t()`, but null instead of the key when there is no translation.
+   *
+   * Use this for anything whose key comes from outside the app — chiefly the
+   * `error.code` the backend returns. `t()` echoes an unknown key back, which
+   * is a reasonable default while developing a template (you see immediately
+   * what is missing) and a bad one for a value the frontend does not control:
+   * the backend can emit a code no locale declares, and the user is then shown
+   * `listing.errFileTooLarge` where a sentence should be.
+   */
+  tOrNull(key: unknown, params?: Record<string, string | number>): string | null {
+    if (typeof key !== 'string' || !key) return null;
+    const text = this.t(key, params);
+    return text === key ? null : text;
+  }
 }
 
 @Pipe({

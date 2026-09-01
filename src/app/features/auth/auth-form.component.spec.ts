@@ -10,6 +10,12 @@ import { I18nService } from '../../core/i18n.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { RegionService } from '../../core/region.service';
 
+/** The only keys the i18n double "knows". Everything else resolves to null,
+ *  standing in for a backend error code no locale declares. */
+const KNOWN_KEYS: Record<string, string> = {
+  'auth.errInvalidCredentials': '信箱或密碼錯誤',
+};
+
 describe('AuthFormComponent', () => {
   let fixture: ComponentFixture<AuthFormComponent>;
   let component: AuthFormComponent;
@@ -54,7 +60,17 @@ describe('AuthFormComponent', () => {
         { provide: GoogleAuthService, useValue: mockGoogle },
         { provide: Router, useValue: mockRouter },
         { provide: RegionService, useValue: { region: () => 'tw' } },
-        { provide: I18nService, useValue: { t: (k: string) => k, lang: signal('zh-TW') } },
+        // tOrNull mirrors the service: null for anything this double does not
+        // "translate", which is what tells a real error code from one no locale
+        // declares. Returning the key here instead would hide the guard.
+        {
+          provide: I18nService,
+          useValue: {
+            t: (k: string) => k,
+            tOrNull: (k: unknown) => (typeof k === 'string' && k in KNOWN_KEYS ? KNOWN_KEYS[k] : null),
+            lang: signal('zh-TW'),
+          },
+        },
         { provide: ThemeService, useValue: { resolved: signal('light'), mode: signal('system') } },
         {
           provide: ActivatedRoute,
@@ -115,7 +131,7 @@ describe('AuthFormComponent', () => {
   });
 
   it('keeps a failed login on the page and shows the error', () => {
-    mockAuth.login.mockReturnValue(throwError(() => ({ error: { error: { code: 'auth.errBadCredentials' } } })));
+    mockAuth.login.mockReturnValue(throwError(() => ({ error: { error: { code: 'auth.errInvalidCredentials' } } })));
     build('login');
     component.email = 'me@example.com';
     component.password = 'wrong';
@@ -123,7 +139,22 @@ describe('AuthFormComponent', () => {
 
     expect(mockRouter.navigate).not.toHaveBeenCalled();
     expect(component.authIsError).toBe(true);
-    expect(component.authMessage).toBe('auth.errBadCredentials');
+    expect(component.authMessage).toBe('信箱或密碼錯誤');
+  });
+
+  it('falls back rather than showing a backend code no locale declares', () => {
+    // This used to assert the opposite — that the raw code reached the screen —
+    // and the code it used, auth.errBadCredentials, is declared in no locale.
+    // The test was holding the defect in place.
+    mockAuth.login.mockReturnValue(throwError(() => ({ error: { error: { code: 'auth.errSomethingNewFromTheBackend' } } })));
+    build('login');
+    component.email = 'me@example.com';
+    component.password = 'wrong';
+    component.onLogin();
+
+    expect(component.authIsError).toBe(true);
+    expect(component.authMessage).toBe('auth.errLoginFailed');
+    expect(component.authMessage).not.toContain('SomethingNew');
   });
 
   it('does not submit a login with empty fields', () => {
