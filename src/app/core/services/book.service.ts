@@ -1,8 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SKIP_LANG_PARAM } from '../api-url.interceptor';
 import { SKIP_AUTH } from '../auth.interceptor';
+
+/** A course the search facet can offer. `count` is absent on a backend that
+ *  still returns the old plain-string list. */
+export interface CourseFacet {
+  value: string;
+  count?: number;
+}
 
 const PUBLIC_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true).set(SKIP_AUTH, true);
 const OPTIONAL_AUTH_NO_LANG = new HttpContext().set(SKIP_LANG_PARAM, true);
@@ -46,12 +53,22 @@ export class BookService {
     return this.http.post<any>('/books/manual/', bookData);
   }
 
-  getTopCourses(school?: string, category?: string): Observable<string[]> {
+  /**
+   * The endpoint used to return `string[]` and now returns `{value, count}[]`
+   * — it always counted, it just threw the number away. Both shapes are
+   * accepted here on purpose: frontend and backend deploy separately, so
+   * whichever ships first must not break the course filter in the other.
+   */
+  getTopCourses(school?: string, category?: string): Observable<CourseFacet[]> {
     let url = `/search/courses/?`;
     const params = new URLSearchParams();
     if (school) params.set('school', school);
     if (category) params.set('category', category);
-    return this.http.get<string[]>(url + params.toString(), { context: PUBLIC_NO_LANG });
+    return this.http.get<Array<string | CourseFacet>>(url + params.toString(), { context: PUBLIC_NO_LANG }).pipe(
+      map(rows => (rows ?? []).map(row =>
+        typeof row === 'string' ? { value: row } : row
+      ))
+    );
   }
 
   subscribe(bookId: string): Observable<any> {

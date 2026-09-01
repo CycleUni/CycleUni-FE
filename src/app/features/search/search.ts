@@ -7,7 +7,7 @@ import { UiButton } from '../../shared/ui/button.component';
 import { UiListingRow } from '../../shared/ui/listing-row.component';
 import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { FormsModule } from '@angular/forms';
-import { BookService } from '../../core/services/book.service';
+import { BookService, CourseFacet } from '../../core/services/book.service';
 import { AuthStore } from '../../core/auth.store';
 import { ChangeDetectorRef } from '@angular/core';
 import { I18nService, TPipe } from '../../core/i18n.service';
@@ -294,7 +294,7 @@ export class Search implements OnInit {
   googleUnavailable = false;
   loading = true; fetchError = false;
   filtersOpen = false;
-  results: any[] = []; categories: any[] = []; courses: string[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
+  results: any[] = []; categories: any[] = []; courses: CourseFacet[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
   private searchSub?: Subscription;
   /** 上一次真的送進 API 的那組欄位。書況／價格／庫存純前端過濾，現在也會寫進
    *  網址，若不比對這個 key，每勾一個書況都會多打一次回傳完全相同的請求。 */
@@ -311,10 +311,10 @@ export class Search implements OnInit {
     ];
   }
 
-  get courseOptions() {
+  get courseOptions(): Array<{ label: string; value: string; count?: number }> {
     return [
       { label: this.i18n.t('search.allCourses'), value: '' },
-      ...this.courses.map(c => ({ label: c, value: c }))
+      ...this.courses.map(c => ({ label: c.value, value: c.value, count: c.count }))
     ];
   }
 
@@ -373,7 +373,7 @@ export class Search implements OnInit {
   }
 
   get courseFacetOptions(): FacetOption[] {
-    return this.courseOptions.map(o => ({ label: o.label, value: o.value, selected: o.value === this.course }));
+    return this.courseOptions.map(o => ({ label: o.label, value: o.value, count: o.count, selected: o.value === this.course }));
   }
 
   get filteredResults(): any[] {
