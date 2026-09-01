@@ -6,6 +6,7 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 import { UiButton } from './button.component';
 import { UiRadioGroup } from './radio-group.component';
 import { UiTextarea } from './textarea.component';
+import { UiFocusTrapDirective } from './focus-trap.directive';
 
 /**
  * "Report this conversation" dialog.
@@ -22,11 +23,11 @@ import { UiTextarea } from './textarea.component';
 @Component({
   selector: 'ui-report-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiRadioGroup, UiTextarea, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiRadioGroup, UiTextarea, TPipe, UiFocusTrapDirective],
   template: `
     <div class="report-overlay" (click)="close.emit()">
-      <div class="report-modal" (click)="$event.stopPropagation()">
-        <h4>{{ 'msg.reportTitle' | t }}</h4>
+      <div class="report-modal" (click)="$event.stopPropagation()" uiFocusTrap="report-modal-title" (escape)="close.emit()">
+        <h4 id="report-modal-title">{{ 'msg.reportTitle' | t }}</h4>
         <div class="report-reasons">
           <ui-radio-group [options]="reasons" [(ngModel)]="reason"></ui-radio-group>
         </div>

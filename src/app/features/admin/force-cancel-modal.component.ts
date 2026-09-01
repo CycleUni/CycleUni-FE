@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiTextarea } from '../../shared/ui/textarea.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 import { AdminService } from '../../core/services/admin.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
@@ -11,11 +12,11 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'app-force-cancel-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiTextarea, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiTextarea, TPipe, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" (click)="close()">
-      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'admin.forceCancelTitle' | t }}</h3>
+      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()" uiFocusTrap="force-cancel-title" (escape)="close()">
+        <h3 id="force-cancel-title" class="app-modal-title">{{ 'admin.forceCancelTitle' | t }}</h3>
 
         <div class="app-modal-body">
           <div class="textarea-wrapper">

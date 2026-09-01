@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../core/i18n.service';
+import { UiFocusTrapDirective } from './focus-trap.directive';
 
 /**
  * Full-screen image viewer. Purely presentational: the host owns which image
@@ -13,11 +14,11 @@ import { TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'ui-image-lightbox',
   standalone: true,
-  imports: [CommonModule, TPipe],
+  imports: [CommonModule, TPipe, UiFocusTrapDirective],
   template: `
     <div class="image-modal-overlay" *ngIf="src" (click)="close.emit()">
-      <div class="image-modal" (click)="$event.stopPropagation()">
-        <button class="image-modal-close" type="button" (click)="close.emit()" [title]="'msg.close' | t">×</button>
+      <div class="image-modal" (click)="$event.stopPropagation()" uiFocusTrap (escape)="close.emit()">
+        <button class="image-modal-close" type="button" (click)="close.emit()" [title]="'msg.close' | t" [attr.aria-label]="'msg.close' | t">×</button>
         <img [src]="src" [alt]="'msg.imagePreview' | t" class="image-modal-img">
       </div>
     </div>

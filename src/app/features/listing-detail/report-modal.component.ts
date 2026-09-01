@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiTextarea } from '../../shared/ui/textarea.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 import { ListingService } from '../../core/services/listing.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
@@ -14,11 +15,11 @@ import { I18nService, TPipe } from '../../core/i18n.service';
 @Component({
   selector: 'app-report-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiDropdown, UiTextarea, TPipe],
+  imports: [CommonModule, FormsModule, UiButton, UiDropdown, UiTextarea, TPipe, UiFocusTrapDirective],
   template: `
     <div class="modal-overlay" (click)="close()"></div>
-    <div class="modal-content">
-      <h3>{{ 'moderation.reportModalTitle' | t }}</h3>
+    <div class="modal-content" uiFocusTrap="listing-report-title" (escape)="close()">
+      <h3 id="listing-report-title">{{ 'moderation.reportModalTitle' | t }}</h3>
 
       <ui-dropdown
         [label]="'moderation.reasonLabel' | t"

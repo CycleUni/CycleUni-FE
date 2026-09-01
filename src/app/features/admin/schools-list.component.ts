@@ -1,3 +1,4 @@
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 import { UiButton } from '../../shared/ui/button.component';
 import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
@@ -15,7 +16,7 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
 @Component({
   selector: 'app-admin-schools-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent, UiPagination, UiButton],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, BulkImportModalComponent, UiPagination, UiButton, UiFocusTrapDirective],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navSchools' | t }}</h2>
@@ -56,8 +57,8 @@ import { BulkImportModalComponent } from './bulk-import-modal.component';
     </div>
 
     <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'admin.addSchool' | t }}</h3>
+      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()" uiFocusTrap="schools-modal-title" (escape)="showCreateModal = false">
+        <h3 id="schools-modal-title" class="app-modal-title">{{ 'admin.addSchool' | t }}</h3>
         <div class="app-modal-body">
           <div class="form-group">
             <label>{{ 'admin.schoolName' | t }}</label>

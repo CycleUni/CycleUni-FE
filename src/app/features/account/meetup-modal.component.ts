@@ -4,15 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { TPipe } from '../../core/i18n.service';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 
 @Component({
   selector: 'app-meetup-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, TPipe, UiButton, UiInput],
+  imports: [CommonModule, FormsModule, TPipe, UiButton, UiInput, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" (click)="close()">
-      <div class="app-modal" style="width: 100%; max-width: 420px;" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'order.meetupModalTitle' | t }}</h3>
+      <div class="app-modal" style="width: 100%; max-width: 420px;" (click)="$event.stopPropagation()" uiFocusTrap="meetup-modal-title" (escape)="close()">
+        <h3 id="meetup-modal-title" class="app-modal-title">{{ 'order.meetupModalTitle' | t }}</h3>
 
         <div class="app-modal-body">
           <p *ngIf="bookTitle" class="book-info">{{ bookTitle }}</p>
