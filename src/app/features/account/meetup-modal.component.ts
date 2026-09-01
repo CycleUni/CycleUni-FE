@@ -12,7 +12,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
   imports: [CommonModule, FormsModule, TPipe, UiButton, UiInput, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" (click)="close()">
-      <div class="app-modal" style="width: 100%; max-width: 420px;" (click)="$event.stopPropagation()" uiFocusTrap="meetup-modal-title" (escape)="close()">
+      <div class="app-modal w-full"  style="max-width: 420px;" (click)="$event.stopPropagation()" uiFocusTrap="meetup-modal-title" (escape)="close()">
         <h3 id="meetup-modal-title" class="app-modal-title">{{ 'order.meetupModalTitle' | t }}</h3>
 
         <div class="app-modal-body">
@@ -87,7 +87,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
     }
     .book-info {
       color: var(--muted);
-      font-size: 13px;
+      font-size: var(--text-sm);
       margin-bottom: 16px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--line);
@@ -99,7 +99,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
       margin-bottom: 16px;
     }
     .field-group label {
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
       display: block;
@@ -119,7 +119,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
       border-radius: 4px;
       width: 28px;
       height: 28px;
-      font-size: 16px;
+      font-size: var(--text-md);
       cursor: pointer;
       color: var(--ink);
       display: flex;
@@ -135,7 +135,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
       cursor: not-allowed;
     }
     .month-label {
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
     }
@@ -146,14 +146,14 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
       text-align: center;
     }
     .day-header {
-      font-size: 11px;
+      font-size: var(--text-xs);
       font-weight: 500;
       color: var(--muted);
       padding: 4px 0;
     }
     .day-cell {
       padding: 6px 0;
-      font-size: 13px;
+      font-size: var(--text-sm);
       border-radius: 4px;
       cursor: pointer;
       color: var(--ink);
@@ -185,7 +185,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
       padding: 8px 12px;
       border: 1px solid var(--line);
       border-radius: 4px;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-family: inherit;
       color: var(--ink);
       background: var(--paper);
@@ -207,12 +207,12 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 
     .error-msg {
       color: var(--flag);
-      font-size: 12px;
+      font-size: var(--text-xs);
       margin-top: 4px;
     }
     .submit-error {
       margin-bottom: 16px;
-      font-size: 13px;
+      font-size: var(--text-sm);
     }
 
   `]

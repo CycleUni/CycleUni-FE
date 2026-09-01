@@ -11,7 +11,7 @@ import { UiFocusTrapDirective } from './focus-trap.directive';
       <!-- Sorts before btn1 and matches the focusable selector, but is not
            rendered — the shape the meetup dialog's mobile-only date input has
            on a desktop. It must not be treated as focusable. -->
-      <input id="hidden-input" style="display: none" />
+      <input id="hidden-input"  style="display: none;" />
       <button id="btn1">Btn 1</button>
       <button id="btn2">Btn 2</button>
       <button id="disabled-btn" disabled>Disabled</button>

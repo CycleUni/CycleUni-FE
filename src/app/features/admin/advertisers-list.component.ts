@@ -55,7 +55,7 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
             </td>
             <td>
               <ui-button size="sm" variant="outline" (onClick)="openEditModal(adv)">{{ 'common.edit' | t }}</ui-button>
-              <ui-button size="sm" variant="outline" (onClick)="deleteAdvertiser(adv.id)" style="margin-left: 4px; color: var(--danger); border-color: var(--danger);">{{ 'common.delete' | t }}</ui-button>
+              <ui-button size="sm" variant="outline" (onClick)="deleteAdvertiser(adv.id)"  style="margin-left: 4px; color: var(--danger); border-color: var(--danger);">{{ 'common.delete' | t }}</ui-button>
             </td>
           </tr>
         </tbody>
@@ -91,12 +91,12 @@ import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
           </div>
           <div class="form-group" *ngIf="!formData.all_schools">
             <label>{{ 'admin.selectSpecificSchool' | t }}</label>
-            <input type="text" class="admin-form-control" [placeholder]="'admin.searchSchool' | t" [(ngModel)]="schoolSearchQuery" style="margin-bottom: 8px;">
-            <div class="school-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
-              <div *ngFor="let school of filteredSchools" style="display: flex; align-items: center; gap: 8px;">
+            <input type="text" class="admin-form-control mb-2" [placeholder]="'admin.searchSchool' | t" [(ngModel)]="schoolSearchQuery" >
+            <div class="school-list"  style="max-height: 200px; overflow-y: auto; border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 8px;">
+              <div *ngFor="let school of filteredSchools"  style="display: flex; align-items: center; gap: 8px;">
                 <ui-checkbox [checked]="formData.schools?.includes(school.id)" (change)="toggleSchool(school.id)" [label]="school.display_name || school.name"></ui-checkbox>
               </div>
-              <div *ngIf="filteredSchools.length === 0" style="color: var(--muted); text-align: center; padding: 12px;">找不到符合的學校</div>
+              <div *ngIf="filteredSchools.length === 0"  style="color: var(--muted); text-align: center; padding: 12px;">找不到符合的學校</div>
             </div>
           </div>
         </div>

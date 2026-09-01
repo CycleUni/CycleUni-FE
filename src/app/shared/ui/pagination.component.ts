@@ -38,7 +38,7 @@ import { CommonModule } from '@angular/common';
       background: var(--paper-warm);
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--ink);
       /* Enumerated, not 'all': the button's min-width tracks the digit count,
          so 'all' animated its width every time the page number changed. */

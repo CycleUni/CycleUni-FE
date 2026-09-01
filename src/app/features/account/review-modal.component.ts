@@ -14,20 +14,20 @@ import { OrderService } from '../../core/services/order.service';
   imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe, UiCheckbox, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" (click)="close()">
-      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()" uiFocusTrap="review-modal-title" (escape)="close()">
+      <div class="app-modal w-full"  style="max-width: 400px;" (click)="$event.stopPropagation()" uiFocusTrap="review-modal-title" (escape)="close()">
         <h3 id="review-modal-title" class="app-modal-title">{{ 'order.reviewTitle' | t }}</h3>
         
         <div class="app-modal-body">
-          <p style="margin-bottom: 16px;" class="muted">
+          <p  class="mb-4" class="muted">
             {{ 'order.reviewDesc' | t }}
           </p>
 
-          <div class="checkbox-group" style="margin-bottom: 24px;">
+          <div class="checkbox-group mb-5" >
             <ui-checkbox [(ngModel)]="isNoShow" (change)="onNoShowChange()" [label]="'order.noShowReport' | t" class="no-show-checkbox"></ui-checkbox>
           </div>
 
-          <div *ngIf="!isNoShow" style="margin-bottom: 16px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 500;">{{ 'order.rating' | t }}</label>
+          <div *ngIf="!isNoShow"  class="mb-4">
+            <label  class="mb-2" style="display: block; font-weight: 500;">{{ 'order.rating' | t }}</label>
             <div class="stars">
               <span *ngFor="let star of [1,2,3,4,5]" 
                     (click)="rating = star"
@@ -57,7 +57,7 @@ import { OrderService } from '../../core/services/order.service';
     .stars {
       display: flex;
       gap: 8px;
-      font-size: 24px;
+      font-size: var(--text-2xl);
       cursor: pointer;
     }
     .star {

@@ -86,7 +86,7 @@ export interface DropdownOption {
       margin-bottom: 0;
     }
     label {
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
     }
@@ -108,7 +108,7 @@ export interface DropdownOption {
       border-radius: var(--radius-control);
       background-color: var(--paper);
       color: var(--ink);
-      font-size: 14px;
+      font-size: var(--text-base);
       font-family: inherit;
       cursor: pointer;
       text-align: left;
@@ -184,7 +184,7 @@ export interface DropdownOption {
       margin-bottom: 4px;
       border: 1px solid var(--line);
       border-radius: var(--radius-control);
-      font-size: 14px;
+      font-size: var(--text-base);
       font-family: inherit;
       color: var(--ink);
       background-color: var(--paper);
@@ -207,7 +207,7 @@ export interface DropdownOption {
       justify-content: space-between;
       gap: 8px;
       padding: 8px;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--ink);
       cursor: pointer;
       border-radius: var(--radius-control);

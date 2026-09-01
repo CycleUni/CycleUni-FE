@@ -85,12 +85,12 @@ import { UiButton } from '../../shared/ui/button.component';
       box-shadow: var(--shadow-card-lg);
     }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: var(--text-base); font-weight: 600; }
     .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
     .checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; margin-bottom: 0; }
-    .text-hint { font-size: 13px; color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
+    .text-hint { font-size: var(--text-sm); color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
     .translation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; width: 60px; text-align: center; }
+    .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: var(--text-xs); font-weight: 600; width: 60px; text-align: center; }
     .toggle-row {
       display: flex;
       gap: 24px;
@@ -100,7 +100,7 @@ import { UiButton } from '../../shared/ui/button.component';
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
+      font-size: var(--text-base);
       cursor: pointer;
     }
   `]

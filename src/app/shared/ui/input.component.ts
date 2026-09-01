@@ -65,7 +65,7 @@ import { CommonModule } from '@angular/common';
     @media (pointer: coarse) {
       input {
         min-height: var(--tap-min);
-        font-size: 16px;
+        font-size: var(--text-md);
       }
     }
     /* Focus recolours the underline to --accent and adds no thickness. The

@@ -22,13 +22,13 @@ import { RegionLinkService } from '../../core/region-link.service';
               <h2>{{ 'fp.requestTitle' | t }}</h2>
               <p>{{ 'fp.requestHint' | t }}</p>
 
-              <div style="margin: 24px 0; text-align: left;">
+              <div  style="margin: 24px 0; text-align: left;">
                 <ui-input [placeholder]="'auth.emailLabel' | t" [(ngModel)]="email" [disabled]="requestStatus === 'loading'"></ui-input>
               </div>
 
               <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
 
-              <ui-button style="width: 100%;" (onClick)="submitRequest()" [disabled]="!email || requestStatus === 'loading'">
+              <ui-button  block (onClick)="submitRequest()" [disabled]="!email || requestStatus === 'loading'">
                 {{ (requestStatus === 'loading' ? 'fp.sending' : 'fp.sendLink') | t }}
               </ui-button>
             </ng-container>
@@ -36,7 +36,7 @@ import { RegionLinkService } from '../../core/region-link.service';
             <ng-container *ngIf="requestStatus === 'sent'">
               <h2>{{ 'fp.sentTitle' | t }}</h2>
               <p>{{ 'fp.sentBody' | t }}</p>
-              <ui-button style="margin-top: 24px;" variant="ghost" (onClick)="goToLogin()">{{ 'auth.backToLogin' | t }}</ui-button>
+              <ui-button  class="mt-5" variant="ghost" (onClick)="goToLogin()">{{ 'auth.backToLogin' | t }}</ui-button>
             </ng-container>
           </ng-container>
 
@@ -46,14 +46,14 @@ import { RegionLinkService } from '../../core/region-link.service';
               <h2>{{ 'fp.confirmTitle' | t }}</h2>
               <p>{{ 'fp.confirmHint' | t }}</p>
 
-              <div style="margin: 24px 0; text-align: left; display: flex; flex-direction: column; gap: 12px;">
+              <div  style="margin: 24px 0; text-align: left; display: flex; flex-direction: column; gap: 12px;">
                 <ui-input type="password" [placeholder]="'acct.newPassword' | t" [(ngModel)]="newPassword" [disabled]="confirmStatus === 'loading'"></ui-input>
                 <ui-input type="password" [placeholder]="'acct.confirmNewPassword' | t" [(ngModel)]="confirmPassword" [disabled]="confirmStatus === 'loading'"></ui-input>
               </div>
 
               <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
 
-              <ui-button style="width: 100%;" (onClick)="submitConfirm()" [disabled]="!newPassword || confirmStatus === 'loading'">
+              <ui-button  block (onClick)="submitConfirm()" [disabled]="!newPassword || confirmStatus === 'loading'">
                 {{ (confirmStatus === 'loading' ? 'fp.saving' : 'fp.setNewPassword') | t }}
               </ui-button>
             </ng-container>
@@ -61,7 +61,7 @@ import { RegionLinkService } from '../../core/region-link.service';
             <ng-container *ngIf="confirmStatus === 'success'">
               <h2>{{ 'fp.successTitle' | t }}</h2>
               <p>{{ 'fp.successBody' | t }}</p>
-              <ui-button style="margin-top: 24px;" (onClick)="goToLogin()">{{ 'verify.goToLogin' | t }}</ui-button>
+              <ui-button  class="mt-5" (onClick)="goToLogin()">{{ 'verify.goToLogin' | t }}</ui-button>
             </ng-container>
           </ng-container>
         </div>
@@ -85,7 +85,7 @@ import { RegionLinkService } from '../../core/region-link.service';
     .fp-box h2 {
       margin-top: 0;
       margin-bottom: 16px;
-      font-size: 24px;
+      font-size: var(--text-2xl);
     }
     .fp-box p {
       color: var(--muted);
@@ -95,7 +95,7 @@ import { RegionLinkService } from '../../core/region-link.service';
     .error-msg {
       color: var(--flag);
       font-weight: 500;
-      font-size: 14px;
+      font-size: var(--text-base);
       margin: 12px 0;
     }
   `]

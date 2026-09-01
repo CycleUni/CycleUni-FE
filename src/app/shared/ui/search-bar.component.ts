@@ -36,7 +36,7 @@ import { TPipe } from '../../core/i18n.service';
       padding: 12px 48px 12px 16px;
       border: 1px solid var(--line-strong);
       border-radius: var(--radius-control);
-      font-size: 16px;
+      font-size: var(--text-md);
       background: var(--paper-warm);
       color: var(--ink);
       box-sizing: border-box;

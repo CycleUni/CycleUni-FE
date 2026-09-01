@@ -18,7 +18,7 @@ import { TPipe } from '../../core/i18n.service';
   styles: [`
     :host { display: inline-flex; }
     .role-badge {
-      font-size: 11px;
+      font-size: var(--text-xs);
       font-weight: normal;
       padding: 2px 6px;
       border-radius: 4px;

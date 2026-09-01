@@ -58,13 +58,13 @@ import { RegionService } from '../../core/region.service';
     }
     .prompt-title {
       margin: 0;
-      font-size: 15px;
+      font-size: var(--text-base);
       font-weight: 600;
       color: var(--flag);
     }
     .prompt-desc {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
       line-height: 1.4;
       color: var(--ink-soft);
     }
@@ -81,7 +81,7 @@ import { RegionService } from '../../core/region.service';
       background: none;
       border: none;
       color: var(--flag);
-      font-size: 13px;
+      font-size: var(--text-sm);
       cursor: pointer;
       text-decoration: underline;
       padding: 4px 8px;

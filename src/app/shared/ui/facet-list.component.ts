@@ -67,7 +67,7 @@ let nextId = 0;
     }
     .facet-title {
       margin: 0 0 12px;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
     }
@@ -84,7 +84,7 @@ let nextId = 0;
       align-items: center;
       gap: 8px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--ink);
       /* Not --tap-min: a sidebar of 20 courses at 44px a row would scroll off
          the screen. 24px is the WCAG 2.5.8 minimum target and keeps the list
@@ -141,7 +141,7 @@ let nextId = 0;
     }
     .facet-count {
       color: var(--muted);
-      font-size: 13px;
+      font-size: var(--text-sm);
       font-variant-numeric: tabular-nums;
     }
   `]

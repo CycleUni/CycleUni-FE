@@ -20,12 +20,12 @@
     }
     .alert-box p {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .form-group { margin-bottom: 16px; }
     .form-group label {
       display: block;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       margin-bottom: 8px;
     }
@@ -45,7 +45,7 @@
   color: var(--success);
 }
 .auto-verify-box p {
-  font-size: 14px;
+  font-size: var(--text-base);
   margin-top: 0;
   color: var(--muted);
 }
@@ -74,10 +74,10 @@
   color: var(--danger);
   margin-top: 0;
   margin-bottom: 8px;
-  font-size: 18px;
+  font-size: var(--text-lg);
 }
 .danger-zone p {
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--muted);
   margin-bottom: 16px;
 }

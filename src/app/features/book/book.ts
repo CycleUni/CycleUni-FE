@@ -63,7 +63,7 @@ import { ToastService } from '../../core/services/toast.service';
               </div>
               <div class="meta-row">
                 <span class="meta-label">ISBN</span>
-                <span class="meta-value" style="font-family: monospace;">{{ book.isbn13 }}</span>
+                <span class="meta-value"  style="font-family: monospace;">{{ book.isbn13 }}</span>
               </div>
             </div>
             <div class="waitlist-banner" [class.hot]="book.waiting_count > 0" *ngIf="!isLoadingListings && totalListings === 0">
@@ -71,7 +71,7 @@ import { ToastService } from '../../core/services/toast.service';
                 {{ (book.waiting_count > 0 ? 'book.waitingBanner' : 'book.waitingBannerZero') | t:{n: book.waiting_count} }}
               </span>
               <ui-button *ngIf="!book.is_subscribed" variant="white" (onClick)="subscribeBook()">{{ 'search.notifyMe' | t }}</ui-button>
-              <ui-button *ngIf="book.is_subscribed" variant="white" style="color: var(--muted); border-color: var(--muted);" (onClick)="unsubscribeBook()">{{ 'search.cancelNotify' | t }}</ui-button>
+              <ui-button *ngIf="book.is_subscribed" variant="white"  style="color: var(--muted); border-color: var(--muted);" (onClick)="unsubscribeBook()">{{ 'search.cancelNotify' | t }}</ui-button>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ import { ToastService } from '../../core/services/toast.service';
     .book-title {
       margin-top: 0;
       margin-bottom: 24px;
-      font-size: 28px;
+      font-size: var(--text-3xl);
       font-family: 'Noto Serif TC', serif;
       font-weight: 700;
       border-bottom: 2px solid var(--line);
@@ -147,7 +147,7 @@ import { ToastService } from '../../core/services/toast.service';
       grid-template-columns: 120px 1fr;
       padding: 12px 0;
       border-top: 1px solid var(--line);
-      font-size: 15px;
+      font-size: var(--text-base);
     }
     .meta-row:first-child {
       border-top: none;
@@ -179,7 +179,7 @@ import { ToastService } from '../../core/services/toast.service';
     .waitlist-count {
       color: var(--muted);
       font-weight: 500;
-      font-size: 16px;
+      font-size: var(--text-md);
     }
     .waitlist-count.hot {
       color: var(--flag);
@@ -197,11 +197,11 @@ import { ToastService } from '../../core/services/toast.service';
       background-color: var(--danger-light);
       color: var(--danger);
       border-radius: 8px;
-      font-size: 14px;
+      font-size: var(--text-base);
       text-align: center;
     }
     .course-info {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       margin-bottom: 8px;
     }
@@ -219,12 +219,12 @@ import { ToastService } from '../../core/services/toast.service';
         margin: 8px auto;
       }
       .book-title {
-        font-size: 22px;
+        font-size: var(--text-xl);
       }
       .meta-row {
         grid-template-columns: 88px 1fr;
         padding: 8px 0;
-        font-size: 14px;
+        font-size: var(--text-base);
       }
       .waitlist-banner {
         flex-direction: column;

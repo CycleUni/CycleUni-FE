@@ -68,7 +68,7 @@
       word-break: break-word;
     }
     .book-match .result-isbn {
-      font-size: 12px;
+      font-size: var(--text-xs);
     }
     .book-match.selectable:hover {
       border-color: var(--accent);
@@ -107,14 +107,14 @@
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .dropzone {
       border: 1.5px dashed var(--line);
       padding: 24px;
       text-align: center;
       color: var(--muted);
-      font-size: 13px;
+      font-size: var(--text-sm);
       cursor: pointer;
       flex: 1;
       display: flex;
@@ -160,14 +160,14 @@
       width: 24px;
       height: 24px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--text-base);
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .price-field-label {
       display: block;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--ink);
       margin-bottom: 8px;
@@ -185,7 +185,7 @@
       border-bottom-color: var(--accent);
     }
     .price-currency {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       flex-shrink: 0;
     }
@@ -199,7 +199,7 @@
       font-family: 'Noto Serif TC', serif;
       font-variant-numeric: tabular-nums;
       font-weight: 700;
-      font-size: 25px;
+      font-size: var(--text-2xl);
       color: var(--accent);
       padding: 0;
     }
@@ -207,7 +207,7 @@
       margin-bottom: 16px;
     }
     .info-text {
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .text-center {
       text-align: center;
@@ -247,7 +247,7 @@
     }
     .draft-banner-text {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
       flex: 1;
       min-width: 180px;
     }
@@ -288,7 +288,7 @@
       }
       .stepper {
         gap: 8px;
-        font-size: 14px;
+        font-size: var(--text-base);
         flex-wrap: wrap;
       }
       .form-container {
@@ -303,7 +303,7 @@
     }
     .group-label {
       display: block;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       color: var(--text);
       margin-bottom: 8px;
@@ -317,7 +317,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--text);
       cursor: pointer;
     }

@@ -50,7 +50,7 @@ import { Lang } from '../../core/i18n';
     </div>
 
     <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-      <div class="app-modal" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()" uiFocusTrap="regions-modal-title" (escape)="showCreateModal = false">
+      <div class="app-modal"  style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()" uiFocusTrap="regions-modal-title" (escape)="showCreateModal = false">
         <h3 id="regions-modal-title" class="app-modal-title">{{ 'admin.addRegion' | t }}</h3>
         <div class="app-modal-body">
           <ui-input [label]="'admin.regionCode' | t" [(ngModel)]="newItem.code"></ui-input>
@@ -97,7 +97,7 @@ import { Lang } from '../../core/i18n';
           
           <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
         </div>
-        <div class="app-modal-actions" style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
+        <div class="app-modal-actions"  style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
           <ui-button variant="ghost" (onClick)="showCreateModal = false" [disabled]="saving">{{ 'common.cancel' | t }}</ui-button>
           <ui-button (onClick)="create()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
         </div>
@@ -107,12 +107,12 @@ import { Lang } from '../../core/i18n';
   styles: [`
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: var(--text-base); font-weight: 600; }
     .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
     .checkbox-group label { display: flex; align-items: center; gap: 4px; font-weight: normal; margin-bottom: 0; }
-    .text-hint { font-size: 13px; color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
+    .text-hint { font-size: var(--text-sm); color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
     .translation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: 12px; font-weight: 600; width: 60px; text-align: center; }
+    .lang-tag { flex: 0 0 auto; padding: 4px 8px; border-radius: 4px; background: var(--paper-warm); font-size: var(--text-xs); font-weight: 600; width: 60px; text-align: center; }
   `]
 })
 export class AdminRegionsListComponent implements OnInit {

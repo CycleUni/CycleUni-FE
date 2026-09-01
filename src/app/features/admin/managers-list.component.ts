@@ -75,7 +75,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
     }
     .btn-toggle {
       padding: 4px 10px;
-      font-size: 13px;
+      font-size: var(--text-sm);
       border-radius: 4px;
       /* --line-strong, not --line: a button's edge is an interactive
          boundary, and --line is 1.48:1 — below WCAG 1.4.11's 3:1. */
@@ -103,7 +103,7 @@ import { UiPagination } from '../../shared/ui/pagination.component';
       color: var(--muted);
     }
     .text-sm {
-      font-size: 12px;
+      font-size: var(--text-xs);
     }
   `]
 })

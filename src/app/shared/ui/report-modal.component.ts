@@ -48,10 +48,10 @@ import { UiFocusTrapDirective } from './focus-trap.directive';
     .report-modal { background: var(--surface-raised); border: 1px solid var(--surface-raised-border); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto; }
     .report-modal h4 { margin-top: 0; margin-bottom: 16px; }
     .report-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+    .report-reason { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: var(--text-base); }
     .report-actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .error-msg { color: var(--danger); font-size: 13px; margin-top: 8px; }
-    .success-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }
+    .error-msg { color: var(--danger); font-size: var(--text-sm); margin-top: 8px; }
+    .success-msg { color: var(--accent); font-size: var(--text-sm); margin-top: 8px; }
   `]
 })
 export class UiReportModal implements OnInit {

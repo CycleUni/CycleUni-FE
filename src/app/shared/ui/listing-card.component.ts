@@ -67,8 +67,8 @@ import { PricePipe } from '../pipes/price.pipe';
            the leading button was sending every first-time buyer into a page
            that could only fail. -->
       <div class="button-group">
-        <ui-button style="flex: 1;" (onClick)="onContactSeller.emit(item.id)">{{ 'book.contactSeller' | t }}</ui-button>
-        <ui-button variant="ghost" style="flex: 1;" (onClick)="onBuyNow.emit(item.id)">{{ 'checkout.arrangeMeetup' | t }}</ui-button>
+        <ui-button  class="flex-1" (onClick)="onContactSeller.emit(item.id)">{{ 'book.contactSeller' | t }}</ui-button>
+        <ui-button variant="ghost"  class="flex-1" (onClick)="onBuyNow.emit(item.id)">{{ 'checkout.arrangeMeetup' | t }}</ui-button>
       </div>
     </div>
   `,
@@ -119,7 +119,7 @@ import { PricePipe } from '../pipes/price.pipe';
       align-items: center;
       justify-content: center;
       color: var(--muted);
-      font-size: 14px;
+      font-size: var(--text-base);
       border-radius: var(--radius-xs);
       overflow: hidden;
       flex-shrink: 0;
@@ -138,14 +138,14 @@ import { PricePipe } from '../pipes/price.pipe';
     .price {
       font-family: 'Noto Serif TC', serif;
       font-variant-numeric: tabular-nums;
-      font-size: 25px;
+      font-size: var(--text-2xl);
       font-weight: 700;
       color: var(--accent);
     }
     .condition-badge {
       display: inline-flex;
       align-items: center;
-      font-size: 12px;
+      font-size: var(--text-xs);
       color: var(--muted);
     }
     .condition-badge::before {
@@ -160,14 +160,14 @@ import { PricePipe } from '../pipes/price.pipe';
     }
     .seller-info {
       display: block;
-      font-size: 15px;
+      font-size: var(--text-base);
       margin-bottom: 8px;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
     .course-info {
       display: block;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       margin-bottom: 8px;
       overflow-wrap: anywhere;
@@ -175,7 +175,7 @@ import { PricePipe } from '../pipes/price.pipe';
     }
     .listing-note {
       display: block;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       font-style: italic;
       margin-top: 12px;

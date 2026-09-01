@@ -84,7 +84,7 @@
             </div>
             <div class="info-row">
               <span class="info-label">ISBN</span>
-              <span class="info-value" style="font-family: monospace;">{{ listing.isbn }}</span>
+              <span class="info-value"  style="font-family: monospace;">{{ listing.isbn }}</span>
             </div>
           </div>
 
@@ -98,10 +98,10 @@
                (checkout.errNoChat), so contacting is the primary action and
                arranging the meetup the secondary one. -->
           <div class="action-buttons">
-            <ui-button style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="contactSeller()">
+            <ui-button  class="flex-1" style="font-size: var(--text-md); padding: 12px;" (onClick)="contactSeller()">
               {{ 'book.contactSeller' | t }}
             </ui-button>
-            <ui-button variant="white" style="flex: 1; font-size: 16px; padding: 12px;" (onClick)="buyNow()">
+            <ui-button variant="white"  class="flex-1" style="font-size: var(--text-md); padding: 12px;" (onClick)="buyNow()">
               {{ 'checkout.arrangeMeetup' | t }}
             </ui-button>
           </div>

@@ -5,7 +5,7 @@
         <div class="alert-box warning">
           <h3>{{ 'sell.notLoggedInTitle' | t }}</h3>
           <p>{{ 'sell.notLoggedInDesc' | t }}</p>
-          <ui-button style="margin-top: 16px;" (onClick)="goToLogin()">{{ 'sell.goLogin' | t }}</ui-button>
+          <ui-button  class="mt-4" (onClick)="goToLogin()">{{ 'sell.goLogin' | t }}</ui-button>
         </div>
       </div>
 
@@ -37,7 +37,7 @@
           <p class="desc">{{ 'sell.isbnDesc' | t }}</p>
           <ui-input [placeholder]="'sell.isbnPlaceholder' | t" [(ngModel)]="searchQuery" (ngModelChange)="onSearchQueryChange()"></ui-input>
 
-          <div style="margin-top: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <div  class="mt-4" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <ui-button variant="ghost" (onClick)="toggleScanner()" *ngIf="!hideSearchButtonForNow && (!bookPreview && searchResults.length === 0 || isSearchQueryDirty)">
               {{ (isScanning ? 'sell.stopScan' : 'sell.scanBarcode') | t }}
             </ui-button>
@@ -46,7 +46,7 @@
             </ui-button>
           </div>
 
-          <div id="reader" [hidden]="!isScanning" style="margin-top: 16px; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);"></div>
+          <div id="reader" [hidden]="!isScanning"  class="mt-4 w-full" style="max-width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; overflow: hidden; border: 1px solid var(--line);"></div>
           <div *ngIf="cameraError" class="inline-msg error">{{ cameraError }}</div>
           <!-- Search Results List -->
           <div *ngIf="searchResults.length > 0 && !bookPreview" class="results-container">
@@ -72,7 +72,7 @@
                 <span class="muted result-isbn">ISBN: {{ result.isbn }}</span>
               </span>
             </button>
-            <div class="actions split" style="margin-top: 16px;">
+            <div class="actions split mt-4" >
               <ui-button variant="ghost" (onClick)="enterManually()">{{ 'sell.enterManually' | t }}</ui-button>
             </div>
           </div>
@@ -86,20 +86,20 @@
                 [author]="bookPreview.authors"
               ></ui-book-cover>
             </div>
-            <div class="info" *ngIf="!bookPreview.isManual" style="flex: 1;">
+            <div class="info flex-1" *ngIf="!bookPreview.isManual" >
               <h3 class="book-title-serif">{{ bookPreview.title }}</h3>
               <p class="muted">{{ bookPreview.authors }}</p>
-              <div style="margin-top: 8px;">
-                <ui-button variant="ghost" (onClick)="clearSelection()" style="padding: 4px 8px; font-size: 12px; height: auto;">{{ 'sell.reselect' | t }}</ui-button>
+              <div  class="mt-2">
+                <ui-button variant="ghost" (onClick)="clearSelection()"  style="padding: 4px 8px; font-size: var(--text-xs); height: auto;">{{ 'sell.reselect' | t }}</ui-button>
               </div>
             </div>
-            <div class="info" *ngIf="bookPreview.isManual" style="flex: 1;">
-              <ui-input [placeholder]="'sell.titlePlaceholder' | t" [(ngModel)]="bookPreview.title" (ngModelChange)="onFormChange()" (focusout)="markTouched('title')" style="margin-bottom: 8px;"></ui-input>
+            <div class="info flex-1" *ngIf="bookPreview.isManual" >
+              <ui-input [placeholder]="'sell.titlePlaceholder' | t" [(ngModel)]="bookPreview.title" (ngModelChange)="onFormChange()" (focusout)="markTouched('title')"  class="mb-2"></ui-input>
               <div *ngIf="titleErrorKey" class="inline-msg error field-msg">{{ titleErrorKey | t }}</div>
               <ui-input [placeholder]="'sell.authorPlaceholder' | t" [(ngModel)]="bookPreview.authors" (ngModelChange)="onFormChange()" (focusout)="markTouched('authors')"></ui-input>
               <div *ngIf="authorErrorKey" class="inline-msg error field-msg">{{ authorErrorKey | t }}</div>
-              <div style="margin-top: 8px;">
-                <ui-button variant="ghost" (onClick)="clearSelection()" style="padding: 4px 8px; font-size: 12px; height: auto;">{{ 'sell.reselect' | t }}</ui-button>
+              <div  class="mt-2">
+                <ui-button variant="ghost" (onClick)="clearSelection()"  style="padding: 4px 8px; font-size: var(--text-xs); height: auto;">{{ 'sell.reselect' | t }}</ui-button>
               </div>
             </div>
           </div>
@@ -150,7 +150,7 @@
                 </svg>
                 <span *ngIf="!isUploading">{{ 'sell.uploadBox' | t }}</span>
                 <span *ngIf="isUploading">{{ 'sell.uploading' | t }}</span>
-                <input #fileInput type="file" accept="image/*" style="display: none" (change)="onFileSelected($event)" [disabled]="isUploading">
+                <input #fileInput type="file" accept="image/*"  style="display: none;" (change)="onFileSelected($event)" [disabled]="isUploading">
               </div>
             </div>
             <div *ngIf="uploadError" class="inline-msg error">

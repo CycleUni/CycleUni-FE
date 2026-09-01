@@ -1,5 +1,5 @@
 import { RegionLinkDirective } from '../../core/region-link.directive';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, booleanAttribute } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -7,6 +7,9 @@ import { RouterModule } from '@angular/router';
   selector: 'ui-button',
   standalone: true,
   imports: [RegionLinkDirective, CommonModule, RouterModule],
+  host: {
+    '[class.is-block]': 'block'
+  },
   template: `
     <a
       *ngIf="link"
@@ -37,6 +40,10 @@ import { RouterModule } from '@angular/router';
     :host {
       display: inline-block;
       align-self: stretch;
+    }
+    :host.is-block {
+      display: block;
+      width: 100%;
     }
     .ui-btn {
       width: 100%;
@@ -162,6 +169,7 @@ export class UiButton {
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() type: string = 'button';
   @Input() disabled: boolean = false;
+  @Input({ transform: booleanAttribute }) block: boolean = false;
   @Input() hostClass: string = '';
   @Output() onClick = new EventEmitter<Event>();
 }

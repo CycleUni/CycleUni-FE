@@ -52,12 +52,12 @@ import { I18nService } from '../../core/i18n.service';
     }
     .message {
       margin: 0 0 8px;
-      font-size: 18px;
+      font-size: var(--text-lg);
       color: var(--ink);
     }
     .description {
       margin: 0 0 16px;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
     }
   `]

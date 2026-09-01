@@ -8,20 +8,20 @@
 
       <div class="form-group">
         <label>{{ 'auth.emailLabel' | t }}</label>
-        <ui-input placeholder="your.email@example.com" [(ngModel)]="email" (keyup.enter)="onLogin()" style="width: 100%;"></ui-input>
+        <ui-input placeholder="your.email@example.com" [(ngModel)]="email" (keyup.enter)="onLogin()" ></ui-input>
       </div>
 
       <div class="form-group">
         <label>{{ 'auth.passwordLabel' | t }}</label>
-        <ui-input type="password" [placeholder]="'auth.passwordPlaceholder' | t" [(ngModel)]="password" (keyup.enter)="onLogin()" style="width: 100%;"></ui-input>
+        <ui-input type="password" [placeholder]="'auth.passwordPlaceholder' | t" [(ngModel)]="password" (keyup.enter)="onLogin()" ></ui-input>
         <a regionLink="/forgot-password" class="forgot-password-link">{{ 'auth.forgotPassword' | t }}</a>
       </div>
 
-      <ui-button style="width: 100%; margin-top: 16px;" (onClick)="onLogin()" [disabled]="isLoading">
+      <ui-button  block class="mt-4" (onClick)="onLogin()" [disabled]="isLoading">
         {{ (isLoading ? 'auth.loggingIn' : 'auth.login') | t }}
       </ui-button>
 
-      <div id="google-btn" style="margin-top: 16px; display: flex; justify-content: center;"></div>
+      <div id="google-btn"  class="mt-4" style="display: flex; justify-content: center;"></div>
 
       <div class="auth-toggle">
         {{ 'auth.noAccount' | t }}<a regionLink="/register" [queryParams]="linkQueryParams">{{ 'auth.clickToRegister' | t }}</a>
@@ -40,34 +40,34 @@
       <h2>{{ 'auth.registerTitle' | t }}</h2>
       <p class="auth-hint">{{ 'auth.registerHint' | t }}</p>
 
-      <div class="form-group" style="display: flex; gap: 16px;">
-        <div style="flex: 1;">
+      <div class="form-group"  style="display: flex; gap: 16px;">
+        <div  class="flex-1">
           <label>{{ 'auth.lastNameLabel' | t }}</label>
-          <ui-input [placeholder]="'auth.lastNamePlaceholder' | t" [(ngModel)]="registerLastName" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+          <ui-input [placeholder]="'auth.lastNamePlaceholder' | t" [(ngModel)]="registerLastName" (keyup.enter)="onRegister()" ></ui-input>
         </div>
-        <div style="flex: 1;">
+        <div  class="flex-1">
           <label>{{ 'auth.firstNameLabel' | t }}</label>
-          <ui-input [placeholder]="'auth.firstNamePlaceholder' | t" [(ngModel)]="registerFirstName" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+          <ui-input [placeholder]="'auth.firstNamePlaceholder' | t" [(ngModel)]="registerFirstName" (keyup.enter)="onRegister()" ></ui-input>
         </div>
       </div>
-      <p class="field-hint" style="margin-bottom: 16px;">{{ 'auth.nameHint' | t }}</p>
+      <p class="field-hint mb-4" >{{ 'auth.nameHint' | t }}</p>
 
       <div class="form-group">
         <label>{{ 'auth.registerEmailLabel' | t }}</label>
-        <ui-input placeholder="your.email@example.com" [(ngModel)]="registerEmail" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+        <ui-input placeholder="your.email@example.com" [(ngModel)]="registerEmail" (keyup.enter)="onRegister()" ></ui-input>
       </div>
 
       <div class="form-group">
         <label>{{ 'auth.setPasswordLabel' | t }}</label>
-        <ui-input type="password" [placeholder]="'auth.passwordMin' | t" [(ngModel)]="registerPassword" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+        <ui-input type="password" [placeholder]="'auth.passwordMin' | t" [(ngModel)]="registerPassword" (keyup.enter)="onRegister()" ></ui-input>
       </div>
 
       <div class="form-group">
         <label>{{ 'auth.confirmPasswordLabel' | t }}</label>
-        <ui-input type="password" [placeholder]="'auth.confirmPlaceholder' | t" [(ngModel)]="registerConfirmPassword" (keyup.enter)="onRegister()" style="width: 100%;"></ui-input>
+        <ui-input type="password" [placeholder]="'auth.confirmPlaceholder' | t" [(ngModel)]="registerConfirmPassword" (keyup.enter)="onRegister()" ></ui-input>
       </div>
 
-      <ui-button style="width: 100%; margin-top: 16px;" (onClick)="onRegister()" [disabled]="isLoading">
+      <ui-button  block class="mt-4" (onClick)="onRegister()" [disabled]="isLoading">
         {{ (isLoading ? 'auth.registering' : 'auth.register') | t }}
       </ui-button>
 

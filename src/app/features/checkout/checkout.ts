@@ -22,7 +22,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       <main class="container container--form checkout-page">
         <h2>{{ 'checkout.title' | t }}</h2>
 
-        <div *ngIf="isLoading" style="padding: 40px; text-align: center;">
+        <div *ngIf="isLoading"  style="padding: 40px; text-align: center;">
           {{ 'checkout.loading' | t }}
         </div>
 
@@ -48,18 +48,18 @@ import { RegionLinkService } from '../../core/region-link.service';
           <!-- Checkout Form -->
           <div class="form-card">
             <h3>{{ 'checkout.meetupFormTitle' | t }}</h3>
-            <p class="muted" style="margin-bottom: 24px;">
+            <p class="muted mb-5" >
               {{ 'checkout.meetupFormDesc' | t }}
             </p>
 
             <div *ngIf="errorKey || errorMsg" class="inline-msg error">
               {{ errorKey ? (errorKey | t) : errorMsg }}
-              <div *ngIf="isNoChatError" style="margin-top: 16px;">
-                <ui-button variant="white" style="display: block; width: 100%;" (onClick)="contactSeller()">{{ 'book.contactSeller' | t }}</ui-button>
+              <div *ngIf="isNoChatError"  class="mt-4">
+                <ui-button variant="white"  block style="display: block;" (onClick)="contactSeller()">{{ 'book.contactSeller' | t }}</ui-button>
               </div>
             </div>
 
-            <ui-button style="margin-top: 24px; width: 100%;" (onClick)="placeOrder()" [disabled]="isSubmitting">
+            <ui-button  block class="mt-5" (onClick)="placeOrder()" [disabled]="isSubmitting">
               {{ (isSubmitting ? 'checkout.processing' : 'checkout.sendMeetupRequest') | t }}
             </ui-button>
           </div>
@@ -114,7 +114,7 @@ import { RegionLinkService } from '../../core/region-link.service';
       overflow: hidden;
     }
     .price {
-      font-size: 20px;
+      font-size: var(--text-xl);
       font-weight: 700;
       color: var(--accent);
       margin-top: 8px;

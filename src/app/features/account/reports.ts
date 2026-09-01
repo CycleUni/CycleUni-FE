@@ -103,7 +103,7 @@ export interface UserReportItem {
     }
     .section-heading {
       margin: 0;
-      font-size: 20px;
+      font-size: var(--text-xl);
       font-weight: 600;
     }
     .tabs {
@@ -116,7 +116,7 @@ export interface UserReportItem {
       background: none;
       border: none;
       padding: 8px 16px;
-      font-size: 15px;
+      font-size: var(--text-base);
       cursor: pointer;
       color: var(--muted);
       border-bottom: 2px solid transparent;
@@ -166,7 +166,7 @@ export interface UserReportItem {
       display: inline-block;
       padding: 2px 8px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: var(--text-xs);
       font-weight: 600;
       line-height: 1.4;
     }
@@ -182,18 +182,18 @@ export interface UserReportItem {
     }
     .report-reason {
       font-weight: 600;
-      font-size: 16px;
+      font-size: var(--text-md);
       color: var(--ink);
     }
     .report-date {
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--muted);
     }
     .status-badge {
       display: inline-block;
       padding: 4px 10px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: var(--text-xs);
       font-weight: 600;
       text-transform: capitalize;
     }
@@ -214,7 +214,7 @@ export interface UserReportItem {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .report-field {
       display: flex;

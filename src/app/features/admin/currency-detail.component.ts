@@ -55,8 +55,8 @@ import { UiButton } from '../../shared/ui/button.component';
       box-shadow: var(--shadow-card-lg);
     }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
-    .text-hint { font-size: 13px; color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: var(--text-base); font-weight: 600; }
+    .text-hint { font-size: var(--text-sm); color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
     .toggle-row {
       display: flex;
       gap: 24px;
@@ -66,7 +66,7 @@ import { UiButton } from '../../shared/ui/button.component';
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
+      font-size: var(--text-base);
       cursor: pointer;
     }
   `]

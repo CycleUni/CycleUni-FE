@@ -50,7 +50,7 @@ import { parseAdminError } from '../../core/admin-error.util';
     </div>
 
     <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()" uiFocusTrap="currencies-modal-title" (escape)="showCreateModal = false">
+      <div class="app-modal"  style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()" uiFocusTrap="currencies-modal-title" (escape)="showCreateModal = false">
         <h3 id="currencies-modal-title" class="app-modal-title">{{ 'admin.addCurrency' | t }}</h3>
         <div class="app-modal-body">
           <ui-input [label]="'admin.currencyCode' | t" [(ngModel)]="newItem.code"></ui-input>
@@ -65,7 +65,7 @@ import { parseAdminError } from '../../core/admin-error.util';
           
           <div *ngIf="errorMsg" class="inline-msg error">{{ errorMsg }}</div>
         </div>
-        <div class="app-modal-actions" style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
+        <div class="app-modal-actions"  style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px;">
           <ui-button variant="ghost" (onClick)="showCreateModal = false" [disabled]="saving">{{ 'common.cancel' | t }}</ui-button>
           <ui-button (onClick)="create()" [disabled]="saving">{{ (saving ? 'admin.saving' : 'admin.save') | t }}</ui-button>
         </div>
@@ -75,7 +75,7 @@ import { parseAdminError } from '../../core/admin-error.util';
   styles: [`
     .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .form-group label { display: block; margin-bottom: 8px; font-size: var(--text-base); font-weight: 600; }
   `]
 })
 export class AdminCurrenciesListComponent implements OnInit {

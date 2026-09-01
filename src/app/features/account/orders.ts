@@ -33,7 +33,7 @@ import { scrollBehavior } from '../../core/reduced-motion';
       </div>
 
       <ui-search-bar 
-        style="display: block; margin-bottom: 24px;"
+         class="mb-5" style="display: block;"
         [placeholder]="'acct.searchOrders' | t" 
         [value]="searchQuery" 
         (search)="onSearchQuery($event)">
@@ -121,7 +121,7 @@ import { scrollBehavior } from '../../core/reduced-motion';
       background: none;
       border: none;
       padding: 8px 16px;
-      font-size: 16px;
+      font-size: var(--text-md);
       cursor: pointer;
       color: var(--muted);
       border-bottom: 2px solid transparent;
@@ -143,12 +143,12 @@ import { scrollBehavior } from '../../core/reduced-motion';
     .order-id {
       font-weight: 500;
       color: var(--muted);
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .badge {
       padding: 3px 7px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: var(--text-xs);
       font-weight: 700;
     }
     .badge.pending { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
@@ -167,10 +167,10 @@ import { scrollBehavior } from '../../core/reduced-motion';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
+      font-size: var(--text-base);
     }
     .meetup-detail {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--accent) !important;
       font-weight: 500;
     }
@@ -186,19 +186,19 @@ import { scrollBehavior } from '../../core/reduced-motion';
     }
     .info h3 {
       margin: 0 0 8px;
-      font-size: 18px;
+      font-size: var(--text-lg);
       overflow-wrap: anywhere;
       word-break: break-word;
     }
     .info p {
       margin: 4px 0;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
       overflow-wrap: anywhere;
       word-break: break-word;
     }
     .price {
-      font-size: 20px;
+      font-size: var(--text-xl);
       font-weight: 700;
       color: var(--accent);
       flex-shrink: 0;

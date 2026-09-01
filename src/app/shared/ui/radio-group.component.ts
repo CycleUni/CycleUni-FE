@@ -45,7 +45,7 @@ let nextId = 0;
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--ink);
       cursor: pointer;
     }

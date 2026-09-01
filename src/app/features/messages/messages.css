@@ -45,12 +45,12 @@
     .empty-inbox h4 {
       margin: 0 0 8px;
       color: var(--ink);
-      font-size: 16px;
+      font-size: var(--text-md);
     }
     .empty-inbox p {
       margin: 0 0 20px;
       max-width: 280px;
-      font-size: 14px;
+      font-size: var(--text-base);
       line-height: 1.5;
     }
     .browse-btn {
@@ -59,7 +59,7 @@
       border-radius: 4px;
       background-color: var(--accent);
       color: var(--on-accent);
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       font-family: inherit;
       cursor: pointer;
@@ -154,7 +154,7 @@
     .listing-title {
       font-family: 'Noto Serif TC', serif;
       font-weight: 500;
-      font-size: 14px;
+      font-size: var(--text-base);
       overflow-wrap: anywhere;
       word-break: break-word;
       display: -webkit-box;
@@ -166,13 +166,13 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 12px;
+      font-size: var(--text-xs);
     }
     .price {
       font-family: 'Noto Serif TC', serif;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      font-size: 18px;
+      font-size: var(--text-lg);
       color: var(--accent);
     }
     .badge {
@@ -181,7 +181,7 @@
       background: var(--paper);
       border: 1px solid var(--line);
       color: var(--ink);
-      font-size: 11px;
+      font-size: var(--text-xs);
     }
     .course {
       color: var(--muted);
@@ -192,7 +192,7 @@
       border: 1px solid var(--line);
       border-radius: 4px;
       padding: 6px 12px;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--ink);
       cursor: pointer;
       flex-shrink: 0;
@@ -212,7 +212,7 @@
 
     .partner-info p {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--muted);
     }
     .partner-info a {
@@ -228,7 +228,7 @@
       color: var(--on-flag);
       padding: 4px 8px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: var(--text-xs);
       font-weight: 600;
       animation: pulse 1.5s infinite;
     }
@@ -250,7 +250,7 @@
       height: 32px;
       flex-shrink: 0;
       line-height: 32px;
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--muted);
     }
     .message-history {
@@ -288,7 +288,7 @@
       color: var(--ink);
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
-      font-size: 15px;
+      font-size: var(--text-base);
       line-height: 1.5;
       overflow-wrap: anywhere;
       word-break: break-word;
@@ -315,7 +315,7 @@
       border-radius: 50%;
       background-color: var(--paper);
       color: var(--muted);
-      font-size: 14px;
+      font-size: var(--text-base);
       cursor: pointer;
       opacity: 0;
       transition: opacity var(--motion-fast);
@@ -342,7 +342,7 @@
     }
 
     .msg-time {
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--muted);
       margin-top: 4px;
       text-align: right;
@@ -358,14 +358,14 @@
       margin-top: 4px;
     }
     .msg-failed-text {
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--danger);
     }
     .msg-retry-btn {
       background: none;
       border: none;
       padding: 0;
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--accent);
       text-decoration: underline;
       cursor: pointer;
@@ -562,7 +562,7 @@
       display: flex;
       align-items: center;
       padding: 0 8px;
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--muted);
     }
     .progress-bar {

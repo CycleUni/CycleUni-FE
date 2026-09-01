@@ -13,8 +13,8 @@ import { Lang } from '../../core/i18n';
   template: `
     <div class="prefs-selector-container" role="group" [attr.aria-label]="'nav.languageSwitcher' | t">
       <ui-dropdown
-        class="footer-lang-dropdown"
-        style="margin-right: 12px;"
+        class="footer-lang-dropdown mr-3"
+        
         [options]="regionOptions"
         [ngModel]="regionService.region()"
         (ngModelChange)="onRegionChange($event)"

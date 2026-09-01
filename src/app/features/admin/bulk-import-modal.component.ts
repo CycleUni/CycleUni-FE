@@ -36,7 +36,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
             </div>
             <div class="diff-section" *ngIf="diff.forbidden?.length">
               <h4>{{ 'admin.importForbiddenSection' | t }} ({{ diff.forbidden.length }})</h4>
-              <div class="hint" style="margin-bottom: 8px; color: var(--danger);">{{ 'admin.importForbiddenHint' | t }}</div>
+              <div class="hint mb-2"  style="color: var(--danger);">{{ 'admin.importForbiddenHint' | t }}</div>
               <div class="diff-box">
                 <pre class="old" *ngFor="let text of previewForbiddenItems">{{ text }}</pre>
               </div>
@@ -97,7 +97,7 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
   styles: [`
     .import-modal { width: 600px; max-width: 90%; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: var(--text-base); }
     .input { 
       width: 100%; 
       padding: 8px 12px; 
@@ -117,17 +117,17 @@ import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
     }
     .url-input-row { display: flex; gap: 8px; }
     ui-textarea.json-textarea { display: block; margin-bottom: 0; }
-    .loading-note { margin-top: 8px; font-size: 13px; color: var(--muted); text-align: right; }
-    .error { color: var(--danger); margin-bottom: 16px; font-size: 14px; }
-    .warning { color: var(--ink); margin-bottom: 16px; font-size: 14px; }
-    .hint { color: var(--ink); font-size: 13px; }
+    .loading-note { margin-top: 8px; font-size: var(--text-sm); color: var(--muted); text-align: right; }
+    .error { color: var(--danger); margin-bottom: 16px; font-size: var(--text-base); }
+    .warning { color: var(--ink); margin-bottom: 16px; font-size: var(--text-base); }
+    .hint { color: var(--ink); font-size: var(--text-sm); }
     .summary-section { margin-bottom: 16px; }
     .summary-section h4 { margin: 0 0 8px 0; color: var(--ink); }
     .summary-list { margin: 0 0 8px 0; padding-left: 18px; }
     
     .diff-section { margin-bottom: 24px; }
     .diff-section h4 { margin: 0 0 8px 0; color: var(--ink); }
-    .diff-box { background: var(--paper-warm); padding: 12px; border-radius: 4px; max-height: 200px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+    .diff-box { background: var(--paper-warm); padding: 12px; border-radius: 4px; max-height: 200px; overflow-y: auto; font-size: var(--text-xs); font-family: monospace; }
     .diff-item { border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 8px; }
     .diff-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .old { color: var(--danger); }

@@ -42,8 +42,8 @@ import { PricePipe } from '../../shared/pipes/price.pipe';
     .detail-card h2 { margin-top: 0; }
     .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
     .field { display: flex; flex-direction: column; gap: 2px; }
-    .field label { font-size: 12px; color: var(--muted); }
-    .field span { font-size: 14px; color: var(--ink); }
+    .field label { font-size: var(--text-xs); color: var(--muted); }
+    .field span { font-size: var(--text-base); color: var(--ink); }
   `]
 })
 export class AdminListingDetailComponent implements OnInit {
