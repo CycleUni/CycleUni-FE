@@ -7,16 +7,17 @@ import { AdminService } from '../../core/services/admin.service';
 import { RegionService } from '../../core/region.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { UiTextarea } from '../../shared/ui/textarea.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 
 @Component({
   selector: 'app-bulk-import-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, UiTextarea, TPipe, UiButton],
+  imports: [CommonModule, FormsModule, UiTextarea, TPipe, UiButton, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" *ngIf="show" (click)="close.emit()">
-      <div class="app-modal import-modal" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'admin.bulkImport' | t }}</h3>
+      <div class="app-modal import-modal" (click)="$event.stopPropagation()" uiFocusTrap="bulk-import-title" (escape)="close.emit()">
+        <h3 id="bulk-import-title" class="app-modal-title">{{ 'admin.bulkImport' | t }}</h3>
 
         <div class="app-modal-body">
           <div *ngIf="step === 'input'">

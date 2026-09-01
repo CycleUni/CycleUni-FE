@@ -5,6 +5,7 @@ import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminCurrency, Paginated } from '../../core/services/admin.service';
@@ -14,7 +15,7 @@ import { parseAdminError } from '../../core/admin-error.util';
 @Component({
   selector: 'app-admin-currencies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton, UiCheckbox],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton, UiCheckbox, UiFocusTrapDirective],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navCurrencies' | t }}</h2>
@@ -49,8 +50,8 @@ import { parseAdminError } from '../../core/admin-error.util';
     </div>
 
     <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'admin.addCurrency' | t }}</h3>
+      <div class="app-modal" style="width: 400px; max-width: 90%;" (click)="$event.stopPropagation()" uiFocusTrap="currencies-modal-title" (escape)="showCreateModal = false">
+        <h3 id="currencies-modal-title" class="app-modal-title">{{ 'admin.addCurrency' | t }}</h3>
         <div class="app-modal-body">
           <ui-input [label]="'admin.currencyCode' | t" [(ngModel)]="newItem.code"></ui-input>
           <ui-input [label]="'admin.currencySymbol' | t" [(ngModel)]="newItem.symbol"></ui-input>

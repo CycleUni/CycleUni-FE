@@ -5,6 +5,7 @@ import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
 import { UiInput } from '../../shared/ui/input.component';
 import { UiButton } from '../../shared/ui/button.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminRegion, Paginated, AdminCurrency } from '../../core/services/admin.service';
@@ -15,7 +16,7 @@ import { Lang } from '../../core/i18n';
 @Component({
   selector: 'app-admin-regions-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton, UiCheckbox],
+  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiPagination, UiDropdown, UiInput, UiButton, UiCheckbox, UiFocusTrapDirective],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navRegions' | t }}</h2>
@@ -49,8 +50,8 @@ import { Lang } from '../../core/i18n';
     </div>
 
     <div class="app-modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-      <div class="app-modal" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'admin.addRegion' | t }}</h3>
+      <div class="app-modal" style="width: 550px; max-width: 95%; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()" uiFocusTrap="regions-modal-title" (escape)="showCreateModal = false">
+        <h3 id="regions-modal-title" class="app-modal-title">{{ 'admin.addRegion' | t }}</h3>
         <div class="app-modal-body">
           <ui-input [label]="'admin.regionCode' | t" [(ngModel)]="newItem.code"></ui-input>
           <ui-input [label]="'admin.regionName' | t" [(ngModel)]="newItem.name"></ui-input>

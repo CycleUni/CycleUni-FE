@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { I18nService } from '../../core/i18n.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { UiButton } from './button.component';
-
-/** Everything that can hold focus inside the dialog, in document order. */
-const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+import { UiFocusTrapDirective } from './focus-trap.directive';
 
 /**
  * Host for `ConfirmService`. Mounted once in the app shell alongside the
@@ -19,28 +17,26 @@ const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tab
 @Component({
   selector: 'ui-confirm-dialog',
   standalone: true,
-  imports: [CommonModule, UiButton],
+  imports: [CommonModule, UiButton, UiFocusTrapDirective],
   template: `
     @if (confirms.current(); as request) {
       <div class="confirm-overlay" (click)="answer(false)">
         <div
-          #dialog
           class="confirm-dialog"
-          tabindex="-1"
-          role="dialog"
-          aria-modal="true"
-          [attr.aria-labelledby]="'confirm-title-' + request.id"
+          [uiFocusTrap]="'confirm-title-' + request.id"
           [attr.aria-describedby]="'confirm-message-' + request.id"
           (click)="$event.stopPropagation()"
-          (keydown)="onKeydown($event)"
+          (escape)="answer(false)"
         >
           <h2 class="confirm-title" [id]="'confirm-title-' + request.id">
             {{ request.title || defaultTitle }}
           </h2>
           <p class="confirm-message" [id]="'confirm-message-' + request.id">{{ request.message }}</p>
           <div class="confirm-actions">
-            <span #cancel class="confirm-action">
-              <ui-button variant="ghost" (onClick)="answer(false)">
+            <span class="confirm-action">
+              <!-- Cancel, not confirm: several call sites are destructive, and a dialog -->
+              <!-- that opens with "Delete" pre-focused turns a stray Enter into a deletion. -->
+              <ui-button variant="ghost" (onClick)="answer(false)" autofocus>
                 {{ request.cancelLabel || defaultCancelLabel }}
               </ui-button>
             </span>
@@ -114,36 +110,6 @@ export class UiConfirmDialog {
   readonly confirms = inject(ConfirmService);
   private readonly i18n = inject(I18nService);
 
-  /** Whatever had focus when the dialog opened, so it can be handed back. */
-  private returnFocusTo: HTMLElement | null = null;
-  private dialogEl: HTMLElement | null = null;
-
-  @ViewChild('cancel') cancelWrapper?: ElementRef<HTMLElement>;
-
-  /**
-   * A setter rather than a plain query: the dialog is created and destroyed
-   * by the `@if`, and both edges matter — entering focus on the way in and
-   * restoring it on the way out.
-   */
-  @ViewChild('dialog') set dialog(el: ElementRef<HTMLElement> | undefined) {
-    if (el) {
-      this.dialogEl = el.nativeElement;
-      const active = typeof document !== 'undefined' ? document.activeElement : null;
-      this.returnFocusTo = active instanceof HTMLElement ? active : null;
-      // One turn later: the projected <ui-button>s inside are not in the DOM
-      // yet at the moment this setter runs.
-      setTimeout(() => this.focusInitial());
-      return;
-    }
-
-    this.dialogEl = null;
-    const target = this.returnFocusTo;
-    this.returnFocusTo = null;
-    // The trigger is often a row action that the confirmed operation has just
-    // removed; focusing a detached node silently sends focus to <body>.
-    if (target && target.isConnected) target.focus();
-  }
-
   get defaultTitle(): string {
     return this.i18n.t('common.confirmTitle');
   }
@@ -159,43 +125,5 @@ export class UiConfirmDialog {
   answer(result: boolean): void {
     const request = this.confirms.current();
     if (request) this.confirms.settle(request.id, result);
-  }
-
-  onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.answer(false);
-      return;
-    }
-    if (event.key !== 'Tab') return;
-
-    const focusable = this.focusableElements();
-    if (focusable.length === 0) return;
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-
-    // Only the two edges need intercepting; everything between them is the
-    // browser's own Tab order and should stay that way.
-    if (event.shiftKey && (active === first || !this.dialogEl?.contains(active))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  private focusInitial(): void {
-    // Cancel, not confirm: several call sites are destructive, and a dialog
-    // that opens with "Delete" pre-focused turns a stray Enter into a deletion.
-    const cancel = this.cancelWrapper?.nativeElement.querySelector<HTMLElement>('button');
-    (cancel ?? this.focusableElements()[0] ?? this.dialogEl)?.focus();
-  }
-
-  private focusableElements(): HTMLElement[] {
-    if (!this.dialogEl) return [];
-    return Array.from(this.dialogEl.querySelectorAll<HTMLElement>(FOCUSABLE));
   }
 }

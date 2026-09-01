@@ -5,16 +5,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiInput } from '../../shared/ui/input.component';
+import { UiFocusTrapDirective } from '../../shared/ui/focus-trap.directive';
 import { OrderService } from '../../core/services/order.service';
 
 @Component({
   selector: 'app-review-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe, UiCheckbox],
+  imports: [CommonModule, FormsModule, UiButton, UiInput, TPipe, UiCheckbox, UiFocusTrapDirective],
   template: `
     <div class="app-modal-overlay" (click)="close()">
-      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()">
-        <h3 class="app-modal-title">{{ 'order.reviewTitle' | t }}</h3>
+      <div class="app-modal" style="width: 100%; max-width: 400px;" (click)="$event.stopPropagation()" uiFocusTrap="review-modal-title" (escape)="close()">
+        <h3 id="review-modal-title" class="app-modal-title">{{ 'order.reviewTitle' | t }}</h3>
         
         <div class="app-modal-body">
           <p style="margin-bottom: 16px;" class="muted">
