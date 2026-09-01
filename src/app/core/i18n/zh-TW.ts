@@ -508,7 +508,6 @@ export const zhTW: Record<string, string> = {
   'order.notify.cancelled_by_seller': '賣家取消了訂單',
   'order.notify.seller_rejected': '賣家拒絕面交，訂單已取消',
 
-  'order.loading': '載入中…',
   'order.exclusiveConflict': '你已經成功約定此書的面交。你有其他相同書名的等待中請求，建議將其取消。',
   'order.cancelOtherPending': '取消其他請求',
   'order.meetupTime': '時間',
@@ -560,7 +559,6 @@ export const zhTW: Record<string, string> = {
   'seller.joined': '加入時間：',
   'seller.listingsTitle': '{name} 的所有商品',
   'seller.noListings': '這個賣家目前沒有上架任何商品。',
-  'seller.loading': '載入商品中…',
   'seller.notFound': '找不到該賣家',
   'seller.notFoundDesc': '請確認網址是否正確，或是該賣家已被移除。',
   'seller.verifiedBadge': '已驗證校園信箱',

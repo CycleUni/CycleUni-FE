@@ -3,6 +3,7 @@ import { UiButton } from '../../shared/ui/button.component';
 import { parseAdminError } from '../../core/admin-error.util';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiCheckbox } from '../../shared/ui/checkbox.component';
 import { UiDropdown } from '../../shared/ui/dropdown.component';
@@ -21,7 +22,7 @@ import { RegionService } from '../../core/region.service';
 @Component({
   selector: 'app-admin-ads-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox, UiDropdown, UiButton],
+  imports: [CommonModule, UiSkeleton, RouterModule, FormsModule, TPipe, UiSearchBarComponent, UiPagination, UiCheckbox, UiDropdown, UiButton],
   template: `
     <div class="header-actions">
       <h2>{{ 'admin.navAds' | t }}</h2>
@@ -80,9 +81,7 @@ import { RegionService } from '../../core/region.service';
       <ui-pagination [total]="total" [pageSize]="pageSize" [currentPage]="currentPage" (pageChange)="loadPage($event)"></ui-pagination>
     </div>
 
-    <div class="empty-note" *ngIf="loading">
-      <p>{{ 'common.loading' | t }}</p>
-    </div>
+    <ui-skeleton *ngIf="loading" variant="table" [count]="5"></ui-skeleton>
 
     <div class="app-modal-overlay" *ngIf="showModal">
       <div class="app-modal">

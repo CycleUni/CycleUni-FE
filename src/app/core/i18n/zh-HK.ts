@@ -508,7 +508,6 @@ export const zhHK: Record<string, string> = {
   'order.notify.cancelled_by_seller': '賣家取消了訂單',
   'order.notify.seller_rejected': '賣家拒絕面交，訂單已取消',
 
-  'order.loading': '載入中…',
   'order.exclusiveConflict': '你已經約好呢本書嘅面交。仲有其他同名書嘅請求等緊，建議取消佢哋。',
   'order.cancelOtherPending': '取消其他請求',
   'order.meetupTime': '時間',
@@ -560,7 +559,6 @@ export const zhHK: Record<string, string> = {
   'seller.joined': '加入時間：',
   'seller.listingsTitle': '{name} 嘅所有商品',
   'seller.noListings': '呢位賣家暫時未上架任何商品。',
-  'seller.loading': '載入商品中…',
   'seller.notFound': '搵唔到呢位賣家',
   'seller.notFoundDesc': '請確認網址是否正確，或是該賣家已被移除。',
   'seller.verifiedBadge': '已驗證校園電郵',

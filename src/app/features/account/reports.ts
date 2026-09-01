@@ -5,6 +5,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AccountService, ChatReportItem, ListingReportItem } from '../../core/services/account.service';
 import { TPipe } from '../../core/i18n.service';
+import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiEmpty } from '../../shared/ui/empty.component';
 import { DateTimeFormatPipe } from '../../shared/pipes/datetime-format.pipe';
@@ -29,7 +30,7 @@ export interface UserReportItem {
 @Component({
   selector: 'app-account-reports',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiPagination, UiEmpty, DateTimeFormatPipe],
+  imports: [CommonModule, RouterModule, TPipe, UiSkeleton, UiPagination, UiEmpty, DateTimeFormatPipe],
   template: `
     <div class="section-head-row">
       <h2 class="section-heading">{{ 'acct.tabReports' | t }}</h2>
@@ -47,9 +48,7 @@ export interface UserReportItem {
       </button>
     </div>
 
-    <div *ngIf="isLoading" class="loading-state">
-      {{ 'order.loading' | t }}
-    </div>
+    <ui-skeleton *ngIf="isLoading" variant="report" [count]="3"></ui-skeleton>
 
     <div *ngIf="!isLoading">
       <ui-empty *ngIf="reports.length === 0" [message]="'acct.noReports' | t"></ui-empty>
