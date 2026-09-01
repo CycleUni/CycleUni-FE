@@ -163,6 +163,35 @@ describe('i18n translation keys (en.ts / zh-TW.ts / zh-HK.ts)', () => {
     expect(undeclared).toEqual([]);
   });
 
+  it('should declare every error code the backend can return', () => {
+    // The two checks above cover declared-but-unused and rendered-but-undeclared,
+    // both of which only look at this repo. The third direction is the one that
+    // actually reached users: the backend answers with {"error": {"code": "..."}}
+    // and the frontend feeds that code straight to t(), which echoes an unknown
+    // key back — so a code no locale declared was rendered as
+    // `listing.errFileTooLarge` where a sentence belonged. 21 of the backend's
+    // codes were in that state at once.
+    if (!fs.existsSync(BE_DIR)) return;
+
+    const emitted = new Map<string, string>();
+    const codePattern = /"code":\s*"([a-zA-Z0-9_]+\.[a-zA-Z0-9._]+)"/g;
+    for (const file of walk(BE_DIR, ['.py'], ['migrations', '.venv', 'tests', 'node_modules'])) {
+      const source = fs.readFileSync(file, 'utf-8');
+      let match: RegExpExecArray | null;
+      codePattern.lastIndex = 0;
+      while ((match = codePattern.exec(source)) !== null) {
+        if (!emitted.has(match[1])) emitted.set(match[1], path.relative(BE_DIR, file));
+      }
+    }
+
+    const undeclared = [...emitted.entries()]
+      .filter(([code]) => !(code in en))
+      .map(([code, file]) => `${code} (${file})`)
+      .sort();
+
+    expect(undeclared).toEqual([]);
+  });
+
   it('should resolve the image-preview token CFEdgeChat writes', () => {
     const key = IMAGE_PREVIEW_TOKEN.replace(/^\[SYSTEM:/, '').replace(/\]$/, '');
 
