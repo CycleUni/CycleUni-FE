@@ -151,7 +151,7 @@ const CONDITION_NONE = 'none';
 
           <!-- Results loaded successfully -->
           <ng-container *ngIf="!loading && !fetchError">
-            <div *ngIf="filteredResults.length > 0" class="discover-grid">
+            <div *ngIf="filteredResults.length > 0" class="discover-grid has-feature">
               <ui-book-tile
                 *ngFor="let item of filteredResults; let i = index"
                 [class.feature-tile]="i === 0"
@@ -251,18 +251,6 @@ const CONDITION_NONE = 'none';
     .results { flex: 1; }
     .scoped-count { margin: -16px 0 24px; font-size: 14px; color: var(--muted); }
 
-    .discover-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 32px 24px;
-    }
-    .discover-grid ui-book-tile {
-      display: block;
-    }
-    .discover-grid ui-book-tile.feature-tile {
-      grid-column: span 2;
-      grid-row: span 2;
-    }
     .tile-actions-inner { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 8px; }
     .local-badge { display:inline-block; padding:4px 8px; font-size:12px; font-weight:500; color:var(--danger); background-color:var(--danger-light); border-radius:4px; }
 
@@ -272,7 +260,6 @@ const CONDITION_NONE = 'none';
 
     @media (max-width: 1024px) {
       .header-inner { flex-wrap:wrap; } .search-page-input-wrap { flex:1; width:auto; min-width:200px; }
-      .discover-grid { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 768px) {
       /* Stays a row. With flex-direction:column the main axis turns vertical,
@@ -298,11 +285,6 @@ const CONDITION_NONE = 'none';
       .sidebar { width:100%; display:flex; flex-wrap:wrap; gap:0 24px; border-bottom:1px solid var(--line); margin-bottom:24px; }
       .sidebar.mobile-collapsed { display:none; }
       .filter-group { flex:1 1 40%; min-width:150px; margin-bottom:16px; padding-bottom:0; border-bottom:none; }
-      .discover-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
-      /* Same reasoning as recent-listings.component.ts: at 2 columns the
-         feature tile spanning both would fill the whole row width and
-         dominate the screen, so it falls back to a regular-sized tile. */
-      .discover-grid ui-book-tile.feature-tile { grid-column: span 1; grid-row: span 1; }
     }
   `]
 })
