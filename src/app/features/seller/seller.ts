@@ -6,6 +6,7 @@ import { RegionService } from '../../core/region.service';
 
 import { AccountService } from '../../core/services/account.service';
 import { ListingService } from '../../core/services/listing.service';
+import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { UiListingRow } from '../../shared/ui/listing-row.component';
 import { UiPagination } from '../../shared/ui/pagination.component';
 import { UiBreadcrumb, BreadcrumbItem } from '../../shared/ui/breadcrumb.component';
@@ -17,7 +18,7 @@ import { isUserVerifiedIn } from '../../core/verification';
 @Component({
   selector: 'app-seller-page',
   standalone: true,
-  imports: [CommonModule, UiListingRow, UiPagination, UiBreadcrumb, TPipe],
+  imports: [CommonModule, UiSkeleton, UiListingRow, UiPagination, UiBreadcrumb, TPipe],
   template: `
     <div class="container container--narrow seller-page" *ngIf="seller">
       <ui-breadcrumb [items]="breadcrumbItems"></ui-breadcrumb>
@@ -72,9 +73,7 @@ import { isUserVerifiedIn } from '../../core/verification';
           <p>{{ 'seller.noListings' | t }}</p>
         </div>
         
-        <div class="loading" *ngIf="loadingListings">
-          {{ 'seller.loading' | t }}
-        </div>
+        <ui-skeleton *ngIf="loadingListings" [count]="5"></ui-skeleton>
       </div>
     </div>
     

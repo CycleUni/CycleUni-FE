@@ -509,7 +509,6 @@ export const en: Record<string, string> = {
   'order.notify.cancelled_by_seller': 'Seller cancelled the order.',
   'order.notify.seller_rejected': 'Seller rejected the meetup. Order cancelled.',
 
-  'order.loading': 'Loading...',
   'order.exclusiveConflict': 'You already have a confirmed meetup for this book. You have other pending requests for the same title — consider cancelling them.',
   'order.cancelOtherPending': 'Cancel other requests',
   'order.meetupTime': 'Time',
@@ -558,7 +557,6 @@ export const en: Record<string, string> = {
   'seller.joined': 'Joined: ',
   'seller.listingsTitle': '{name}\'s Listings',
   'seller.noListings': 'This seller has no active listings.',
-  'seller.loading': 'Loading listings...',
   'seller.notFound': 'Seller Not Found',
   'seller.notFoundDesc': 'Please check the URL or the seller has been removed.',
   'seller.verifiedBadge': 'Verified school email',

@@ -5,6 +5,7 @@ import { OrderService, Order } from '../../core/services/order.service';
 import { AuthStore } from '../../core/auth.store';
 import { TPipe, I18nService } from '../../core/i18n.service';
 import { AccountService } from '../../core/services/account.service';
+import { UiSkeleton } from '../../shared/ui/skeleton.component';
 import { UiButton } from '../../shared/ui/button.component';
 import { UiEmpty } from '../../shared/ui/empty.component';
 import { UiSearchBarComponent } from '../../shared/ui/search-bar.component';
@@ -22,7 +23,7 @@ import { scrollBehavior } from '../../core/reduced-motion';
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, TPipe, UiButton, UiEmpty, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, PricePipe, UiSearchBarComponent],
+  imports: [CommonModule, RouterModule, UiSkeleton, TPipe, UiButton, UiEmpty, ReviewModalComponent, MeetupModalComponent, DateTimeFormatPipe, PricePipe, UiSearchBarComponent],
   template: `
     <h2 class="section-heading">{{ 'acct.myOrders' | t }}</h2>
 
@@ -38,7 +39,7 @@ import { scrollBehavior } from '../../core/reduced-motion';
         (search)="onSearchQuery($event)">
       </ui-search-bar>
 
-      <div *ngIf="isLoading" style="padding: 24px;">{{ 'order.loading' | t }}</div>
+      <ui-skeleton *ngIf="isLoading" variant="order" [count]="3"></ui-skeleton>
 
       <div *ngIf="!isLoading">
         <div *ngIf="activeTab === 'buying'">

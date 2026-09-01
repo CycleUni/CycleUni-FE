@@ -48,7 +48,62 @@ import { TPipe } from '../../core/i18n.service';
           </div>
         </ng-container>
 
+
+        <ng-container *ngSwitchCase="'discover-grid'">
+          <div class="s-tile" *ngFor="let i of slots" [class.feature-tile]="i === 0">
+            <div class="s-tile-cover pulse"></div>
+            <div class="s-bar pulse w-80"></div>
+            <div class="s-bar pulse w-50"></div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'report'">
+          <div class="s-report-card" *ngFor="let i of slots">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <div class="s-bar pulse w-40"></div>
+              <div class="s-bar pulse w-15"></div>
+            </div>
+            <div class="s-bar pulse w-60 h-24"></div>
+            <div class="s-bar pulse w-80" style="margin-top: 12px;"></div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'order'">
+          <div class="s-order-card" *ngFor="let i of slots">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="s-bar pulse w-60 h-24"></div>
+                <div class="s-bar pulse w-40"></div>
+                <div class="s-bar pulse w-40"></div>
+              </div>
+              <div class="s-bar pulse w-15 h-24"></div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'table'">
+          <div class="s-table">
+            <div class="s-table-header">
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+            </div>
+            <div class="s-table-row" *ngFor="let i of slots">
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+              <div class="s-bar pulse w-15"></div>
+            </div>
+          </div>
+        </ng-container>
+
         <ng-container *ngSwitchDefault>
+
           <div class="skeleton-row" *ngFor="let i of slots">
             <div class="s-cover pulse"></div>
             <div class="s-info">
@@ -146,7 +201,72 @@ import { TPipe } from '../../core/i18n.service';
     }
     .s-card:first-child { border-left: none; }
 
+
+    /* discover-grid: mirrors search.ts .discover-grid */
+    .v-discover-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px 24px;
+    }
+    .v-discover-grid .feature-tile {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    @media (max-width: 1024px) {
+      .v-discover-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .v-discover-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
+      .v-discover-grid .feature-tile { grid-column: span 1; grid-row: span 1; }
+    }
+
+    /* report: mirrors .report-card in reports.ts */
+    .v-report {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .s-report-card {
+      background: var(--surface-card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+
+    /* order: mirrors .order-card in orders.ts */
+    .v-order {
+      display: flex;
+      flex-direction: column;
+    }
+    .s-order-card {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* table: mirrors .admin-table in admin pages */
+    .s-table {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .s-table-header {
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+    }
+    .s-table-row {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+    }
+    .s-table-row:last-child {
+      border-bottom: none;
+    }
+
     @keyframes pulse {
+
       0% { opacity: 0.75; }
       50% { opacity: 0.5; }
       100% { opacity: 0.75; }
@@ -155,7 +275,7 @@ import { TPipe } from '../../core/i18n.service';
 })
 export class UiSkeleton {
   @Input() count: number = 3;
-  @Input() variant: 'list' | 'tile-grid' | 'row' | 'card-row' = 'list';
+  @Input() variant: 'list' | 'tile-grid' | 'row' | 'card-row' | 'discover-grid' | 'report' | 'order' | 'table' = 'list';
 
   get slots(): number[] {
     return Array.from({ length: Math.max(0, this.count) }, (_, i) => i);

@@ -146,7 +146,7 @@ const CONDITION_NONE = 'none';
 
           <!-- Loading state with animation -->
           <ng-container *ngIf="loading">
-            <ui-skeleton [count]="4"></ui-skeleton>
+            <ui-skeleton variant="discover-grid" [count]="8"></ui-skeleton>
           </ng-container>
 
           <!-- Results loaded successfully -->
