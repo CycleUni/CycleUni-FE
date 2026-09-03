@@ -20,16 +20,24 @@
                different questions ("how is my trading going" vs "what is mine"),
                and the labels give the eye somewhere to land. -->
           <nav class="dashboard-nav">
+            <!-- The links sit in their own element so the title can hold a
+                 line of its own above them on a phone while they stay in one
+                 row. Without it the title's full-width basis resolves against
+                 the nav, which forces each group onto its own row instead. -->
             <div class="nav-group" role="group" aria-labelledby="acct-nav-trade">
               <h4 class="nav-group-title" id="acct-nav-trade">{{ 'acct.navGroupTrade' | t }}</h4>
-              <a regionLink="/account/listings" routerLinkActive="active">{{ 'acct.tabListings' | t }}</a>
-              <a regionLink="/account/orders" routerLinkActive="active">{{ 'acct.myOrders' | t }}<span class="unread-dot" *ngIf="hasUnreadOrders"></span></a>
+              <div class="nav-links">
+                <a regionLink="/account/listings" routerLinkActive="active">{{ 'acct.tabListings' | t }}</a>
+                <a regionLink="/account/orders" routerLinkActive="active">{{ 'acct.myOrders' | t }}<span class="unread-dot" *ngIf="hasUnreadOrders"></span></a>
+              </div>
             </div>
             <div class="nav-group" role="group" aria-labelledby="acct-nav-mine">
               <h4 class="nav-group-title" id="acct-nav-mine">{{ 'acct.navGroupMine' | t }}</h4>
-              <a regionLink="/account/subscriptions" routerLinkActive="active">{{ 'acct.tabSubs' | t }}</a>
-              <a regionLink="/account/reports" routerLinkActive="active">{{ 'acct.tabReports' | t }}</a>
-              <a regionLink="/account/settings" routerLinkActive="active">{{ 'acct.tabSettings' | t }}</a>
+              <div class="nav-links">
+                <a regionLink="/account/subscriptions" routerLinkActive="active">{{ 'acct.tabSubs' | t }}</a>
+                <a regionLink="/account/reports" routerLinkActive="active">{{ 'acct.tabReports' | t }}</a>
+                <a regionLink="/account/settings" routerLinkActive="active">{{ 'acct.tabSettings' | t }}</a>
+              </div>
             </div>
           </nav>
         </aside>
