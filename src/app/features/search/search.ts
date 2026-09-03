@@ -132,6 +132,7 @@ const CONDITION_NONE = 'none';
           <!-- 保留在結果欄而不是側欄：這不是使用者選出來的條件，是後端自動降級
                後的通知，跟哪個篩選器都無關。 -->
           <p class="fallback-hint" *ngIf="googleUnavailable">{{ 'search.googleUnavailable' | t }}</p>
+          <p class="fallback-hint" *ngIf="resultsTruncated">{{ 'search.resultsTruncated' | t }}</p>
           <h2 class="section-heading" *ngIf="activeQuery">{{ 'search.resultsFor' | t:{q: activeQuery} }}</h2>
           <h2 class="section-heading" *ngIf="!activeQuery && category">{{ 'search.categoryResults' | t }}</h2>
           <p class="scoped-count" *ngIf="(activeQuery || category) && !loading && !fetchError && filteredResults.length > 0">
@@ -292,6 +293,9 @@ export class Search implements OnInit {
   searchQuery = ''; activeQuery = ''; category = ''; course = '';
   engine: 'googlebooks' | 'openlibrary' | 'isbnnet' = 'googlebooks';
   googleUnavailable = false;
+  /** Browsing a category reads the local catalogue up to a cap; past it the
+   *  pages simply stop, so say so rather than let the list end unexplained. */
+  resultsTruncated = false;
   loading = true; fetchError = false;
   filtersOpen = false;
   results: any[] = []; categories: any[] = []; courses: CourseFacet[] = []; currentSchool = ''; currentPage = 1; totalCount = 0;
@@ -571,6 +575,7 @@ export class Search implements OnInit {
         this.results = data.results || data;
         this.totalCount = data.count || this.results.length;
         this.googleUnavailable = !!data.google_unavailable;
+        this.resultsTruncated = !!data.results_truncated;
         this.loading = false;
         this.fetchError = false;
         if (this.activeQuery || this.category || this.course) {

@@ -207,9 +207,14 @@ export class Messages implements OnInit, AfterViewChecked, OnDestroy {
         msg.failed = true;
         this.cdr.markForCheck();
       }
-      // Check for system message forbidden error from CFEdgeChat DO
+      // Refusals from the CFEdgeChat DO that the user can act on. Anything
+      // else has already shown itself as the failed marker on the bubble.
       if (errMsg && errMsg.includes('FORBIDDEN_SYSTEM_MESSAGE')) {
         this.toast.error(this.i18n.t('msg.errSystemMessageForbidden'));
+      } else if (errMsg && errMsg.includes('IMAGE_URL_NOT_ALLOWED')) {
+        // The room only accepts image URLs on the configured upload host, so
+        // this is a red bubble with no explanation whatsoever otherwise.
+        this.toast.error(this.i18n.t('msg.errImageUrlNotAllowed'));
       }
     });
 

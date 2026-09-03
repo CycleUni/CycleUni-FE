@@ -113,6 +113,7 @@ export const en: Record<string, string> = {
   'search.courseTitle': 'Course',
   'search.allCourses': 'All Courses',
   'search.googleUnavailable': 'Google is temporarily unavailable — showing Open Library results instead.',
+  'search.resultsTruncated': 'Showing the newest matches only — add a filter to narrow this down.',
   'search.resultsFor': 'Search results for "{q}"',
   'search.categoryResults': 'Category search results',
   'search.foundCountScoped': 'Found {n} matching books at {school}',
@@ -534,6 +535,7 @@ export const en: Record<string, string> = {
 
   // Message errors
   'msg.errSystemMessageForbidden': 'Cannot send system message format.',
+  'msg.errImageUrlNotAllowed': 'That image could not be sent — only images uploaded here can be shared in chat.',
   'msg.chatOpenFailed': 'Failed to open conversation. Please try again.',
   'msg.orderActionFailed': 'Action failed: {msg}',
   'msg.reportConversation': 'Report conversation',

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { I18nService, TPipe } from '../../core/i18n.service';
+import { translateApiError } from '../../core/api-error.util';
 import { UiButton } from './button.component';
 import { UiRadioGroup } from './radio-group.component';
 import { UiTextarea } from './textarea.component';
@@ -100,11 +101,13 @@ export class UiReportModal implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err: any) => {
-        this.error = err?.error?.error?.code
-          ? this.i18n.t(err.error.error.code)
-          : err?.error?.error?.detail
-            ? err?.error?.error?.detail
-            : this.i18n.t('msg.reportError');
+        // A serializer raise answers {"reported_party": ["<code>"]}, not the
+        // {"error": {"code"}} contract this used to read — so the check that
+        // the reported party is really the other participant landed here as
+        // the generic "could not report" message.
+        this.error = translateApiError(err, this.i18n)
+          ?? err?.error?.error?.detail
+          ?? this.i18n.t('msg.reportError');
         this.submitting = false;
         this.cdr.markForCheck();
       },

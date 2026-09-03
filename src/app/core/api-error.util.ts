@@ -15,6 +15,13 @@ import { I18nService } from './i18n.service';
  * into the UI.
  */
 export function parseApiError(err: any, i18n: I18nService, fallbackKey: string): string {
+  return translateApiError(err, i18n) ?? i18n.t(fallbackKey);
+}
+
+/** The same lookup, but null rather than a fallback when the backend said
+ *  nothing this locale can render — for the callers that have prose of their
+ *  own to fall back to before the generic sentence. */
+export function translateApiError(err: any, i18n: I18nService): string | null {
   const direct = i18n.tOrNull(err?.error?.error?.code);
   if (direct) return direct;
 
@@ -26,5 +33,5 @@ export function parseApiError(err: any, i18n: I18nService, fallbackKey: string):
     }
   }
 
-  return i18n.t(fallbackKey);
+  return null;
 }

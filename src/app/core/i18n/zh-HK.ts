@@ -110,6 +110,7 @@ export const zhHK: Record<string, string> = {
   'search.courseTitle': '課程篩選',
   'search.allCourses': '全部課程',
   'search.googleUnavailable': 'Google 暫時無法使用，已改用 Open Library 的搜尋結果。',
+  'search.resultsTruncated': '只顯示最新的部分結果，請加上篩選條件縮小範圍。',
   'search.resultsFor': '「{q}」的搜尋結果',
   'search.categoryResults': '學院搜尋結果',
   'search.foundCountScoped': '喺 {school} 搵到 {n} 本啱嘅書',
@@ -533,6 +534,7 @@ export const zhHK: Record<string, string> = {
 
   // Message errors
   'msg.errSystemMessageForbidden': '無法發送系統訊息格式。',
+  'msg.errImageUrlNotAllowed': '無法傳送呢張圖片，聊天室只可以分享喺呢度上載嘅圖片。',
   'msg.chatOpenFailed': '開啟對話失敗，請再試一次。',
   'msg.orderActionFailed': '操作失敗：{msg}',
   'msg.reportConversation': '舉報對話',

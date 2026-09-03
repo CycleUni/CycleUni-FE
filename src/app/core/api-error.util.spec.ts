@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseApiError } from './api-error.util';
+import { parseApiError, translateApiError } from './api-error.util';
 import { en } from './i18n/en';
 
 // Same double as admin-error.util.spec: t() echoes an unknown key, tOrNull()
@@ -39,5 +39,22 @@ describe('parseApiError', () => {
   it('survives a body that is not an object', () => {
     expect(parseApiError({ error: 'Bad Gateway' }, i18n, 'acct.updateFailed')).toBe(en['acct.updateFailed']);
     expect(parseApiError({ error: ['nope'] }, i18n, 'acct.updateFailed')).toBe(en['acct.updateFailed']);
+  });
+});
+
+describe('translateApiError', () => {
+  it('reads a serializer raise on a nested field', () => {
+    // The chat-report check that the reported party is really the other
+    // participant answers {"reported_party": [...]}, which the report modal
+    // was not reading at all.
+    expect(translateApiError({ error: { reported_party: ['moderation.errInvalidReportedParty'] } }, i18n))
+      .toBe(en['moderation.errInvalidReportedParty']);
+  });
+
+  it('answers null so the caller can keep its own fallback', () => {
+    // The report modal still prefers DRF's `detail` prose (a throttle notice,
+    // say) over its generic sentence, which a fallback key would swallow.
+    expect(translateApiError({ error: { detail: 'Request was throttled.' } }, i18n)).toBeNull();
+    expect(translateApiError({}, i18n)).toBeNull();
   });
 });

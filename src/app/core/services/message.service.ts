@@ -281,7 +281,12 @@ export class MessageService {
           // either way this client should stop showing the message.
           this.realTimeDeletions$.next(data.id);
         } else if (data.type === 'error') {
-          this.sendErrors$.next(data.message || 'Failed to send message');
+          // The stable code first, the English sentence only as a fallback:
+          // messages.ts has to recognise a refusal to explain it, and the
+          // sentence is whatever the room happens to say today. Its
+          // FORBIDDEN_SYSTEM_MESSAGE check has in fact never matched, because
+          // only `message` was ever forwarded here.
+          this.sendErrors$.next(data.code || data.message || 'Failed to send message');
         }
       } catch (e) {
         devError('Error parsing EdgeChat message', e);
