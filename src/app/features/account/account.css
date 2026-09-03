@@ -312,17 +312,23 @@
          Putting the titles inline instead cost the row 78px — a quarter of the
          width — for two words that are not destinations.
 
-         Above them, the links keep a single row and the titles caption it, at
-         64px against the 95px an inline arrangement needed. Below, the groups
-         wrap one per row on their own, which is why there is no breakpoint
-         here: each group is already a column, so the second drops beneath the
-         first exactly when it stops fitting. Measured with the real labels,
-         that happens between 360 and 375px. */
+         The links keep one row at every width the app is used at, and the
+         titles caption it from above: 64px, against the 95px an inline
+         arrangement needed, and a second row of links would cost another 46.
+
+         Two things buy that row. It runs to the screen edges, which a tab
+         strip reads as anyway, and which is worth 32px — the difference
+         between fitting and not at 320px. And the padding scales with the
+         viewport rather than sitting at a fixed 8px. Measured with the real
+         labels, the five links need 260px of text; the clamp lands the row at
+         311px inside 320 on the narrowest phone and 326 inside 414 on a large
+         one, so it fits throughout without a breakpoint deciding where. */
       .dashboard-nav {
         flex-direction: row;
-        flex-wrap: wrap;
         border-bottom: 1px solid var(--line);
         gap: 0;
+        margin-inline: calc(var(--space-4) * -1);
+        padding-inline: var(--space-1);
       }
       .nav-group {
         flex-direction: column;
@@ -344,7 +350,8 @@
         display: flex;
         align-items: center;
         min-height: var(--tap-min);
-        padding: 12px var(--space-2);
+        padding-block: 12px;
+        padding-inline: clamp(4px, 1.2vw, var(--space-2));
         font-size: var(--text-sm);
       }
       .dashboard-nav a.active {
