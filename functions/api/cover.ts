@@ -1,8 +1,49 @@
-const THRESHOLDS: Record<number, number> = {
-  1: 5000,
-  2: 13000,
-  3: 20000,
-};
+/**
+ * A floor for degenerate responses, not a guess at whether art exists.
+ *
+ * This replaces per-zoom thresholds of 5,000 / 13,000 / 20,000 bytes, which
+ * were trying to answer "is there a cover here?" by weight and got it wrong in
+ * both directions. Measured across 13 volumes: a real cover at zoom 2 came in
+ * at 12,934 bytes and was rejected for being 66 bytes light, so the page fell
+ * back to the zoom 1 image; another at 10,626 was rejected at zoom 2 and its
+ * zoom 1 at 4,786 was rejected too, leaving that book with no cover at all.
+ * Whether art exists is now cache-control's answer (see below).
+ *
+ * What weight still catches is Google occasionally returning a blank sliver —
+ * one volume answers zoom 2 with a 300x48 white bar of 1,026 bytes, marked
+ * durable. The smallest real cover measured was 4,786 bytes and the largest
+ * sliver 1,491, so the floor sits between them with room on both sides.
+ */
+const MIN_IMAGE_BYTES = 3000;
+
+/**
+ * Google serves its "image not available" card with `max-age=30`, and real
+ * cover art with `max-age=86400`. It is saying the response is not durable,
+ * which is exactly the question here, so that is what we read.
+ *
+ * Byte size cannot answer it. The placeholder rendered at zoom 2 is 15,567
+ * bytes — larger than that zoom's threshold, so it was accepted, and the
+ * cascade stopped before reaching a zoom that had the real jacket. Raising the
+ * threshold past it is not available either: of ten real covers measured at
+ * zoom 2, two are smaller than the placeholder (10,626 and 12,934 bytes).
+ * Content type does not separate them either — the placeholder is a PNG, but
+ * so is a real line-art cover measured at 86,631 bytes.
+ *
+ * Checked against 39 responses (13 volumes x 3 zooms): every placeholder said
+ * 30, every real cover 86400, including the volume that has real art at zoom 1
+ * and the placeholder above it. The cutoff sits between the two by an order of
+ * magnitude on either side, so a change to Google's exact numbers has room
+ * before it reverses the decision.
+ */
+const DURABLE_MAX_AGE_SECONDS = 3600;
+
+function isPlaceholderResponse(response: Response): boolean {
+  const cacheControl = response.headers.get('cache-control');
+  if (!cacheControl) return false;
+  const match = /max-age\s*=\s*(\d+)/i.exec(cacheControl);
+  if (!match) return false;
+  return parseInt(match[1], 10) < DURABLE_MAX_AGE_SECONDS;
+}
 
 // Cache-Control on the returned Response only governs the *browser's* cache.
 // Cloudflare's edge/CDN cache does not automatically store dynamic
@@ -117,13 +158,18 @@ export const onRequestGet: PagesFunction = async (context) => {
   }
 
   for (let currentZoom = initialZoom; currentZoom >= 1; currentZoom--) {
-    const threshold = THRESHOLDS[currentZoom] ?? 5000;
     const targetUrl = new URL(srcUrl.toString());
     targetUrl.searchParams.set('zoom', currentZoom.toString());
 
     try {
       const upstreamResponse = await fetch(targetUrl.toString());
       if (!upstreamResponse.ok) {
+        continue;
+      }
+
+      // Before measuring anything: a 200 here can still be the "image not
+      // available" card, and it can outweigh any size floor.
+      if (isPlaceholderResponse(upstreamResponse)) {
         continue;
       }
 
@@ -143,12 +189,12 @@ export const onRequestGet: PagesFunction = async (context) => {
         byteLength = bodyBuffer.byteLength;
       }
 
-      if (byteLength >= threshold) {
+      if (byteLength >= MIN_IMAGE_BYTES) {
         if (!bodyBuffer) {
           bodyBuffer = await upstreamResponse.arrayBuffer();
         }
 
-        if (bodyBuffer.byteLength < threshold) {
+        if (bodyBuffer.byteLength < MIN_IMAGE_BYTES) {
           continue;
         }
 
