@@ -376,12 +376,23 @@ export class Search implements OnInit {
     return this.courseOptions.map(o => ({ label: o.label, value: o.value, count: o.count, selected: o.value === this.course }));
   }
 
+  // Template getters run on every change-detection pass (each keystroke,
+  // scroll and pointer move), and this one filters the whole result set.
+  // Memoised on the inputs it actually reads: the results array identity and
+  // the filter controls. `results` is only ever reassigned, never mutated in
+  // place, so identity is a sound key.
+  private filteredMemo: { results: any[]; key: string; value: any[] } | null = null;
+
   get filteredResults(): any[] {
+    const key = `${this.stockFilter}|${this.priceMin}|${this.priceMax}|${JSON.stringify(this.conditionFilters)}`;
+    if (this.filteredMemo && this.filteredMemo.results === this.results && this.filteredMemo.key === key) {
+      return this.filteredMemo.value;
+    }
     const allChecked = Object.values(this.conditionFilters).every(v => v);
     const min = parseInt(this.priceMin, 10);
     const max = parseInt(this.priceMax, 10);
     const filterPrice = !isNaN(min) || !isNaN(max);
-    return this.results.filter(item => {
+    const value = this.results.filter(item => {
       const inStock = item.activeListings > 0;
       if (this.stockFilter === 'inStock' && !inStock) return false;
       if (filterPrice) {
@@ -396,6 +407,8 @@ export class Search implements OnInit {
       }
       return true;
     });
+    this.filteredMemo = { results: this.results, key, value };
+    return value;
   }
 
   get localResultsCount(): number {

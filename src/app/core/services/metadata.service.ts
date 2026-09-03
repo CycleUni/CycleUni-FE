@@ -1,7 +1,9 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, effect } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError, shareReplay } from 'rxjs/operators';
 import { SKIP_AUTH } from '../auth.interceptor';
+import { I18nService } from '../i18n.service';
 
 export interface PublicAd {
   id: number;
@@ -21,18 +23,49 @@ export interface PublicAd {
 })
 export class MetadataService {
   private http = inject(HttpClient);
+  private i18n = inject(I18nService);
+
+  // The layout shell and the home page both ask for the homepage metadata on
+  // load, so without this every visit fired the same request twice. Entries
+  // are keyed by school and dropped after a minute (the backend caches the
+  // same payload far longer) or when the language changes, since the
+  // response is localized.
+  private static readonly METADATA_TTL_MS = 60_000;
+  private metadataCache = new Map<string, { at: number; request$: Observable<any> }>();
+
+  constructor() {
+    effect(() => {
+      this.i18n.lang();
+      this.metadataCache.clear();
+    });
+  }
 
   getMetadata(schoolId?: string | number): Observable<any> {
+    const key = schoolId ? String(schoolId) : '';
+    const hit = this.metadataCache.get(key);
+    if (hit && Date.now() - hit.at < MetadataService.METADATA_TTL_MS) {
+      return hit.request$;
+    }
+
     // Public endpoint — do not attach Bearer token (SKIP_AUTH).
     // The `lang` query param is appended by ApiUrlInterceptor.
     let params = new HttpParams();
     if (schoolId) {
       params = params.set('school', String(schoolId));
     }
-    return this.http.get<any>('/core/metadata/', {
+    const request$ = this.http.get<any>('/core/metadata/', {
       context: new HttpContext().set(SKIP_AUTH, true),
       params
-    });
+    }).pipe(
+      catchError(err => {
+        // Never cache a failure: the next caller retries.
+        this.metadataCache.delete(key);
+        return throwError(() => err);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.metadataCache.set(key, { at: Date.now(), request$ });
+    return request$;
   }
 
   getActiveAds(position: string = 'home_banner', schoolId?: string | number): Observable<any> {

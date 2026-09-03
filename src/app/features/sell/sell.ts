@@ -16,7 +16,9 @@ import { MetadataService } from '../../core/services/metadata.service';
 import { AuthStore } from '../../core/auth.store';
 import { I18nService, TPipe } from '../../core/i18n.service';
 import { GoogleAnalyticsService } from '../../core/services/google-analytics.service';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+// Type-only: the library (~300 KB of decoders) is pulled in with a dynamic
+// import the first time the camera is opened, not on every visit to /sell.
+import type { Html5Qrcode } from 'html5-qrcode';
 import { RegionLinkService } from '../../core/region-link.service';
 import { HasUnsavedChanges } from '../../core/unsaved-changes.guard';
 
@@ -470,6 +472,7 @@ export class Sell implements OnInit, OnDestroy, HasUnsavedChanges {
       if (this.html5QrCode && this.html5QrCode.isScanning) {
         await this.stopScanner();
       }
+      const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode');
       this.html5QrCode = new Html5Qrcode("reader", {
         formatsToSupport: [
           Html5QrcodeSupportedFormats.EAN_13,

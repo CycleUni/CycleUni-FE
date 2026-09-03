@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { UiCheckbox } from '../../shared/ui/checkbox.component';
-import { TPipe } from '../../core/i18n.service';
+import { I18nService, TPipe } from '../../core/i18n.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiButton } from '../../shared/ui/button.component';
@@ -81,6 +81,7 @@ export class ReviewModalComponent {
 
   private orderService = inject(OrderService);
   private cdr = inject(ChangeDetectorRef);
+  private i18n = inject(I18nService);
 
   onNoShowChange() {
     if (this.isNoShow) {
@@ -104,7 +105,11 @@ export class ReviewModalComponent {
       },
       error: (err) => {
         this.isSubmitting = false;
-        this.errorMsg = err.error?.detail || err.error?.non_field_errors?.[0] || 'Failed to submit review.';
+        const ratingCode = err.error?.rating?.[0];
+        this.errorMsg = err.error?.detail
+          || err.error?.non_field_errors?.[0]
+          || (typeof ratingCode === 'string' ? this.i18n.t(ratingCode) : '')
+          || 'Failed to submit review.';
         this.cdr.markForCheck();
       }
     });

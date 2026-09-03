@@ -106,6 +106,8 @@
                     [src]="msg._expired ? expiredImageSrc() : msg.body" 
                     [alt]="'msg.image' | t" 
                     class="chat-image"
+                    referrerpolicy="no-referrer"
+                    loading="lazy"
                     [class.expired]="msg._expired"
                     (click)="openImageModal(msg.body, $event)"
                     (error)="onImageError(msg)"
