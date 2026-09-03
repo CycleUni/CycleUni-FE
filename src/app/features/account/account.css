@@ -249,18 +249,26 @@
       .dashboard-sidebar {
         width: 100%;
       }
-      /* The sidebar becomes a horizontal strip here, so the groups flow into
-         one scroller with their titles acting as inline dividers — stacking
-         them would push the links themselves off the first screen. */
+      /* One row per group, rather than both groups in a single scroller.
+         Measured at 375px, the scroller was 479px of content in 343px of
+         width: 帳號設定 sat entirely off-screen and 檢舉紀錄 was clipped, with
+         nothing to say they were there — a touch device draws no scrollbar.
+         Two of the five destinations were reachable only by guessing to swipe.
+
+         Each group fits its own row on its own (193px and 285px against 343),
+         so wrapping costs one row of height and hides nothing. It also reads
+         better than the strip did: the titles start their row instead of
+         breaking up a queue of links. */
       .dashboard-nav {
         flex-direction: row;
-        overflow-x: auto;
+        flex-wrap: wrap;
         border-bottom: 1px solid var(--line);
         gap: 0;
       }
       .nav-group {
         flex-direction: row;
         align-items: center;
+        flex: 1 0 100%;
       }
       .nav-group-title {
         margin: 0;
