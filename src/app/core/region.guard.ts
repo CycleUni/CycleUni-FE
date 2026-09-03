@@ -1,6 +1,29 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, PRIMARY_OUTLET, Router, UrlSegment, UrlTree } from '@angular/router';
 import { RegionService } from './region.service';
+
+/**
+ * Swap the leading path segment, keeping everything else byte-identical.
+ *
+ * This used to be `state.url.replace('/' + regionParam, '/' + fallback)`, which
+ * compares a *decoded* route parameter against an *encoded* URL string. They
+ * differ for any segment that needed escaping — `/a%20b/search` yields the
+ * parameter `a b`, which does not occur in the URL — so the replace found
+ * nothing, the guard returned the URL it was given, and navigating to it ran
+ * the guard again: a redirect loop rather than a fallback.
+ *
+ * Editing the parsed tree sidesteps the comparison entirely, and carries query
+ * parameters, matrix parameters and the fragment across untouched.
+ */
+function withRegion(router: Router, url: string, region: string): UrlTree {
+  const tree = router.parseUrl(url);
+  const primary = tree.root.children[PRIMARY_OUTLET];
+  if (!primary || primary.segments.length === 0) {
+    return router.parseUrl(`/${region}`);
+  }
+  primary.segments[0] = new UrlSegment(region, primary.segments[0].parameters);
+  return tree;
+}
 
 export const regionGuard: CanActivateFn = (route, state) => {
   const regionService = inject(RegionService);
@@ -20,14 +43,11 @@ export const regionGuard: CanActivateFn = (route, state) => {
   
   if (regs.length > 0) {
     if (!regs.some(r => r.code.toLowerCase() === code)) {
-      const fallback = regs[0].code.toLowerCase();
-      const newUrl = state.url.replace(`/${regionParam}`, `/${fallback}`);
-      return router.parseUrl(newUrl);
+      return withRegion(router, state.url, regs[0].code.toLowerCase());
     }
   } else {
     if (code !== 'tw' && code !== 'hk') {
-       const newUrl = state.url.replace(`/${regionParam}`, `/tw`);
-       return router.parseUrl(newUrl);
+      return withRegion(router, state.url, 'tw');
     }
   }
   
