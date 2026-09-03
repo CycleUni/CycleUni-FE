@@ -1,5 +1,5 @@
 import { RegionLinkDirective } from '../../core/region-link.directive';
-import { Component, inject, effect, ChangeDetectorRef, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, inject, effect, ChangeDetectorRef, ElementRef, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiButton } from '../../shared/ui/button.component';
 
@@ -21,7 +21,7 @@ import { scrollBehavior } from '../../core/reduced-motion';
   templateUrl: './account.html',
   styleUrls: ['./account.css']
 })
-export class Account implements AfterViewInit {
+export class Account implements AfterViewInit, OnDestroy {
   activeTab = 'listings';
   hasUnreadOrders = false;
 
@@ -49,6 +49,8 @@ export class Account implements AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
   private host: ElementRef<HTMLElement> = inject(ElementRef);
+  private zone = inject(NgZone);
+  private stopWatchingNav?: () => void;
 
   /**
    * On a phone the tabs are one scrolling row, so the one you are on can start
@@ -59,8 +61,48 @@ export class Account implements AfterViewInit {
    * arriving on the first tab does not shift a strip that was already correct.
    */
   ngAfterViewInit(): void {
-    const active = this.host.nativeElement.querySelector<HTMLElement>('.dashboard-nav a.active');
+    const nav = this.host.nativeElement.querySelector<HTMLElement>('.dashboard-nav');
+    const active = nav?.querySelector<HTMLElement>('a.active');
     active?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: scrollBehavior() });
+    if (nav) {
+      this.watchNavOverflow(nav);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopWatchingNav?.();
+  }
+
+  /**
+   * Drives the fades at the two ends of the tab strip. Each says "there is
+   * more this way" and nothing else, so each is on only while its own side is
+   * genuinely hiding something — neither at the end of the travel it belongs
+   * to, and neither at the widths where the tabs fit outright.
+   *
+   * Measured rather than expressed in CSS because no selector can ask whether
+   * an element overflows. Outside the zone and touching only classList: this
+   * runs on every scroll frame, and a change detection pass per frame would
+   * cost the page far more than the fades are worth.
+   *
+   * The 1px slack absorbs the fractional scrollLeft a zoomed or scaled
+   * viewport produces, which would otherwise leave a fade on at rest.
+   */
+  private watchNavOverflow(nav: HTMLElement): void {
+    const sync = () => {
+      const remaining = nav.scrollWidth - nav.clientWidth - nav.scrollLeft;
+      nav.classList.toggle('has-more', remaining > 1);
+      nav.classList.toggle('has-previous', nav.scrollLeft > 1);
+    };
+    this.zone.runOutsideAngular(() => {
+      nav.addEventListener('scroll', sync, { passive: true });
+      const observer = new ResizeObserver(sync);
+      observer.observe(nav);
+      sync();
+      this.stopWatchingNav = () => {
+        nav.removeEventListener('scroll', sync);
+        observer.disconnect();
+      };
+    });
   }
 
   constructor(public auth: AuthStore) {

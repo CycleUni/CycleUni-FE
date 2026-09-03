@@ -325,31 +325,57 @@
          titles caption it from above: 64px, against the 95px an inline
          arrangement needed, and a second row of links would cost another 46.
 
-         Two things buy that row. It runs to the screen edges, which a tab
-         strip reads as anyway, and which is worth 32px — the difference
-         between fitting and not at 320px. And the padding scales with the
-         viewport rather than sitting at a fixed 8px. Measured with the real
-         labels, the five links need 260px of text; the clamp lands the row at
-         311px inside 320 on the narrowest phone and 326 inside 414 on a large
-         one, so it fits throughout without a breakpoint deciding where. */
+         The strip itself runs to the screen edges so a tab can scroll out
+         under the fade rather than stopping short of it, but its own padding
+         puts the first tab's text back on the page's 16px gutter: 4px here
+         plus the 12px each tab carries. Flush against the glass, it read as
+         if it had been cut off rather than laid out. */
       .dashboard-nav {
         flex-direction: row;
         flex-wrap: nowrap;
         border-bottom: 1px solid var(--line);
         gap: 0;
         margin-inline: calc(var(--space-4) * -1);
+        padding-inline: var(--space-1);
+        /* The snap ports have to be inset by the same amount. Without this the
+           first tab snaps to the padding box edge, which scrolls the strip by
+           exactly the padding and puts the tab back against the glass — the
+           inset above is applied and then immediately undone. */
+        scroll-padding-inline: var(--space-1);
         overflow-x: auto;
         scrollbar-width: none;
-        /* Fades the last thing on the right rather than cutting it, so a strip
-           with more to the right never looks like a strip that has ended. This
-           is what the original scroller was missing: a phone draws no
-           scrollbar, so a clipped tab and a final tab looked identical. The
-           mask lifts once there is nothing left to scroll. */
-        mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
         scroll-snap-type: x proximity;
       }
       .dashboard-nav::-webkit-scrollbar { display: none; }
-      .dashboard-nav:not(:has(> :last-child:not(:only-child))) { mask-image: none; }
+      /* Fades whatever is at the edge rather than cutting it, so a strip with
+         more beyond it never looks like a strip that has ended. This is what
+         the original scroller was missing: a phone draws no scrollbar, so a
+         clipped tab and a final tab looked identical.
+
+         Both edges, because both can hide a tab. Once you have scrolled right,
+         我的上架 is behind the left edge with nothing to say so, and the tab
+         half-cut there reads as a rendering fault rather than as somewhere to
+         scroll back to.
+
+         Each side is on only while that side is actually hiding something —
+         the classes come from the component, since overflow is not a thing CSS
+         can ask about. Left on unconditionally, a fade sits over a tab nothing
+         is hiding, which is the impression it exists to prevent: the five
+         Chinese labels fit outright from 414px up, and this branch runs to
+         768. At 0 the stops collapse and the mask is fully opaque. */
+      .dashboard-nav {
+        --nav-fade-start: 0px;
+        --nav-fade-end: 0px;
+        mask-image: linear-gradient(
+          to right,
+          transparent 0,
+          #000 var(--nav-fade-start),
+          #000 calc(100% - var(--nav-fade-end)),
+          transparent 100%
+        );
+      }
+      .dashboard-nav.has-previous { --nav-fade-start: 28px; }
+      .dashboard-nav.has-more { --nav-fade-end: 28px; }
       .nav-group {
         flex-direction: column;
         min-width: 0;
@@ -373,7 +399,9 @@
       }
       .nav-group-title {
         margin: 0;
-        padding: 0 var(--space-2);
+        /* Matches a tab's own inline padding, so the caption starts on the
+           same vertical as the label it captions. */
+        padding: 0 var(--space-3);
         white-space: nowrap;
       }
       .dashboard-nav a {
