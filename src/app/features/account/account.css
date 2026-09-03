@@ -325,11 +325,22 @@
          one, so it fits throughout without a breakpoint deciding where. */
       .dashboard-nav {
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         border-bottom: 1px solid var(--line);
         gap: 0;
         margin-inline: calc(var(--space-4) * -1);
+        overflow-x: auto;
+        scrollbar-width: none;
+        /* Fades the last thing on the right rather than cutting it, so a strip
+           with more to the right never looks like a strip that has ended. This
+           is what the original scroller was missing: a phone draws no
+           scrollbar, so a clipped tab and a final tab looked identical. The
+           mask lifts once there is nothing left to scroll. */
+        mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+        scroll-snap-type: x proximity;
       }
+      .dashboard-nav::-webkit-scrollbar { display: none; }
+      .dashboard-nav:not(:has(> :last-child:not(:only-child))) { mask-image: none; }
       .nav-group {
         flex-direction: column;
         min-width: 0;
@@ -344,9 +355,12 @@
          430px. Given a fifth of 375 each, those two overflowed a 75px box —
          and with nowrap and nothing clipping them, the overflow ran across the
          neighbouring tab. */
+      .nav-group {
+        flex-shrink: 0;
+      }
       .nav-links {
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
       .nav-group-title {
         margin: 0;
@@ -363,7 +377,8 @@
         align-items: center;
         min-height: var(--tap-min);
         padding-block: 12px;
-        padding-inline: var(--space-2);
+        padding-inline: var(--space-3);
+        scroll-snap-align: start;
       }
       .dashboard-nav a.active {
         border-left-color: transparent;
