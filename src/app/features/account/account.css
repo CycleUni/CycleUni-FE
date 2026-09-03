@@ -109,6 +109,12 @@
       display: flex;
       flex-direction: column;
     }
+    /* A column here too, so the sidebar reads exactly as it did before the
+       wrapper existed; it only becomes a row on a phone. */
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+    }
     /* Deliberately quiet: the group titles are signposts for the links below
        them, not competing destinations. */
     .nav-group-title {
@@ -299,16 +305,19 @@
         width: auto;
         margin-top: 0;
       }
-      /* One row per group, rather than both groups in a single scroller.
-         Measured at 375px, the scroller was 479px of content in 343px of
-         width: 帳號設定 sat entirely off-screen and 檢舉紀錄 was clipped, with
-         nothing to say they were there — a touch device draws no scrollbar.
-         Two of the five destinations were reachable only by guessing to swipe.
+      /* Titles on a line of their own, links in one row beneath them.
+         This started as a horizontal scroller holding both groups: 479px of
+         content in 343px of width, so 帳號設定 sat entirely off-screen and
+         檢舉紀錄 was clipped, and a touch device draws no scrollbar to say so.
+         Putting the titles inline instead cost the row 78px — a quarter of the
+         width — for two words that are not destinations.
 
-         Each group fits its own row on its own (193px and 285px against 343),
-         so wrapping costs one row of height and hides nothing. It also reads
-         better than the strip did: the titles start their row instead of
-         breaking up a queue of links. */
+         Above them, the links keep a single row and the titles caption it, at
+         64px against the 95px an inline arrangement needed. Below, the groups
+         wrap one per row on their own, which is why there is no breakpoint
+         here: each group is already a column, so the second drops beneath the
+         first exactly when it stops fitting. Measured with the real labels,
+         that happens between 360 and 375px. */
       .dashboard-nav {
         flex-direction: row;
         flex-wrap: wrap;
@@ -316,23 +325,27 @@
         gap: 0;
       }
       .nav-group {
+        flex-direction: column;
+      }
+      .nav-links {
         flex-direction: row;
-        align-items: center;
-        flex: 1 0 100%;
       }
       .nav-group-title {
         margin: 0;
-        padding: 0 var(--space-2) 0 var(--space-3);
+        padding: 0 var(--space-2);
         white-space: nowrap;
-      }
-      .nav-group:first-child .nav-group-title {
-        padding-left: 0;
       }
       .dashboard-nav a {
         border-left: none;
         border-bottom: 3px solid transparent;
         white-space: nowrap;
-        padding: 12px;
+        /* min-height, not padding alone: 12px of padding around 13px text left
+           a 38px target, under the 44px a finger needs. */
+        display: flex;
+        align-items: center;
+        min-height: var(--tap-min);
+        padding: 12px var(--space-2);
+        font-size: var(--text-sm);
       }
       .dashboard-nav a.active {
         border-left-color: transparent;
