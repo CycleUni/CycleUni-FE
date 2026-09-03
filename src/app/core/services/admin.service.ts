@@ -360,7 +360,10 @@ export class AdminService {
 
   uploadAdPhoto(file: File): Observable<{ url: string }> {
     return this.http.post<any>('/admin/promotions/uploads/presign/', {
-      content_type: file.type
+      content_type: file.type,
+      // Signed into the presigned URL by the backend; ad images are PUT
+      // uncompressed, so this is the file's own size.
+      content_length: file.size
     }).pipe(
       switchMap((presign: any) => {
         if (presign.mode === 'direct') {

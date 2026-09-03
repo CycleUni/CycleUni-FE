@@ -151,8 +151,11 @@ export class MessageService {
       useWebWorker: true,
       fileType: 'image/webp',
     }))).pipe(
-      switchMap(compressed => this.http.post<any>(`/messaging/uploads/`, { 
+      // See listing.service.ts: the length is signed into the URL, so it
+      // must be the compressed blob's, not the original file's.
+      switchMap(compressed => this.http.post<any>(`/messaging/uploads/`, {
         content_type: compressed.type,
+        content_length: compressed.size,
         conversation_id: conversationId
       }).pipe(
         switchMap(presign => {

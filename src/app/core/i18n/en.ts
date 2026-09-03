@@ -262,6 +262,12 @@ export const en: Record<string, string> = {
   'acct.errEduEmail': 'Please enter a valid {suffix} email',
   'acct.errSchoolNotSupported': 'Your school is not supported yet, please stay tuned',
   'acct.errEmailTaken': 'This email is already in use by another account',
+  'acct.emailChangePending': 'Check the new address — the change takes effect once you follow the link we just sent.',
+  'acct.pendingLoginEmail': 'Waiting for confirmation: {email}',
+  'acct.cancelEmailChange': 'Cancel this change',
+  'acct.emailChanged': 'Your sign-in email has been updated.',
+  'acct.emailChangeCancelled': 'The email change has been cancelled.',
+  'acct.errEmailChangeTokenInvalid': 'That confirmation link is invalid or has expired. Request the change again.',
   'acct.errEduEmailChangeNotAllowed': 'You cannot change your login email to a school email address this way — use the school email verification flow instead.',
   'acct.sentVerification': 'Verification email sent. Please check your inbox.',
   'acct.errUnverified': 'Please verify your campus email first',
@@ -561,6 +567,7 @@ export const en: Record<string, string> = {
   'msg.imageLoadFailed': 'Image expired',
   'msg.errInvalidImageType': 'Please select a valid image file',
   'msg.errImageTooLarge': 'Image must be smaller than 5MB',
+  'msg.errFileTooLarge': 'That image is too large to send. Pick one under 5MB.',
 
   // Seller Page
   'seller.joined': 'Joined: ',

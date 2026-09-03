@@ -102,7 +102,14 @@ export class ListingService {
       useWebWorker: true,
       fileType: 'image/webp',
     }))).pipe(
-      switchMap(compressed => this.http.post<any>(`${this.apiUrl}uploads/`, { content_type: compressed.type }).pipe(
+      // content_length is the size of the body about to be PUT — the
+      // compressed blob, not the file the user picked. The backend signs it
+      // into the presigned URL, so R2 refuses a body of any other length;
+      // send the wrong number and the upload itself fails.
+      switchMap(compressed => this.http.post<any>(`${this.apiUrl}uploads/`, {
+        content_type: compressed.type,
+        content_length: compressed.size,
+      }).pipe(
         switchMap(presign => {
           if (presign.mode === 'direct') {
             const formData = new FormData();

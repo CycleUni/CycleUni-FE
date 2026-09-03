@@ -259,6 +259,12 @@ export const zhHK: Record<string, string> = {
   'acct.errEduEmail': '請輸入有效的 {suffix} 學校電郵',
   'acct.errSchoolNotSupported': '目前尚未支援你的學校，敬請期待',
   'acct.errEmailTaken': '此電郵已被其他帳戶使用',
+  'acct.emailChangePending': '確認信已經寄咗去新電郵，㩒咗信入面嘅連結先會生效。',
+  'acct.pendingLoginEmail': '等緊確認嘅新電郵：{email}',
+  'acct.cancelEmailChange': '取消今次更改',
+  'acct.emailChanged': '登入電郵已經更新。',
+  'acct.emailChangeCancelled': '已經取消今次電郵更改。',
+  'acct.errEmailChangeTokenInvalid': '呢個確認連結無效或者已經過期，請再更改一次。',
   'acct.errEduEmailChangeNotAllowed': '無法直接將登入電郵改為學校電郵，請改用學校電郵驗證流程。',
   'acct.sentVerification': '已發送驗證電郵，請前往你的電郵收取。',
   'acct.errUnverified': '請先完成校園電郵驗證',
@@ -563,6 +569,7 @@ export const zhHK: Record<string, string> = {
   'msg.imageLoadFailed': '圖片已過期',
   'msg.errInvalidImageType': '請選擇有效的圖片檔案',
   'msg.errImageTooLarge': '圖片大小不可超過 5MB',
+  'msg.errFileTooLarge': '呢張圖片太大，傳唔到，請揀 5MB 以內嘅圖片。',
 
   // Seller Page
   'seller.joined': '加入時間：',

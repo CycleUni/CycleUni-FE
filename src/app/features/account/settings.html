@@ -84,6 +84,10 @@
         <div *ngIf="isGoogleLinked" class="text-muted"  style="font-size: var(--text-xs); margin-top: 4px;">
           {{ 'acct.googleLinkedEmailDesc' | t }}
         </div>
+        <div *ngIf="pendingEmail" class="text-muted"  style="font-size: var(--text-xs); margin-top: 4px;">
+          {{ 'acct.pendingLoginEmail' | t:{email: pendingEmail} }}
+          <button type="button" class="link-btn" (click)="onCancelEmailChange()">{{ 'acct.cancelEmailChange' | t }}</button>
+        </div>
       </div>
       <div  style="display: flex; gap: 16px;">
         <div  class="flex-1">

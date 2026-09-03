@@ -169,10 +169,24 @@ export class AccountService {
   updateProfile(data: { first_name?: string, last_name?: string, email?: string, last_seen_bought_orders_at?: string, last_seen_sold_orders_at?: string }): Observable<any> {
     return this.http.patch<any>('/auth/me/', data).pipe(
       tap(profile => {
+        // A request to change the sign-in email answers with the pending
+        // address instead of the profile, since nothing has changed yet —
+        // caching that as the profile would blank the account out.
+        if (!profile || profile.id === undefined) return;
         this.profileCache.set(profile);
         this.cacheTimestamp = Date.now();
       })
     );
+  }
+
+  /** Apply a pending sign-in-email change. The token comes from the link in
+   *  the mail sent to the new address; no session is needed to follow it. */
+  confirmEmailChange(token: string): Observable<any> {
+    return this.http.post<any>('/auth/email/change/confirm/', { token });
+  }
+
+  cancelEmailChange(): Observable<any> {
+    return this.http.post<any>('/auth/email/change/cancel/', {});
   }
 
   changePassword(data: { old_password?: string, new_password?: string }): Observable<any> {

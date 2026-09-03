@@ -1,3 +1,26 @@
+# Report-Only, not enforced, on purpose. Tokens live in localStorage, so any
+# script that runs on this origin can read them and a CSP is the control that
+# stops one running — but a policy that blocks something the app needs takes
+# the app down, and the way to find out what it needs is to watch first.
+# There is no report-uri, so violations land in each visitor's browser console:
+# read them by walking the real flows on the deployed site with the console
+# open (Google sign-in, photo upload, chat, book page).
+#
+# What the policy allows and why:
+#   script-src   GSI (accounts.google.com) and GA (googletagmanager.com) are
+#                injected at runtime.
+#   'unsafe-inline' in style-src: Angular writes component styles into <style>
+#                tags. Removing it needs build-side nonces, not a header edit.
+#   fonts.*      the Noto family is loaded from Google Fonts in index.html.
+#   img-src https:  covers come through this origin's /api/cover proxy, but
+#                listing photos and avatars come from the R2 custom domain and
+#                lh3.googleusercontent.com, which differ per deployment.
+#   connect-src https: wss:  the API origin and the CFEdgeChat worker are both
+#                configured at build/run time, and chat uses a WebSocket.
+#   frame-src    GSI renders its button and One Tap in an iframe.
+#
+# Before enforcing: replace the two wildcard sources with this deployment's
+# real hosts, confirm a full pass reports nothing, then drop "-Report-Only".
 /*
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cache-Control: public, max-age=31536000
@@ -6,6 +29,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://accounts.google.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src https://accounts.google.com; worker-src 'self' blob:; manifest-src 'self'
 
 /
   Cache-Control: no-cache

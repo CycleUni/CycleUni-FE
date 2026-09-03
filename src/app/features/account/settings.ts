@@ -10,6 +10,8 @@ import { AuthStore } from '../../core/auth.store';
 import { isSameRegion } from '../../core/region-path';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { ActivatedRoute } from '@angular/router';
+import { parseApiError } from '../../core/api-error.util';
 
 @Component({
   selector: 'app-account-settings',
@@ -126,6 +128,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   readonly i18n = inject(I18nService);
   private toast = inject(ToastService);
   private confirms = inject(ConfirmService);
+  private route = inject(ActivatedRoute);
   private resendCountdownTimer: ReturnType<typeof setInterval> | null = null;
   private profileUserId: string | null = null;
 
@@ -162,9 +165,47 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  /** A sign-in-email change waiting for the link in the new mailbox to be
+   *  followed. Until then `email` below is still the address that works. */
+  pendingEmail: string | null = null;
+
   ngOnInit() {
     this.clearLegacyPendingVerificationState();
     this.loadProfile();
+
+    // The confirmation mail links back here with the token on the query
+    // string; the address it was sent to may well be open in a browser that
+    // is not signed in, which is why the endpoint takes the token as proof.
+    const token = this.route.snapshot.queryParamMap.get('email_change_token');
+    if (token) {
+      this.confirmEmailChange(token);
+    }
+  }
+
+  private confirmEmailChange(token: string) {
+    this.accountService.confirmEmailChange(token).subscribe({
+      next: () => {
+        this.toast.success(this.i18n.t('acct.emailChanged'));
+        this.accountService.clearProfileCache();
+        this.loadProfile();
+      },
+      error: (err) => {
+        this.toast.error(parseApiError(err, this.i18n, 'acct.errEmailChangeTokenInvalid'));
+      },
+    });
+  }
+
+  onCancelEmailChange() {
+    this.accountService.cancelEmailChange().subscribe({
+      next: () => {
+        this.pendingEmail = null;
+        this.toast.success(this.i18n.t('acct.emailChangeCancelled'));
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.toast.error(parseApiError(err, this.i18n, 'acct.updateFailed'));
+      },
+    });
   }
 
   ngOnDestroy() {
@@ -182,6 +223,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.verifications = data.verifications || [];
         this.hasPassword = data.has_password ?? true;
         this.isGoogleLinked = data.is_google_linked ?? false;
+        this.pendingEmail = data.pending_email ?? null;
         this.restorePendingVerificationState();
         if (this.verifications.length > 0) {
           this.clearPendingVerificationState();
@@ -329,9 +371,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
       last_name: this.lastName,
       email: this.email
     }).subscribe({
-      next: () => {
+      next: (resp) => {
         this.isLoading = false;
-        this.clientSettingsMsg = 'acct.profileSaved';
+        // A new sign-in email is not applied on save — it waits for the link
+        // sent to that address — so say so rather than "profile saved", which
+        // would read as though the address had already changed.
+        if (resp?.code === 'acct.emailChangePending') {
+          this.clientSettingsMsg = 'acct.emailChangePending';
+          // Re-read rather than trust the response: /auth/me/ reports the
+          // pending address as well as the one still in force, and the field
+          // above must go back to showing the address that actually works.
+          this.accountService.clearProfileCache();
+          this.loadProfile();
+        } else {
+          this.clientSettingsMsg = 'acct.profileSaved';
+        }
         this.cdr.markForCheck();
       },
       error: (err) => {

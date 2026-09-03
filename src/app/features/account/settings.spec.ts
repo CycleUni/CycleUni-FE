@@ -1,4 +1,6 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { SettingsComponent } from './settings';
 import { RegionService } from '../../core/region.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -99,6 +101,46 @@ describe('SettingsComponent', () => {
       (component as any).lastPwdError = { error: { old_password: ['Incorrect password.'] } };
 
       expect(component.pwdMessage).toBe('Incorrect password.');
+    });
+  });
+
+  describe('changing the sign-in email', () => {
+    it('reports it as pending rather than saved', () => {
+      // The address is not applied until the link sent to it is followed, so
+      // "profile saved" would read as though it already had been.
+      (component as any).accountService = {
+        updateProfile: () => of({ code: 'acct.emailChangePending', pending_email: 'new@example.com' }),
+        clearProfileCache: vi.fn(),
+        getMyProfile: () => of({ id: 1, email: 'old@example.com', pending_email: 'new@example.com' }),
+      };
+
+      component.onUpdateProfile();
+
+      expect(component.pendingEmail).toBe('new@example.com');
+      expect((component as any).clientSettingsMsg).toBe('acct.emailChangePending');
+    });
+
+    it('still reports an ordinary save as saved', () => {
+      (component as any).accountService = {
+        updateProfile: () => of({ id: 1, email: 'same@example.com', first_name: 'A' }),
+        clearProfileCache: vi.fn(),
+        getMyProfile: () => of({ id: 1, email: 'same@example.com' }),
+      };
+
+      component.onUpdateProfile();
+
+      expect(component.pendingEmail).toBeNull();
+      expect((component as any).clientSettingsMsg).toBe('acct.profileSaved');
+    });
+
+    it('drops the pending address when the change is cancelled', () => {
+      component.pendingEmail = 'new@example.com';
+      (component as any).accountService = { cancelEmailChange: () => of({}) };
+      (component as any).toast = { success: vi.fn(), error: vi.fn() };
+
+      component.onCancelEmailChange();
+
+      expect(component.pendingEmail).toBeNull();
     });
   });
 });
