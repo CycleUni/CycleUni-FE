@@ -30,7 +30,12 @@ import { SchoolStateService } from '../../core/services/school-state.service';
           <ui-recent-listings [school]="currentSchool" [ads]="activeAds" (adClick)="onAdClick($event)"></ui-recent-listings>
         </section>
 
-        <section class="col-side" [class.is-empty]="waitlistBandEmpty" aria-labelledby="waitlist-heading">
+        <section
+          class="col-side"
+          [class.is-empty]="waitlistBandEmpty"
+          [class.is-hero-covered]="waitlistFullyInHero"
+          aria-labelledby="waitlist-heading"
+        >
           <h2 class="section-heading" id="waitlist-heading">{{ 'home.waitlistTitle' | t }}</h2>
           <ui-skeleton *ngIf="metadataLoading && !metadataError" variant="row" [count]="4"></ui-skeleton>
           <!-- This branch used to contain only a spinner guarded by
@@ -45,7 +50,8 @@ import { SchoolStateService } from '../../core/services/school-state.service';
             <div class="waitlist-card" *ngIf="waitlist?.length">
               <a
                 class="waitlist-row"
-                *ngFor="let wait of waitlist; trackBy: trackByTitle"
+                *ngFor="let wait of waitlist; let i = index; trackBy: trackByTitle"
+                [class.in-hero]="i < heroWaitlistCount"
                 [regionLink]="['/book']"
                 [queryParams]="waitlistParams(wait)"
               >
@@ -210,6 +216,21 @@ import { SchoolStateService } from '../../core/services/school-state.service';
       /* Nothing to show but the heading and an empty note would be a
          page-wide empty box; the narrow mobile panel can carry that note. */
       .col-side.is-empty { display: none; }
+      /* The hero cover stack is these same books — it is waitlist.slice(0, 3),
+         same titles, same counts — and it is shown only from 769px up, which
+         is exactly where this panel now also appears. Printing the top three
+         twice on one page told a seller nothing the stack had not already
+         said. The panel reads as "who else is waiting" instead.
+
+         Hidden here rather than dropped from the list, because below 769 the
+         stack is display: none and these are the only place those books
+         appear at all. */
+      .waitlist-row.in-hero { display: none; }
+      /* Everything the panel had is in the stack above it, so there is nothing
+         left for it to add. Distinct from .is-empty: nobody is waiting there,
+         whereas here they are — the heading and its empty note would flatly
+         contradict the counts printed on the covers. */
+      .col-side.is-hero-covered { display: none; }
       .waitlist-card {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -312,6 +333,23 @@ export class Home implements OnInit, OnDestroy {
    */
   get waitlistBandEmpty(): boolean {
     return !this.metadataLoading && !this.metadataError && this.waitlist?.length === 0;
+  }
+
+  /**
+   * How many of the waitlist entries the hero stack is already showing. The
+   * stack takes them off the front in order, so this doubles as the number of
+   * rows the panel skips where the stack is visible — no matching by id or
+   * title, which entries without a book_id would fall out of.
+   */
+  heroWaitlistCount = 0;
+
+  /**
+   * Whether the stack has the whole waitlist, leaving the panel with nothing
+   * of its own. Only meaningful from 769px up, where the stack is shown; the
+   * class it drives is read inside that media query alone.
+   */
+  get waitlistFullyInHero(): boolean {
+    return this.waitlist?.length > 0 && this.heroWaitlistCount >= this.waitlist.length;
   }
 
   private metadataService = inject(MetadataService);
@@ -426,6 +464,8 @@ export class Home implements OnInit, OnDestroy {
       coverUrl: w.cover_url,
       count: w.count
     }));
+
+    this.heroWaitlistCount = waitlistCovers.length;
 
     if (heroAd) {
       const adCover: HeroCover = {

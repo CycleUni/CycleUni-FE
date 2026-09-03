@@ -165,4 +165,76 @@ describe('HomeComponent', () => {
     expect(wcounts[0].textContent).toContain('n=50');
     expect(wcounts[1].textContent).toContain('n=9999+');
   });
+  it('marks exactly the waitlist rows the hero stack is already showing', () => {
+    const waitlist = [
+      { book_id: 1, title: 'Book 1', cover_url: '', count: 9 },
+      { book_id: 2, title: 'Book 2', cover_url: '', count: 8 },
+      { book_id: 3, title: 'Book 3', cover_url: '', count: 7 },
+      { book_id: 4, title: 'Book 4', cover_url: '', count: 6 },
+      { book_id: 5, title: 'Book 5', cover_url: '', count: 5 }
+    ];
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist }));
+
+    component.loadAds();
+    component.loadMetadata();
+    fixture.detectChanges();
+
+    expect(component.heroWaitlistCount).toBe(3);
+    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('.waitlist-row');
+    expect([...rows].map(r => r.classList.contains('in-hero')))
+      .toEqual([true, true, true, false, false]);
+    // The rows stay in the DOM: below 769px the hero stack is display: none,
+    // so these are the only place those books appear at all.
+    expect(rows.length).toBe(5);
+  });
+
+  it('counts only two rows as hero-shown when an ad takes a slot in the stack', () => {
+    const heroAd: any = { id: 99, title: 'Ad', image_url: 'http://img.png', target_url: 'http://l.com', show_in_hero: true, slot_index: 1 };
+    const waitlist = [
+      { book_id: 1, title: 'Book 1', cover_url: '', count: 9 },
+      { book_id: 2, title: 'Book 2', cover_url: '', count: 8 },
+      { book_id: 3, title: 'Book 3', cover_url: '', count: 7 }
+    ];
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist }));
+    mockMetadataService.getActiveAds.mockReturnValue(of({ results: [heroAd] }));
+
+    component.loadAds();
+    component.loadMetadata();
+    fixture.detectChanges();
+
+    expect(component.heroWaitlistCount).toBe(2);
+    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('.waitlist-row');
+    expect([...rows].map(r => r.classList.contains('in-hero')))
+      .toEqual([true, true, false]);
+  });
+
+  it('flags the panel as fully covered when the stack has the whole waitlist', () => {
+    const waitlist = [
+      { book_id: 1, title: 'Book 1', cover_url: '', count: 9 },
+      { book_id: 2, title: 'Book 2', cover_url: '', count: 8 }
+    ];
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist }));
+
+    component.loadAds();
+    component.loadMetadata();
+    fixture.detectChanges();
+
+    expect(component.waitlistFullyInHero).toBe(true);
+    expect(component.waitlistBandEmpty).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).querySelector('.col-side')!.classList)
+      .toContain('is-hero-covered');
+  });
+
+  it('does not flag an empty waitlist as hero-covered', () => {
+    mockMetadataService.getMetadata.mockReturnValue(of({ categories: [], waitlist: [] }));
+
+    component.loadAds();
+    component.loadMetadata();
+    fixture.detectChanges();
+
+    // .is-empty already hides this case, and it means the opposite thing:
+    // nobody is waiting, rather than everyone waiting being shown above.
+    expect(component.waitlistFullyInHero).toBe(false);
+    expect(component.waitlistBandEmpty).toBe(true);
+  });
 });
