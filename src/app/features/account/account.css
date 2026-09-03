@@ -249,6 +249,56 @@
       .dashboard-sidebar {
         width: 100%;
       }
+      /* The desktop card is a centred column — 64px avatar, name, school,
+         three counters, the email, then a full-width button — and nothing
+         reduced it here, so it ran to 310px. With the nav under it, half the
+         phone was spent before the page's own content began.
+         It becomes one identity row: who you are, where you study, and the way
+         out. The counters and the email go, rather than being shrunk: each
+         listing count is the heading of the tab it belongs to, and the email
+         is on the settings page. Neither is something you act on from here.
+         Laid out with grid so the markup stays as the desktop needs it. */
+      .profile-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+          'avatar name   logout'
+          'avatar school logout';
+        align-items: center;
+        column-gap: var(--space-3);
+        text-align: left;
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+      }
+      .profile-card .avatar,
+      .profile-card .avatar-image-container {
+        grid-area: avatar;
+        width: 40px;
+        height: 40px;
+        font-size: var(--text-base);
+      }
+      .profile-card h3 {
+        grid-area: name;
+        margin: 0;
+        font-size: var(--text-base);
+      }
+      .profile-card .school-name {
+        grid-area: school;
+        margin: 0;
+      }
+      .profile-card .profile-stats,
+      .profile-card .email {
+        display: none;
+      }
+      .profile-card ui-button {
+        grid-area: logout;
+      }
+      /* Undo the block/margin the desktop column gives it. */
+      .profile-card ui-button.is-block {
+        display: inline-block;
+        width: auto;
+        margin-top: 0;
+      }
       /* One row per group, rather than both groups in a single scroller.
          Measured at 375px, the scroller was 479px of content in 343px of
          width: 帳號設定 sat entirely off-screen and 檢舉紀錄 was clipped, with
