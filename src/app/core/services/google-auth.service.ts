@@ -3,6 +3,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { AuthStore } from '../auth.store';
 import { I18nService } from '../i18n.service';
 import { ThemeService } from './theme.service';
+import { ToastService } from './toast.service';
+import { parseApiError } from '../api-error.util';
 
 
 @Injectable({
@@ -12,6 +14,7 @@ export class GoogleAuthService {
   private authStore = inject(AuthStore);
   private i18n = inject(I18nService);
   private themeService = inject(ThemeService);
+  private toast = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
   
   private googleClientId = '';
@@ -202,6 +205,13 @@ export class GoogleAuthService {
         },
         error: (err) => {
           console.error('Google login failed', err);
+          // The button lives outside any one page, so a failure here used to
+          // reach nobody but the console — the user pressed "continue with
+          // Google" and the page simply sat there. The backend refuses a
+          // Google account whose address it has not verified
+          // (auth.errEmailNotVerified, 403), which is exactly the case that
+          // needs explaining.
+          this.toast.error(parseApiError(err, this.i18n, 'auth.errGoogleLoginFailed'));
         }
       });
     }

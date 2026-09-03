@@ -18,6 +18,7 @@ import { AccountService } from '../../core/services/account.service';
 import { RegionLinkService } from '../../core/region-link.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { parseApiError } from '../../core/api-error.util';
 
 
 @Component({
@@ -324,9 +325,22 @@ export class ListingsComponent implements OnInit {
     };
     
     if (this.editingListing.book_source === 'manual') {
-      payload.book_title = this.editForm.book_title;
-      payload.book_authors = this.editForm.book_authors;
-      payload.isbn = this.editForm.isbn;
+      // Only the fields the seller actually touched. A Book row is shared by
+      // every listing of that title, so the backend refuses book-field edits
+      // once a second seller lists the same manual book — and sending the
+      // unchanged title/authors/ISBN on every save turned a plain price edit
+      // into a 403 that lost the whole form.
+      const original = this.editingListing;
+      const same = (a: any, b: any) => (a ?? '') === (b ?? '');
+      if (!same(this.editForm.book_title, original.book_title)) {
+        payload.book_title = this.editForm.book_title;
+      }
+      if (!same(this.editForm.book_authors, original.book_authors)) {
+        payload.book_authors = this.editForm.book_authors;
+      }
+      if (!same(this.editForm.isbn, original.isbn)) {
+        payload.isbn = this.editForm.isbn;
+      }
     }
     
     this.listingService.updateListing(this.editingListing.id, payload).subscribe({
@@ -335,8 +349,11 @@ export class ListingsComponent implements OnInit {
         this.closeEdit();
         this.loadMyListings();
       },
-      error: () => {
-        this.toast.error(this.i18n.t('acct.updateFailed'));
+      error: (err) => {
+        // The backend has real reasons to refuse this edit now (shared book,
+        // malformed ISBN, ISBN already on another book) and each carries an
+        // i18n code; the blanket "update failed" left the seller guessing.
+        this.toast.error(parseApiError(err, this.i18n, 'acct.updateFailed'));
       }
     });
   }

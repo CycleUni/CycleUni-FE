@@ -83,6 +83,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (this.clientPwdMsg) return this.i18n.t(this.clientPwdMsg);
     if (!this.lastPwdError) return '';
     const err = this.lastPwdError;
+    // Changing a password now runs Django's AUTH_PASSWORD_VALIDATORS, which
+    // answer {error:{code:'auth.errValidation', fields:[...]}} — the shape
+    // registration already knows. Nothing here read it, so "too short",
+    // "too common" and "entirely numeric" all arrived as a bare "update
+    // failed" with nothing to act on. The code itself is not shown:
+    // auth.errValidation reads "provide an email and password", which is the
+    // registration wording and wrong here. Each message falls back to itself,
+    // since the validators answer in prose, not in i18n keys.
+    const backend = err.error?.error;
+    if (backend?.code === 'auth.errValidation') {
+      // A list from the validators, but a lone string costs nothing to accept.
+      const raw = backend.fields;
+      const messages: string[] = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
+      const detail = messages.map((m: string) => this.i18n.tOrNull(m) ?? m).join(' ');
+      return detail
+        ? this.i18n.t('acct.errPasswordRejected', { msg: detail })
+        : this.i18n.t('acct.updateFailed');
+    }
+    const code = this.i18n.tOrNull(backend?.code);
+    if (code) return code;
     return err.error?.old_password?.[0] || err.error?.detail || this.i18n.t('acct.updateFailed');
   }
 

@@ -70,4 +70,35 @@ describe('SettingsComponent', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('pwdMessage', () => {
+    it('spells out why the validators rejected the new password', () => {
+      // Change-password runs AUTH_PASSWORD_VALIDATORS now, and answers in the
+      // shape registration uses. Before this was read, "too short", "too
+      // common" and "entirely numeric" all arrived as a bare "update failed".
+      component.pwdIsError = true;
+      (component as any).lastPwdError = {
+        error: { error: { code: 'auth.errValidation', fields: ['This password is too common.'] } },
+      };
+
+      expect(component.pwdMessage).toContain('This password is too common.');
+      expect(component.pwdMessage).not.toBe('Update failed. Please try again.');
+    });
+
+    it('does not show the registration wording for auth.errValidation itself', () => {
+      // auth.errValidation reads "please provide an email and password",
+      // which is nonsense on the change-password form.
+      (component as any).lastPwdError = {
+        error: { error: { code: 'auth.errValidation', fields: [] } },
+      };
+
+      expect(component.pwdMessage).toBe('Update failed. Please try again.');
+    });
+
+    it('still reports a wrong current password', () => {
+      (component as any).lastPwdError = { error: { old_password: ['Incorrect password.'] } };
+
+      expect(component.pwdMessage).toBe('Incorrect password.');
+    });
+  });
 });

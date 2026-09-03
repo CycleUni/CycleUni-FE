@@ -18,6 +18,7 @@ import { GoogleAnalyticsService } from '../../core/services/google-analytics.ser
 import { RegionLinkService } from '../../core/region-link.service';
 import { ToastService } from '../../core/services/toast.service';
 import { scrollBehavior } from '../../core/reduced-motion';
+import { parseApiError } from '../../core/api-error.util';
 
 
 @Component({
@@ -419,6 +420,22 @@ export class OrdersComponent implements OnInit {
         } else {
           const idx = this.soldOrders.findIndex(o => o.id === order.id);
           if (idx !== -1) this.soldOrders[idx] = { ...this.soldOrders[idx], ...updatedOrder };
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        // This subscribe had no error branch at all, so a refused transition
+        // was invisible: the seller pressed Accept and nothing whatsoever
+        // happened. The backend now takes a row lock and refuses an accept
+        // whose listing is no longer active — another buyer's order reserved
+        // it first, or the seller has since marked it sold — and this list is
+        // simply out of date about that.
+        this.toast.error(parseApiError(err, this.i18n, 'acct.updateFailed'));
+        // Only the codes that mean "your copy of this row is out of date".
+        // A 401 is the interceptor's business and re-reading on it would just
+        // fail again; a dropped connection says nothing about the row at all.
+        if ([400, 403, 404, 409].includes(err?.status)) {
+          this.loadOrders();
         }
         this.cdr.markForCheck();
       }
