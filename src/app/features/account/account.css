@@ -279,6 +279,11 @@
       .profile-card .avatar,
       .profile-card .avatar-image-container {
         grid-area: avatar;
+        /* The desktop rule centres it in a column with 16px beneath; here it
+           sits beside two lines of text, and that margin pushed it off their
+           centre. */
+        margin: 0;
+        align-self: center;
         width: 40px;
         height: 40px;
         font-size: var(--text-base);
@@ -296,10 +301,14 @@
       .profile-card .email {
         display: none;
       }
+      /* Undo the block, the margin and the stretch the desktop column gives
+         it — ui-button's host carries align-self: stretch, which in a grid
+         pulls the button to the full height of the card instead of leaving it
+         on the centre line with the name beside it. */
       .profile-card ui-button {
         grid-area: logout;
+        align-self: center;
       }
-      /* Undo the block/margin the desktop column gives it. */
       .profile-card ui-button.is-block {
         display: inline-block;
         width: auto;
