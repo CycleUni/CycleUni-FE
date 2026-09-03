@@ -1,5 +1,5 @@
 import { RegionLinkDirective } from '../../core/region-link.directive';
-import { Component, inject, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, effect, ChangeDetectorRef, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiButton } from '../../shared/ui/button.component';
 
@@ -9,6 +9,7 @@ import { OrderService } from '../../core/services/order.service';
 import { I18nService, TPipe } from '../../core/i18n.service';
 
 import { RouterModule } from '@angular/router';
+import { scrollBehavior } from '../../core/reduced-motion';
 
 /** The signed-in dashboard. It used to double as the login wall on the same
  *  URL; that half now lives at /login and /register, and the route's authGuard
@@ -20,7 +21,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './account.html',
   styleUrls: ['./account.css']
 })
-export class Account {
+export class Account implements AfterViewInit {
   activeTab = 'listings';
   hasUnreadOrders = false;
 
@@ -47,6 +48,20 @@ export class Account {
   private orderService = inject(OrderService);
   private cdr = inject(ChangeDetectorRef);
   private i18n = inject(I18nService);
+  private host: ElementRef<HTMLElement> = inject(ElementRef);
+
+  /**
+   * On a phone the tabs are one scrolling row, so the one you are on can start
+   * outside the viewport — land on Account settings and the strip shows the
+   * first two tabs and no sign of where you are. Bring it into view.
+   *
+   * Nearest, not start: it moves only when the tab is actually off-screen, so
+   * arriving on the first tab does not shift a strip that was already correct.
+   */
+  ngAfterViewInit(): void {
+    const active = this.host.nativeElement.querySelector<HTMLElement>('.dashboard-nav a.active');
+    active?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: scrollBehavior() });
+  }
 
   constructor(public auth: AuthStore) {
     // Reload the profile when the language changes so localized fields
