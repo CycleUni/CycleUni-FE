@@ -328,13 +328,30 @@
         border-bottom: 1px solid var(--line);
         gap: 0;
         margin-inline: calc(var(--space-4) * -1);
-        padding-inline: var(--space-1);
       }
       .nav-group {
         flex-direction: column;
+        min-width: 0;
       }
+      /* The five tabs share the row equally, so each keeps the size it had in
+         the old strip — 75px against 80px at 375, 83px at 414 — without any of
+         them being measured against its own label. A tab that is wider than
+         its neighbour because its word is longer reads as an accident.
+
+         The ratios are the link counts, and CSS cannot count children: if a
+         destination is added to either group, the numbers below move with it.
+         Basis 0 rather than auto so the same ratio governs growing and
+         shrinking; sized by content, the two-link group takes the same share
+         of free space as the three-link one and ends up with wider tabs. */
+      .nav-group:first-child { flex: 2 2 0; }
+      .nav-group:last-child { flex: 3 3 0; }
       .nav-links {
         flex-direction: row;
+      }
+      .nav-links a {
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
       }
       .nav-group-title {
         margin: 0;
@@ -351,8 +368,7 @@
         align-items: center;
         min-height: var(--tap-min);
         padding-block: 12px;
-        padding-inline: clamp(4px, 1.2vw, var(--space-2));
-        font-size: var(--text-sm);
+        padding-inline: var(--space-1);
       }
       .dashboard-nav a.active {
         border-left-color: transparent;
