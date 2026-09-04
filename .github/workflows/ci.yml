@@ -20,16 +20,15 @@ jobs:
           node-version: '24'
           cache: npm
 
-      # playwright and puppeteer are devDependencies of the local recording
-      # tooling, and each downloads a browser on install — around 1.7GB
-      # between them. Nothing in CI drives a real browser: the tests run on
-      # vitest with jsdom, and the build needs none. Skipping the downloads
-      # removes minutes and a network failure mode from every run. Variable
-      # names read off the installed packages, not from memory.
+      # puppeteer is a devDependency here that nothing references — see the
+      # note in package.json — and it downloads a browser on install, around
+      # 1.1GB. Nothing in CI drives a real browser: the tests run on vitest
+      # with jsdom and the build needs none, so that is minutes and a network
+      # failure mode bought for nothing. Variable name read off the installed
+      # package, not from memory.
       - name: Install
         run: npm ci
         env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
           PUPPETEER_SKIP_DOWNLOAD: '1'
 
       # Both scripts run scripts/set-env.js first. With none of the NG_APP_*
