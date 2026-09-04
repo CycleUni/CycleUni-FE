@@ -13,58 +13,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Checked out into a subdirectory so the sibling repositories can sit
-      # beside it. i18n-keys.spec.ts resolves them as ../UniBooks-BE and
-      # ../CFEdgeChat, and actions/checkout refuses a path outside the
-      # workspace — so the frontend moves down a level rather than them up.
       - uses: actions/checkout@v4
-        with:
-          path: UniBooks-FE
-
-      # The backend is the authority on two things this repository cannot
-      # answer alone: which error codes it emits (the dictionary must declare
-      # every one, or the frontend renders a raw key at the user), and which
-      # keys are referenced only from Python — about fifty, which without this
-      # look like orphans. Both checks skip when it is absent, so leaving it
-      # out would not fail CI, it would quietly stop testing.
-      - uses: actions/checkout@v4
-        with:
-          repository: CycleUni/UniBooks-BE
-          path: UniBooks-BE
-
-      # For the image-placeholder token, which the worker writes and this
-      # dictionary has to resolve.
-      - uses: actions/checkout@v4
-        with:
-          repository: CycleUni/CFEdgeChat
-          path: CFEdgeChat
 
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: UniBooks-FE/package-lock.json
 
       - run: npm ci
-        working-directory: UniBooks-FE
 
+      # This repository alone. Two checks in i18n-keys.spec.ts need
+      # UniBooks-BE beside this one to answer — which codes the backend emits,
+      # and which keys only Python references — and they skip themselves when
+      # it is absent. That is deliberate: verifying a contract between two
+      # repositories belongs where both exist at the versions that ship
+      # together, which is the umbrella repository, not here. See its
+      # contract job. A red build here always means this repository.
       - name: Tests
-        working-directory: UniBooks-FE
-        # `shell: bash` for pipefail: without it a failing npm test piped into
-        # tee would report the exit code of tee, which is always 0.
-        shell: bash
-        run: |
-          npm test 2>&1 | tee test-output.log
-
-          # The two cross-repository i18n checks skip themselves when a
-          # sibling repository is missing. A broken checkout step above would
-          # therefore show as a green run that quietly tested less, so treat
-          # any skip as a failure rather than trusting the summary line.
-          if sed 's/\x1b\[[0-9;]*m//g' test-output.log | grep -qE "[0-9]+ skipped"; then
-            echo "::error::A cross-repository i18n check skipped — UniBooks-BE or CFEdgeChat did not check out."
-            exit 1
-          fi
+        run: npm test
 
       - name: Production build
         run: npm run build
-        working-directory: UniBooks-FE
