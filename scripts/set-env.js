@@ -64,6 +64,14 @@ if (process.env.NG_APP_ALLOWED_HOSTS) {
 // enforcing. With none of them set the committed file is left exactly as it
 // is — a deploy that does not opt in keeps working, with every other security
 // header intact.
+//
+// EDGE_CHAT_URL and R2_PUBLIC_URL deliberately carry no NG_APP_ prefix: they
+// are the same values, in the same format, that Django is already configured
+// with, so a whole KEY=VALUE line can be copied between the two dashboards
+// rather than retyped under a second name. The prefix is kept only for
+// settings that exist for the frontend alone (NG_APP_BACKEND_URL, which also
+// carries the /api/v1 path the app calls; NG_APP_CSP_ENFORCE;
+// NG_APP_GA_MEASUREMENT_ID).
 // ---------------------------------------------------------------------------
 
 function originOf(rawUrl) {
@@ -98,8 +106,8 @@ function buildCsp({ backendOrigin, chatOrigin, mediaOrigin }) {
 
 const cspOrigins = {
   backendOrigin: originOf(process.env.NG_APP_BACKEND_URL),
-  chatOrigin: originOf(process.env.NG_APP_EDGE_CHAT_URL),
-  mediaOrigin: originOf(process.env.NG_APP_MEDIA_URL),
+  chatOrigin: originOf(process.env.EDGE_CHAT_URL),
+  mediaOrigin: originOf(process.env.R2_PUBLIC_URL),
 };
 
 // Only rewrite once every origin the wildcards stand in for is known.
@@ -125,5 +133,5 @@ if (cspOrigins.backendOrigin && cspOrigins.chatOrigin && cspOrigins.mediaOrigin)
     console.log(`CSP rewritten in public/_headers (${headerName})`);
   }
 } else {
-  console.log('CSP left as committed — set NG_APP_BACKEND_URL, NG_APP_EDGE_CHAT_URL and NG_APP_MEDIA_URL to narrow it');
+  console.log('CSP left as committed — set NG_APP_BACKEND_URL, EDGE_CHAT_URL and R2_PUBLIC_URL to narrow it');
 }

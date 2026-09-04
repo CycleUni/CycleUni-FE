@@ -10,8 +10,11 @@
 # substitutes the real hosts:
 #
 #   NG_APP_BACKEND_URL      the Django API        -> connect-src
-#   NG_APP_EDGE_CHAT_URL    the CFEdgeChat worker -> connect-src (https + wss)
-#   NG_APP_MEDIA_URL        the R2 public domain  -> img-src
+#   EDGE_CHAT_URL           the CFEdgeChat worker -> connect-src (https + wss)
+#   R2_PUBLIC_URL           the R2 public domain  -> img-src
+#
+# The latter two are spelled exactly as Django spells them, and take the same
+# value, so the setting can be copied between dashboards as a whole line.
 #
 # With those set it stays Report-Only; add NG_APP_CSP_ENFORCE=1 to promote it
 # to an enforcing Content-Security-Policy. Do that only after watching a real
