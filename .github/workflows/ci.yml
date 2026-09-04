@@ -20,16 +20,7 @@ jobs:
           node-version: '24'
           cache: npm
 
-      # puppeteer is a devDependency here that nothing references — see the
-      # note in package.json — and it downloads a browser on install, around
-      # 1.1GB. Nothing in CI drives a real browser: the tests run on vitest
-      # with jsdom and the build needs none, so that is minutes and a network
-      # failure mode bought for nothing. Variable name read off the installed
-      # package, not from memory.
-      - name: Install
-        run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: '1'
+      - run: npm ci
 
       # Both scripts run scripts/set-env.js first. With none of the NG_APP_*
       # or shared origins set it uses its defaults and leaves public/_headers
