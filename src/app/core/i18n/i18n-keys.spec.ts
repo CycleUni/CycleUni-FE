@@ -71,7 +71,16 @@ describe('i18n translation keys (en.ts / zh-TW.ts / zh-HK.ts)', () => {
     expect(findDuplicates(path.join(I18N_DIR, 'zh-HK.ts'))).toEqual([]);
   });
 
-  it('should not declare keys that nothing in the app references', () => {
+  it('should not declare keys that nothing in the app references', (ctx) => {
+    // Around fifty of these keys are referenced only from the backend, so
+    // without it this cannot tell an orphan from a key it simply cannot see —
+    // it would report all fifty as unused. Skipped rather than answered
+    // wrongly; CI checks out the sibling repository so it does run there.
+    if (!fs.existsSync(BE_DIR)) {
+      ctx.skip();
+      return;
+    }
+
     const feFiles = walk(SRC_DIR, ['.ts', '.html'], ['i18n']).filter(f => !f.endsWith('.spec.ts'));
     let combinedSource = '';
     const dynamicPrefixes = new Set<string>();
@@ -163,7 +172,7 @@ describe('i18n translation keys (en.ts / zh-TW.ts / zh-HK.ts)', () => {
     expect(undeclared).toEqual([]);
   });
 
-  it('should declare every error code the backend can return', () => {
+  it('should declare every error code the backend can return', (ctx) => {
     // The two checks above cover declared-but-unused and rendered-but-undeclared,
     // both of which only look at this repo. The third direction is the one that
     // actually reached users: the backend answers with {"error": {"code": "..."}}
@@ -171,7 +180,12 @@ describe('i18n translation keys (en.ts / zh-TW.ts / zh-HK.ts)', () => {
     // key back — so a code no locale declared was rendered as
     // `listing.errFileTooLarge` where a sentence belonged. 21 of the backend's
     // codes were in that state at once.
-    if (!fs.existsSync(BE_DIR)) return;
+    // Passing here would be worse than skipping: it would report that the
+    // frontend declares every code the backend emits, having read no backend.
+    if (!fs.existsSync(BE_DIR)) {
+      ctx.skip();
+      return;
+    }
 
     const emitted = new Map<string, string>();
     const codePattern = /"code":\s*"([a-zA-Z0-9_]+\.[a-zA-Z0-9._]+)"/g;

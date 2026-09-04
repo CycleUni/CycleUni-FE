@@ -34,3 +34,4 @@ src/environments/environment.prod.ts
 # --- 執行期伺服器 --- 
 *.pid
 *_server.log
+test-output.log
