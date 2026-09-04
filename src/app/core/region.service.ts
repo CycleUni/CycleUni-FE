@@ -131,6 +131,17 @@ export class RegionService {
       }
       
       if (!isInit && typeof window !== 'undefined') {
+        // `code` is about to be interpolated into a URL that is then
+        // navigated to. It has usually already been checked against the
+        // loaded region list above — but that check is skipped entirely when
+        // the list is empty, which is a real state: the regions request has a
+        // catchError that yields []. A code of `/evil.example` would make
+        // `/${code}` a protocol-relative URL, i.e. a full navigation off this
+        // origin. Nothing reaches here with a hostile value today (the route
+        // guard validates first, and passes isInit=true, which skips this
+        // branch), so this is the second lock rather than the first.
+        if (!/^[a-z0-9-]{1,16}$/.test(code)) return;
+
         const urlWithoutRegion = stripRegionPrefix(this.router.url);
         const target = `/${code}${urlWithoutRegion === '/' ? '' : urlWithoutRegion}`;
         // A full document load, not router.navigateByUrl. Every route lives

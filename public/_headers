@@ -1,10 +1,23 @@
-# Report-Only, not enforced, on purpose. Tokens live in localStorage, so any
-# script that runs on this origin can read them and a CSP is the control that
-# stops one running — but a policy that blocks something the app needs takes
-# the app down, and the way to find out what it needs is to watch first.
-# There is no report-uri, so violations land in each visitor's browser console:
-# read them by walking the real flows on the deployed site with the console
-# open (Google sign-in, photo upload, chat, book page).
+# The CSP line below is rewritten at build time by scripts/set-env.js. What is
+# committed here is the fallback: Report-Only, with a wildcard img-src and
+# connect-src, because the R2 media domain and the CFEdgeChat origin differ per
+# deployment and a static file cannot know them.
+#
+# That fallback is deliberately weak-but-harmless. A wildcard connect-src gives
+# up most of what a CSP is for — it is the directive that would stop an
+# injected script posting stolen data to an attacker's server — so a real
+# deployment should not stay on it. Supply all three origins and set-env.js
+# substitutes the real hosts:
+#
+#   NG_APP_BACKEND_URL      the Django API        -> connect-src
+#   NG_APP_EDGE_CHAT_URL    the CFEdgeChat worker -> connect-src (https + wss)
+#   NG_APP_MEDIA_URL        the R2 public domain  -> img-src
+#
+# With those set it stays Report-Only; add NG_APP_CSP_ENFORCE=1 to promote it
+# to an enforcing Content-Security-Policy. Do that only after watching a real
+# pass of the app report nothing: there is no report-uri, so violations land in
+# each visitor's browser console, and the flows worth walking are Google
+# sign-in, photo upload, chat, and a book page.
 #
 # What the policy allows and why:
 #   script-src   GSI (accounts.google.com) and GA (googletagmanager.com) are
@@ -12,15 +25,11 @@
 #   'unsafe-inline' in style-src: Angular writes component styles into <style>
 #                tags. Removing it needs build-side nonces, not a header edit.
 #   fonts.*      the Noto family is loaded from Google Fonts in index.html.
-#   img-src https:  covers come through this origin's /api/cover proxy, but
-#                listing photos and avatars come from the R2 custom domain and
-#                lh3.googleusercontent.com, which differ per deployment.
-#   connect-src https: wss:  the API origin and the CFEdgeChat worker are both
-#                configured at build/run time, and chat uses a WebSocket.
+#   img-src      book covers come through this origin's /api/cover proxy;
+#                listing photos and avatars come from the R2 domain, and
+#                Google account avatars from lh3.googleusercontent.com.
+#   connect-src  the API origin, plus the chat worker over https and wss.
 #   frame-src    GSI renders its button and One Tap in an iframe.
-#
-# Before enforcing: replace the two wildcard sources with this deployment's
-# real hosts, confirm a full pass reports nothing, then drop "-Report-Only".
 /*
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cache-Control: public, max-age=31536000
