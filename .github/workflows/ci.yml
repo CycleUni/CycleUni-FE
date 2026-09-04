@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # Both scripts run scripts/set-env.js first. With none of the NG_APP_*
+      # or shared origins set it uses its defaults and leaves public/_headers
+      # untouched, which is the path a contributor's machine takes too.
+      - name: Tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
