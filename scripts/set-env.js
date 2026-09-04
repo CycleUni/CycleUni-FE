@@ -84,6 +84,21 @@ function originOf(rawUrl) {
   }
 }
 
+// Directives that cost nothing to enforce, whatever the deployment: the app
+// has no <object>/<embed>, no cross-origin <form action>, its <base> is the
+// origin itself, and X-Frame-Options: DENY already says what frame-ancestors
+// says. Enforcing these needs no verification pass and no opt-in, so a deploy
+// that never sets NG_APP_CSP_ENFORCE still gets real protection instead of a
+// policy that only ever watches. base-uri in particular is worth having: a
+// injected <base> tag is a standard way to escalate an HTML injection into
+// script execution.
+const ALWAYS_ENFORCED = [
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+
 function buildCsp({ backendOrigin, chatOrigin, mediaOrigin }) {
   const connect = ["'self'", backendOrigin, chatOrigin, chatOrigin && chatOrigin.replace(/^https:/, 'wss:')];
   const img = ["'self'", 'data:', 'blob:', mediaOrigin, 'https://lh3.googleusercontent.com'];
@@ -120,11 +135,25 @@ if (cspOrigins.backendOrigin && cspOrigins.chatOrigin && cspOrigins.mediaOrigin)
     : 'Content-Security-Policy-Report-Only';
   const line = `  ${headerName}: ${buildCsp(cspOrigins)}`;
 
+
   const original = fs.readFileSync(headersPath, 'utf8');
-  const rewritten = original.replace(
-    /^ {2}Content-Security-Policy(-Report-Only)?:.*$/m,
-    line.replace(/\$/g, '$$$$'),
-  );
+  const lines = process.env.NG_APP_CSP_ENFORCE === '1'
+    // Enforcing the full policy supersedes the always-enforced subset.
+    ? [line]
+    : [`  Content-Security-Policy: ${ALWAYS_ENFORCED}`, line];
+
+  // Replace the whole CSP block: there may be one line or two, and which is
+  // which changes with the flag.
+  let replaced = false;
+  const rewritten = original
+    .split('\n')
+    .flatMap(l => {
+      if (!/^ {2}Content-Security-Policy(-Report-Only)?:/.test(l)) return [l];
+      if (replaced) return [];
+      replaced = true;
+      return lines;
+    })
+    .join('\n');
 
   if (rewritten === original) {
     console.log('CSP unchanged');

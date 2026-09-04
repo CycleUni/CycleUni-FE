@@ -48,6 +48,25 @@ describe('public/_headers', () => {
       expect(csp).not.toBeNull();
     });
 
+    it('enforces the directives that cost nothing to enforce', () => {
+      // Holds in both states: by default an enforcing header carries just
+      // this subset alongside the Report-Only full policy, and with
+      // NG_APP_CSP_ENFORCE=1 the single enforcing header contains them too.
+      // Without this assertion the enforcing line could be dropped entirely
+      // and every other test here would still pass against the Report-Only
+      // one — which is to say, the app would ship watching and not enforcing.
+      const enforced = headerValue('Content-Security-Policy');
+      expect(enforced).not.toBeNull();
+      for (const required of [
+        "object-src 'none'",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ]) {
+        expect(enforced).toContain(required);
+      }
+    });
+
     it('keeps the directives that do not depend on the deployment', () => {
       expect(directive('default-src')).toBe("default-src 'self'");
       expect(directive('object-src')).toBe("object-src 'none'");

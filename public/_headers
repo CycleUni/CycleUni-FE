@@ -22,6 +22,15 @@
 # each visitor's browser console, and the flows worth walking are Google
 # sign-in, photo upload, chat, and a book page.
 #
+# Two CSP headers ship, and that is deliberate. The enforcing one carries only
+# directives that cost nothing to turn on here — the app has no <object>, no
+# cross-origin <form action>, its <base> is this origin, and X-Frame-Options
+# already says what frame-ancestors says — so they need no verification pass
+# and no opt-in. Without that, a deployment that never sets the flag would run
+# with a policy that only ever watches. The Report-Only one carries the full
+# policy, including the directives that would take the site down if they were
+# wrong. NG_APP_CSP_ENFORCE=1 merges them into a single enforcing header.
+#
 # What the policy allows and why:
 #   script-src   GSI (accounts.google.com) and GA (googletagmanager.com) are
 #                injected at runtime.
@@ -41,6 +50,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
   Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://accounts.google.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src https://accounts.google.com; worker-src 'self' blob:; manifest-src 'self'
 
 /
